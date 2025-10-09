@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "MAS Staten Island",
-    "owner": "appflowcreations",
+    "owner": "appflow-studios",
     "slug": "MAS-SI-APP",
     "version": "1.0.7",
     "orientation": "portrait",
@@ -20,7 +20,7 @@
     },
     "android": {
       "package": "com.anonymous.MASSIAPP",
-      "googleServicesFile" : "./android/app/google-services.json"
+      "googleServicesFile": "./android/app/google-services.json"
     },
     "web": {
       "bundler": "metro",
@@ -34,12 +34,12 @@
         {
           "iosUrlScheme": "com.googleusercontent.apps.991344123272-nk55l8nc7dcloc56m6mmnvnkhdtjfcbf"
         }
-      ]
+      ],
+      "expo-font"
     ],
     "experiments": {
-  "typedRoutes": true
-},
-
+      "typedRoutes": true
+    },
     "extra": {
       "router": {
         "origin": false

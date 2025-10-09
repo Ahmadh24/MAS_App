@@ -5,18 +5,21 @@
     "slug": "MAS-SI-APP",
     "version": "1.0.7",
     "orientation": "portrait",
-    "icon": "./assets/images/ .png",
+    "icon": "./assets/images/massicliquidglassicon.png",
     "scheme": "myapp",
     "userInterfaceStyle": "automatic",
     "splash": {
-      "image": "./assets/images/MASsplasgit h.png",
+      "image": "./assets/images/massicliquidglassicon.png",
       "resizeMode": "contain",
       "backgroundColor": "white"
     },
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.MAS-SI-APP",
-      "usesAppleSignIn": true
+      "usesAppleSignIn": true,
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "package": "com.anonymous.MASSIAPP",

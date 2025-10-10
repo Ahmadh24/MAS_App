@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1039624114339",
+    "project_id": "mas-si-f5f7e",
+    "storage_bucket": "mas-si-f5f7e.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1039624114339:android:0cd685d3f61e8e5a926f16",
+        "android_client_info": {
+          "package_name": "com.anonymous.MASSIAPP"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBBJKHTToV4r1EkZ5jNmQCUetnYMelIZWQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

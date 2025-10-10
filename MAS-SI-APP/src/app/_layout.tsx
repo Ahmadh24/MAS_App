@@ -18,6 +18,7 @@ import { Text } from 'react-native';
 //import TutorialOverlay from "../components/TutorialOverlay"; // Import tutorial
 import LottieView from 'lottie-react-native';
 import Animated, { useSharedValue, withTiming, runOnJS, useAnimatedStyle } from 'react-native-reanimated';
+import "@/global.css"
 
 
 SplashScreen.preventAutoHideAsync()

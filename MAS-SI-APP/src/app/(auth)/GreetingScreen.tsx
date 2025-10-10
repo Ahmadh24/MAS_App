@@ -130,7 +130,7 @@ const GreetingScreen = () => {
         <Image source={require("@/assets/images/massiLogo.webp")} style={{width: "90%", height: "100%", objectFit: "contain"}}/>
       </Animated.View>
       <ImageBackground source={require('@/assets/images/MASGreetingScreen.png')} style={{ height : height, width : width, alignItems : 'center', alignSelf : 'center', justifyContent : 'center' }} imageStyle={{ height : height , width : width, borderRadius : 20, alignSelf : 'center', objectFit : 'cover'  }} >
-        <View style={{ width : width, height : height, backgroundColor : 'rgba(255, 255, 255, 0.6)'}} className='items-center'>
+        <View style={{ width : width, height : height, backgroundColor : 'rgba(255, 255, 255, 0.6)'}} className='items-center '>
             <View>
               <Image source={require('@/assets/images/MASGreetingScreen.png')} style={{height : height / 2.5, width : width * .98, borderRadius : 20 }}/>
             </View>

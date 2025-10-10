@@ -1,6 +1,5 @@
 import { Stack } from "expo-router";
 import ProgramProvider from "@/src/providers/programProvider";
-import { createSharedElementStackNavigator } from "react-navigation-shared-element";
 import ProgramsAndEventsScreen from './programsAndEventsScreen'
 import UpcomingEvents from "./upcomingEvents/UpcomingEvents";
 import ProgramLectures from "./[programId]";

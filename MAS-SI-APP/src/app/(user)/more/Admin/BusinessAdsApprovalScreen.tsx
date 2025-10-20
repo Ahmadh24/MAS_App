@@ -55,7 +55,7 @@ const BusinessAdsApprovalScreen = () => {
             }}
           />
       <Text className="font-bold text-2xl p-3 pt-[170px] my-4 ">Business Ads</Text>
-      <View className='flex-1 grow'>
+      <View className='flex-1 grow pb-20'>
         <FlatList 
         style={{ flex : 1 }}
         data={ads}

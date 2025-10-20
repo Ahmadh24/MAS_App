@@ -315,7 +315,7 @@ async function processPrayerNotifications30Mins() {
   }
 }
 async function processTaraweehNotifications(todaysDate : Date) {
-  if (!isBefore(todaysDate, new Date(2025, 2, 30))) return;
+  if (!isBefore(todaysDate, new Date(2025, 2, 28))) return;
 
   // Fetch all notification settings for tarawih one and two at both alert types.
   const [
@@ -498,7 +498,7 @@ serve(async (req) => {
         ProcessAlertAtAthan(),
         ProcessAlertAtIqamah(),
         processPrayerNotifications30Mins(),
-        processTaraweehNotifications(todaysDate),
+        // processTaraweehNotifications(todaysDate),
         processJummahNotifications(todaysDate)
       ]
     )

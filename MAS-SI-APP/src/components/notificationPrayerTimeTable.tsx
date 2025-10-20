@@ -158,7 +158,7 @@ const NotificationPrayerTable = ({
               ))
             }
 
-            <Text className="font-bold text-lg mt-[15%] mb-1">Taraweeh Notifications</Text>
+            {/* <Text className="font-bold text-lg mt-[15%] mb-1">Taraweeh Notifications</Text>
             <Link 
                 href={{
                   pathname : '/myPrograms/notifications/Prayer/Tarawih/[tarawihDetails]',
@@ -326,7 +326,7 @@ const NotificationPrayerTable = ({
                     </View>
   
                </Pressable>
-            </Link>
+            </Link> */}
 
 
             <Text className="font-bold text-lg mt-[15%] mb-1">Jummah Notifications</Text>

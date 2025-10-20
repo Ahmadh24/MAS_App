@@ -57,7 +57,7 @@ export async function registerForPushNotificationsAsync() {
       finalStatus = status;
     }
     if (finalStatus !== 'granted') {
-      alert('For Push Notifications, Please Allow this app this app to send you notifications');
+      alert('For prayer times and annoucements notifications, Please Allow this app to send you notifications in your settings!');
       return;
     }
     token = (

@@ -5,7 +5,9 @@ import { AccordionItem } from './_Accordion'
 import { Link } from 'expo-router'
 import { useSharedValue } from 'react-native-reanimated'
 import { Icon } from 'react-native-paper'
-
+import { FlyerSkeleton } from '@/src/components/FlyerSkeleton'
+import FlyerImageComponent from '@/src/components/FlyerImageComponent'
+import EventImageComponent from '@/src/components/EventImageComponent'
 
 const Days = ( {Programs , Day, Kids, Pace, Events, TodaysDate, index } : {Programs : Program[], Day : string, Kids : Program[], Pace : EventsType[], Events : EventsType[], TodaysDate : number, index : number }) => {
   const Section = useSharedValue(false);
@@ -34,14 +36,8 @@ const Days = ( {Programs , Day, Kids, Pace, Events, TodaysDate, index } : {Progr
                 <Text className='text-black text-left self-start text-[15px] mb-4'>Kids Programs: </Text>
                 <FlatList 
                     data={Kids}
-                    renderItem={({item}) => (
-                        <Link href={`/menu/program/${item.program_id}`} asChild>
-                            <Pressable className='flex-col'>
-                                <Image source={{ uri : item.program_img || undefined }} style={{ width : 150, height : 150, borderRadius : 8, margin : 5 }}/>
-                                <Text className='text-gray-500 font-medium pl-2 text-[10px] w-[150px] text-center' numberOfLines={1}>{item.program_name}</Text>
-                            </Pressable>
-                        </Link>
-                    )}
+                    renderItem={({item}) => <FlyerImageComponent item={item} />
+                }
                     horizontal
                     showsHorizontalScrollIndicator={false}
 
@@ -53,14 +49,7 @@ const Days = ( {Programs , Day, Kids, Pace, Events, TodaysDate, index } : {Progr
                 <Text className='text-black mt-4 mb-4 self-start text-[15px]'>Programs: </Text>
                 <FlatList 
                     data={Programs.filter(program => program.is_kids == false)}
-                    renderItem={({item}) => (
-                        <Link href={`/menu/program/${item.program_id}`} asChild>
-                            <Pressable className='flex-col'>
-                                <Image source={{ uri : item.program_img || undefined }} style={{ width : 150, height : 150, borderRadius : 8, margin : 5 }}/>
-                                <Text className='text-gray-500 font-medium text-[10px] pl-2 w-[150px]  text-center' numberOfLines={1}>{item.program_name}</Text>
-                            </Pressable>
-                        </Link>
-                    )}
+                    renderItem={({item}) => <FlyerImageComponent item={item} /> }
                     horizontal
                     showsHorizontalScrollIndicator={false}
 
@@ -72,14 +61,7 @@ const Days = ( {Programs , Day, Kids, Pace, Events, TodaysDate, index } : {Progr
                <Text className='text-black mt-4 mb-4 self-start text-[15px]'>Events: </Text>
                 <FlatList 
                     data={Events}
-                    renderItem={({item}) => (
-                        <Link href={`/menu/program/events/${item.event_id}`} asChild>
-                            <Pressable className='flex-col'>
-                                <Image source={{ uri : item.event_img || undefined }} style={{ width : 150, height : 150, borderRadius : 8, margin : 5 }}/>
-                                <Text className='text-gray-500 font-medium text-[10px] pl-2 w-[150px] text-center' numberOfLines={1}>{item.event_name}</Text>
-                            </Pressable>
-                        </Link>
-                    )}
+                    renderItem={({item}) => <EventImageComponent item={item}/>}
                     horizontal
                     showsHorizontalScrollIndicator={false}
 
@@ -91,14 +73,7 @@ const Days = ( {Programs , Day, Kids, Pace, Events, TodaysDate, index } : {Progr
               <Text className='text-black mt-4 mb-4 self-start text-[15px]'>Pace:</Text>
                 <FlatList 
                     data={Pace}
-                    renderItem={({item}) => (
-                        <Link href={`/menu/program/events/${item.event_id}`} asChild>
-                            <Pressable className='flex-col'>
-                                <Image source={{ uri : item.event_img || undefined }} style={{ width : 150, height : 150, borderRadius : 8, margin : 5 }}/>
-                                <Text className='text-gray-500 font-medium text-[10px] pl-2 w-[150px] text-center' numberOfLines={1}>{item.event_name}</Text>
-                            </Pressable>
-                        </Link>
-                    )}
+                    renderItem={({item}) => <EventImageComponent item={item}/>}
                     horizontal
                     showsHorizontalScrollIndicator={false}
                 />

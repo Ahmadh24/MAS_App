@@ -19,6 +19,7 @@ import * as Haptics from "expo-haptics"
 import LottieView from 'lottie-react-native';
 import Toast from 'react-native-toast-message';
 import { isBefore } from 'date-fns';
+import { FlyerSkeleton } from '@/src/components/FlyerSkeleton';
 function setTimeToCurrentDate(timeString : string ) {
 
   // Split the time string into hours, minutes, and seconds
@@ -35,7 +36,7 @@ function setTimeToCurrentDate(timeString : string ) {
 
   return timestampISO
 }
-const schedule_notification = async ( user_id, push_notification_token, message, notification_type, program_event_name, notification_time ) => {
+const schedule_notification = async ( user_id : string, push_notification_token : string , message : string, notification_type : string, program_event_name : string, notification_time : Date ) => {
   console.log(program_event_name)
   const { error } = await supabase.from('program_notification_schedule').insert({ user_id : user_id, push_notification_token : push_notification_token, message : message, notification_type : notification_type, program_event_name : program_event_name, notification_time : notification_time, title : program_event_name})
   if( error ){
@@ -48,6 +49,8 @@ const ProgramLectures = () => {
   const [ lectures, setLectures ] = useState<Lectures[] | null>(null)
   const [ program, setProgram ] = useState<Program>()
   const [ visible, setVisible ] = useState(false);
+  const [imageReady, setImageReady] = useState(false);
+  const [hasError, setHasError] = useState(false);
   const showModal = () => setVisible(true);
   const hideModal = () => setVisible(false);
   const [ programInNotfications, setProgramInNotifications ] = useState(false)
@@ -238,7 +241,7 @@ const fadeOutNotification = useAnimatedStyle(() => ({
         programDays?.map( async (day) => {
           const { data : user_push_token } = await supabase.from('profiles').select('push_notification_token').eq('id', session?.user.id).single()
           if( (TodaysDate.getDay() == DaysOfWeek.indexOf(day)) && (user_push_token?.push_notification_token) ){
-            await schedule_notification(session?.user.id, user_push_token?.push_notification_token,  `${program.program_name} is Starting Now!`, 'When Program Starts', program.program_name, ProgramStartTime)
+            await schedule_notification(session?.user.id!, user_push_token?.push_notification_token,  `${program.program_name} is Starting Now!`, 'When Program Starts', program.program_name, ProgramStartTime)
           }
         })
       )
@@ -376,11 +379,33 @@ const fadeOutNotification = useAnimatedStyle(() => ({
      <StatusBar barStyle={"dark-content"}/>
       <Animated.ScrollView ref={scrollRef}  scrollEventThrottle={16} contentContainerStyle={{justifyContent: "center", alignItems: "center", marginTop: "2%" }} >
           
-          <View>
+          <View className=' relative' style={{width: width / 1.2, height: 300, borderRadius: 8 }}>
+            {/* Show the skeleton until the image is loaded or errored */}
+            { !imageReady && 
+              <FlyerSkeleton 
+                width={width / 1.2} 
+                height={300} 
+                style={{ position: 'absolute', top: 0, zIndex: 2 }} 
+              />
+            }
             <Animated.Image 
-              source={ program?.program_img ? { uri : program?.program_img } : require("@/assets/images/MASHomeLogo.png") }
-              style={ [{width: width / 1.2, height: 300, borderRadius: 8 }, imageAnimatedStyle] }
-              resizeMode='stretch'
+              source={
+                // If there's an error or no URL, use the fallback image
+                hasError || !program?.program_img 
+                  ? require("@/assets/images/MASHomeLogo.png")
+                  : { uri: program.program_img }
+              }
+              style={[
+                { width: width / 1.2, height: 300, borderRadius: 8 },
+                imageAnimatedStyle
+              ]}
+              resizeMode="stretch"
+              onLoad={() => setImageReady(true)}
+              onError={() => {
+                // Mark that an error occurred and hide the skeleton
+                setHasError(true);
+                setImageReady(true);
+              }}
             />
           </View>
        

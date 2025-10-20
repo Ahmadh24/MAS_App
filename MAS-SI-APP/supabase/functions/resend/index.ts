@@ -27,7 +27,7 @@ serve(async (req) => {
       Authorization: `Bearer ${RESEND_API_KEY}`,
     },
     body: JSON.stringify({
-      from: 'onboarding@resend.dev',
+      from: 'developer@massic.org',
       to: 'temurbeksayfutdinov@gmail.com',
       subject: 'New App Advertisment Submission',
       html: `

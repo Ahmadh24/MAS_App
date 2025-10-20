@@ -1,4 +1,5 @@
-import { Image, StyleSheet, View, Text, FlatList, ScrollView, Dimensions, useWindowDimensions, ImageBackground, StatusBar, Pressable, RefreshControl, SafeAreaView } from 'react-native';
+import { Image, StyleSheet, View, Text, FlatList, ScrollView, Dimensions, useWindowDimensions, ImageBackground, StatusBar, Pressable, RefreshControl } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import React, { useState, useEffect, useRef, useContext, useCallback} from 'react';
 import { gettingPrayerData, prayerTimesType, Profile } from '@/src/types';
 import { format, parse, setHours, setMinutes, subMinutes } from 'date-fns';
@@ -35,6 +36,7 @@ export default function homeScreen() {
   const [ confirmProfile, setConfirmProfile ] = useState(true)
   const [loading, setLoading] = useState(true)
   const [visible, setVisible] = React.useState(false);
+  const [ showQuestionaire, setShowQuestionaire ] = useState(false)
   const showModal = () => setVisible(true);
   const hideModal = () => setVisible(false);
   const tabBarHeight = useBottomTabBarHeight();
@@ -74,19 +76,19 @@ export default function homeScreen() {
         setProfile(data)
       }
     }
-    const onConfirmButton = async () => {
-      console.log(profileFirstName, profileLastName, profileEmail)
-      const { data, error } = await supabase.from('profiles').update({ first_name : profileFirstName, last_name : profileLastName, profile_email : profileEmail}).eq('id', session?.user.id)
-      if( data ){
-        console.log(data)
-      }
-      if( error ){
-        console.log(error)
-      }
-      else{
-      setVisible(false)
-      }
-    }
+    // const onConfirmButton = async () => {
+    //   console.log(profileFirstName, profileLastName, profileEmail)
+    //   const { data, error } = await supabase.from('profiles').update({ first_name : profileFirstName, last_name : profileLastName, profile_email : profileEmail}).eq('id', session?.user.id)
+    //   if( data ){
+    //     console.log(data)
+    //   }
+    //   if( error ){
+    //     console.log(error)
+    //   }
+    //   else{
+    //   setVisible(false)
+    //   }
+    // }
     const getPrayer = async () => {
       const prayerTimesInfo = await supabase.from('prayers').select('*').eq('id', 1).single()
         const prayerTimes = prayerTimesInfo.data
@@ -172,7 +174,7 @@ export default function homeScreen() {
                     <Modal visible style={{
                       backgroundColor : 'white'
                     }}>
-                      <MASQuestionaire />
+                      <MASQuestionaire onCloseQuestionaire={() => setShowQuestionaire(false)}/>
                     </Modal>
                   </Portal> */}
 

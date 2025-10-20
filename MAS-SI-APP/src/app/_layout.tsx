@@ -17,7 +17,10 @@ import { StripeProvider } from '@stripe/stripe-react-native';
 import { Text } from 'react-native';
 import LottieView from 'lottie-react-native';
 import Animated, { useSharedValue, withTiming, runOnJS, useAnimatedStyle } from 'react-native-reanimated';
+import "@/global.css"
 
+
+SplashScreen.preventAutoHideAsync()
 export default function RootLayout() {
   const colorScheme = useColorScheme();
   const [showLogo, setShowLogo] = useState(true);
@@ -84,7 +87,6 @@ export default function RootLayout() {
   if (!loaded || !isFirstLaunchChecked) {
     return null; // Wait until fonts and AsyncStorage are ready
   }
-
   return (
     <GestureHandlerRootView>
       <StripeProvider publishableKey={process.env.EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY!}>

@@ -103,7 +103,7 @@ export default function Index() {
   const SecondTaraweehEndTime = new Date(FirstTaraweehTime).setHours(FirstTaraweehTime.getHours() + 2,  FirstTaraweehTime.getMinutes() + 20)
   return (
     <View className='flex flex-1 h-screen'>
-      <ScrollView className='h-full  bg-white flex flex-col ' contentContainerStyle={{ paddingBottom : tabBar + 100 }} bounces={false}>
+      <ScrollView className='h-full  bg-white flex flex-col ' contentContainerStyle={{ paddingBottom : tabBar + 50 }} bounces={false}>
       <StatusBar barStyle={"dark-content"} />
       <ImageBackground
         source={require('@/assets/images/PrayerTimesHeader.jpg')}

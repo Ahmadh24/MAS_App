@@ -40,13 +40,25 @@ type PersonalSchemaId = {
     schemaId :  "name" | "phoneNumber" | "email",
     label : string
 }
+function formatPhoneNumber( phoneNumberString : string | undefined ) {
+    if( phoneNumberString == undefined ){
+        return ''
+    }
+    var cleaned = ('' + phoneNumberString).replace(/\D/g, '');
+    var match = cleaned.match(/^(\d{3})(\d{3})(\d{4})$/);
+    if (match) {
+      return '(' + match[1] + ') ' + match[2] + '-' + match[3];
+    }
+    return null;
+}
 const BusinessAds = () => {
   const { session } = useAuth()
   const router = useRouter()
   const tabBarHeight = useBottomTabBarHeight() * 3.7
   const { height, width } = Dimensions.get('screen')
   const [ currentStage, setCurrentStage ] = useState(0)
-  
+  const listItemWidth = Dimensions.get('screen').width
+  const [ PreviewBusinessAdInfo, setPreviewBusinessAdInfo ] = useState<{ businessName: string; businessPhoneNumber: string; businessEmail: string; city: string; state: string; address: string }>()
   
   const methods = useForm<SubmissionFormSchema>({
     resolver: zodResolver(submissionFormSchema),
@@ -95,11 +107,13 @@ const BusinessAds = () => {
     if( !result.canceled ){
       const img = result.assets[0]
       setBusinessFlyer(img)
+      setPreviewBusinessAdInfo(businessMethods.getValues())
     }
   }
 
   const onSubmit = async () => {
     if( businessFlyer ){
+        setFinishedSelectedChoices(false)
         const base64 = await FileSystem.readAsStringAsync(businessFlyer.uri, { encoding: 'base64' });
         const filePath = `${session?.user.id}/${new Date().getTime()}.${businessFlyer.type === 'image' ? 'png' : 'mp4'}`;
         const contentType = businessFlyer.type === 'image' ? 'image/png' : 'video/mp4';
@@ -131,6 +145,7 @@ const BusinessAds = () => {
                 visibilityTime: 2000,
             }
         )
+        setFinishedSelectedChoices(true)
     }
     else{
         Alert.alert("Submit Business Flyer")
@@ -307,8 +322,17 @@ const BusinessAds = () => {
                         <View className='flex-row justify-between items-center px-2 mt-4'> 
                             <Text className='text-gray-400 text-xl'>Upload Flyer</Text>
                         </View>
-                        <Pressable className='h-[200] w-[250] items-center justify-center bg-white self-center mt-2' onPress={onSelectImage} style={{ borderRadius : 20 }}>
-                            {businessFlyer ? <Image source={{ uri : businessFlyer.uri || undefined}} style={{width: "100%", height:"100%", objectFit: "contain"}} /> : (
+                        <Pressable className='items-center justify-center bg-white self-center mt-2' onPress={onSelectImage} style={{ borderRadius : 20, width : listItemWidth * .93 }}>
+                            {businessFlyer ? 
+                            <View className='h-[300] flex flex-col bg-gray-500' style={{  borderRadius : 19, overflow : 'hidden', width : listItemWidth * .93}}>
+                                <Image source={{ uri : businessFlyer.uri}} style={{  width : '100%', height : 250, objectFit : 'fill' }}/>
+                                <View className='px-2 mt-1'>
+                                <Text className='text-white text-[12px]' numberOfLines={1} adjustsFontSizeToFit><Text className='font-bold'>{PreviewBusinessAdInfo?.businessName}</Text> {PreviewBusinessAdInfo?.address}</Text>
+                                <Text className='text-white text-[12px]' numberOfLines={1} adjustsFontSizeToFit>Contacts: {PreviewBusinessAdInfo?.businessEmail} {formatPhoneNumber(PreviewBusinessAdInfo?.businessPhoneNumber)}</Text>
+                                </View>
+                            </View>
+                            
+                            : (
                                 <View className=' overflow-hidden w-[100%] h-[100%]' style={{ borderRadius : 20 }}>
                                     <BlurView intensity={10} style={{ height : '100%', width : '100%', borderRadius : 20, alignItems : 'center', justifyContent : 'center'}} >
                                         <View className='p-2 rounded-full bg-gray-50' >

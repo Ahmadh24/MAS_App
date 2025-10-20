@@ -43,8 +43,6 @@ const NotificationProvider = ({ children }: PropsWithChildren) => {
   const responseListener = useRef<Notifications.Subscription>();
 
   const savePushToken = async ( newToken : ExpoPushToken | undefined ) => {
-    console.log('called savePushToken')
-    console.log('newToken', newToken)
     setExpoPushToken(newToken)
     if( !newToken ){
       return;
@@ -59,7 +57,6 @@ const NotificationProvider = ({ children }: PropsWithChildren) => {
     else{
       console.log('session fail')
     }
-   
   }
 
   const DeleteOldPushToken = async () => {
@@ -105,5 +102,8 @@ const NotificationProvider = ({ children }: PropsWithChildren) => {
   return <>{children}</>;
 };
 
+export const SetNotificationOptions = async () => {
+  
+}
 
 export default NotificationProvider;

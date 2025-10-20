@@ -421,7 +421,7 @@ const Index = () => {
           onPress={async () => {
             if( feedbackOpen && feedbackMessage.trim() ){
               setSendAble(false)
-              const { error } =  await supabase.functions.invoke('donation-confirmation-email',{body : { message : feedbackMessage }})
+              const { error } =  await supabase.functions.invoke('donation-confirmation-email',{body : { message : feedbackMessage, userinfo : profile }})
               if (error) return
               Toast.show({
                 type: 'success',
@@ -534,7 +534,7 @@ const Index = () => {
                     <Button  mode='contained' buttonColor='#57BA47' textColor='white' className='w-[300] h-15 mt-8' onPress={onConfirmButton}>Submit</Button>
                   </View>
                   </View>
-              </Modal>
+      </Modal>
       </Portal>
     </ScrollView>
   )

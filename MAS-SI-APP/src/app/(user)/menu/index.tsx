@@ -58,8 +58,7 @@ export default function homeScreen() {
     const imageAnimatedStyle = useAnimatedStyle(() => {
       return{
         height: interpolate(scrollOffset.value, [0, 75-50], [75, 50], 'clamp'),
-        width: interpolate(scrollOffset.value, [0, (width / 1.8) - (width / 2.8)], [width / 1.8, width / 2.8], 'clamp'),
-
+        width: interpolate(scrollOffset.value, [0, (width / 2.2) - (width / 3)], [width / 2.2, width / 3], 'clamp'),
       }
     })
 
@@ -120,7 +119,10 @@ export default function homeScreen() {
             >
                   <StatusBar barStyle={"dark-content"}/>
                   <Animated.View className='justify-center items-center pt-[14%] bg-white w-full overflow-clip z-[1]' style={HeaderRadius} > 
-                    <Animated.Image source={require("@/assets/images/massiLogo2.png")} style={[{width: width / 1.5, justifyContent: "center", objectFit : 'fill' }, imageAnimatedStyle]}  />
+                    <Animated.Image 
+                      source={require("@/assets/images/massiLogo2.png")} 
+                      style={[{width: width / 2.2, height: 75, justifyContent: "center", objectFit: 'contain' }, imageAnimatedStyle]}  
+                    />
                   </Animated.View>
                   
                   <View style={{height: 250, overflow: "hidden", justifyContent:"center", borderEndStartRadius: 30 ,borderEndEndRadius: 30}} className=''>

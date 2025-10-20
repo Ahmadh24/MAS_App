@@ -15,7 +15,7 @@ const BlinkingIcon = () => {
     blink.value = withRepeat(
       withTiming(blink.value == 0.4 ? 1 : 0.4, { duration: 1000 }),
       -1,
-      true
+      
     )
   }) 
 

@@ -1,4 +1,3 @@
-
 import { Tabs, Redirect } from "expo-router";
 import * as Animatable from 'react-native-animatable';
 import { Pressable, TouchableOpacity } from "react-native";
@@ -14,6 +13,8 @@ import Toast from 'react-native-toast-message'
 import { View, Text, Image } from 'react-native'
 import { BlurView } from 'expo-blur';
 import * as Haptics from 'expo-haptics'
+import TutorialOverlay from "@/src/components/TutorialOverlay";
+
 const toastConfig = {
   addProgramToNotificationsToast : ( {props} : any ) => (
     <Pressable className='rounded-xl overflow-hidden ' onPress={props.onPress}>
@@ -162,9 +163,10 @@ const TabButton = ({ props, items }: TabButtonProps) => {
   );
 }
 
-export default function TabLayout() {
-  const { session } = useAuth();
+const UserLayout = () => {
+  const { session, loading: authLoading } = useAuth();
   const [loading, setLoading] = useState(true);
+  const [showTutorial, setShowTutorial] = useState(false);
   const opacity = useSharedValue(1);
   interface TextWithDefaultProps extends Text {
     defaultProps?: { allowFontScaling?: boolean };
@@ -181,6 +183,7 @@ export default function TabLayout() {
 
   const handleAnimationEnd = () => {
     setLoading(false);
+    setShowTutorial(true); // Show tutorial after logo animation
   };
 
   const fadeOutAnimation = () => {
@@ -189,12 +192,21 @@ export default function TabLayout() {
     });
   }
 
+  const handleTutorialFinish = () => {
+    setShowTutorial(false);
+  };
+
   if (!session) {
     return <Redirect href={'/GreetingScreen'} />;
   }
+
+  if (authLoading) {
+    return null;
+  }
+
   return (
     <>
-     { loading && (
+      {loading && (
         <Animated.View style={[{ zIndex: 1, position: 'absolute', width: '100%', height: '100%' }, playMASAnimation]}>
           <LottieView
             autoPlay
@@ -211,7 +223,8 @@ export default function TabLayout() {
             speed={1.5}
           />
         </Animated.View>
-      ) }
+      )}
+      
       <Tabs
         screenOptions={{
           tabBarStyle: {
@@ -253,7 +266,10 @@ export default function TabLayout() {
         ))}
       </Tabs>
       <Toast config={toastConfig}/>
+      {showTutorial && <TutorialOverlay visible={showTutorial} onClose={handleTutorialFinish} />}
     </>
   );
-}
+};
+
+export default UserLayout;
 

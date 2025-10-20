@@ -83,16 +83,35 @@ const SpeakersData = (speakers  : any ) => {
       <MenuTrigger style={{ marginLeft  : 10 }}>
         { !speakerSelected || speakerSelected.length == 0 ? <Text className="text-blue-600">Update Speakers</Text> : <Text>{speakerSelected.length} Speaker(s) Chosen</Text>}
       </MenuTrigger>
-      <MenuOptions optionsContainerStyle={{  borderRadius  : 10, paddingHorizontal : 4, paddingVertical : 4}}>
-        {
-          speakers.speakers && speakers.speakers.length > 0 ? speakers.speakers.map(( speaker:any ) =>{
-            return(
-              <MenuOption onSelect={() => handleSpeakerPress(speaker.speaker_id)}>
-                <Text className="text-black ">{speaker.speaker_name} { speakerSelected && speakerSelected.includes(speaker.speaker_id) ? <Icon source={'check'} color="green" size={15}/> : <></>}</Text>
-              </MenuOption>
-            )
-          }) : <></>
-        }
+      <MenuOptions 
+        optionsContainerStyle={{  
+          borderRadius: 10, 
+          paddingHorizontal: 4, 
+          paddingVertical: 4,
+          maxHeight: 250,
+          backgroundColor: 'white',
+          shadowColor: '#000',
+          shadowOffset: { width: 0, height: 2 },
+          shadowOpacity: 0.25,
+          shadowRadius: 3.84,
+          elevation: 5
+        }}
+      >
+        <ScrollView 
+          nestedScrollEnabled={true}
+          showsVerticalScrollIndicator={true}
+          style={{ maxHeight: 250 }}
+        >
+          {
+            speakers.speakers && speakers.speakers.length > 0 ? speakers.speakers.map(( speaker:any ) =>{
+              return(
+                <MenuOption key={speaker.speaker_id} onSelect={() => handleSpeakerPress(speaker.speaker_id)}>
+                  <Text className="text-black ">{speaker.speaker_name} { speakerSelected && speakerSelected.includes(speaker.speaker_id) ? <Icon source={'check'} color="green" size={15}/> : <></>}</Text>
+                </MenuOption>
+              )
+            }) : <></>
+          }
+        </ScrollView>
       </MenuOptions>
     </Menu>
   )

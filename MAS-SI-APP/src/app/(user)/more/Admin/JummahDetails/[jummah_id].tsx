@@ -1,4 +1,4 @@
-import { View, Text, Alert, Pressable } from 'react-native'
+import { View, Text, Alert, Pressable, ScrollView } from 'react-native'
 import React, { useEffect, useRef, useState } from 'react'
 import { router, Stack, useLocalSearchParams } from 'expo-router'
 import { supabase } from '@/src/lib/supabase'
@@ -68,16 +68,35 @@ export default function JummahId() {
           </View>
 
         </MenuTrigger>
-        <MenuOptions optionsContainerStyle={{  borderRadius  : 10, paddingHorizontal : 4, paddingVertical : 4}}>
-          {
-            speakers.speakers && speakers.speakers.length > 0 ? speakers.speakers.map(( speaker ) =>{
-              return(
-                <MenuOption onSelect={() => setSpeaker(speaker.speaker_id)}>
-                  <Text className="text-black ">{speaker.speaker_name} {chosenSpeaker == speaker.speaker_id ? <Icon source={'check'} color="green" size={15}/> : <></>}</Text>
-                </MenuOption>
-              )
-            }) : <></>
-          }
+        <MenuOptions 
+          optionsContainerStyle={{  
+            borderRadius: 10, 
+            paddingHorizontal: 4, 
+            paddingVertical: 4,
+            maxHeight: 250,
+            backgroundColor: 'white',
+            shadowColor: '#000',
+            shadowOffset: { width: 0, height: 2 },
+            shadowOpacity: 0.25,
+            shadowRadius: 3.84,
+            elevation: 5
+          }}
+        >
+          <ScrollView 
+            nestedScrollEnabled={true}
+            showsVerticalScrollIndicator={true}
+            style={{ maxHeight: 250 }}
+          >
+            {
+              speakers.speakers && speakers.speakers.length > 0 ? speakers.speakers.map(( speaker ) =>{
+                return(
+                  <MenuOption key={speaker.speaker_id} onSelect={() => setSpeaker(speaker.speaker_id)}>
+                    <Text className="text-black ">{speaker.speaker_name} {chosenSpeaker == speaker.speaker_id ? <Icon source={'check'} color="green" size={15}/> : <></>}</Text>
+                  </MenuOption>
+                )
+              }) : <></>
+            }
+          </ScrollView>
         </MenuOptions>
       </Menu>
     )

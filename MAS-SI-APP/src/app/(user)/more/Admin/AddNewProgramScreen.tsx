@@ -129,41 +129,63 @@ const AddNewProgramScreen = () => {
   const SpeakersData = (speakers  : any ) => {
     return(
       <Menu>
-        <MenuTrigger style={{ marginHorizontal  : 10 }}>
-
-         <View className="flex flex-row w-[100%} justify-between">
-            <View className="items-center justify-between flex flex-row w-[35%]">
-              <Text className="text-blue-600 underline">
+        <MenuTrigger style={{ marginHorizontal: 10 }}>
+          <View className="flex-row items-center justify-between w-full">
+            <View className="flex-row items-center flex-1">
+              <Text className="text-blue-600 underline mr-2">
                 Select Speakers 
               </Text>
               <Svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                <Path d="M7.5 15L12.5 10L7.5 5" stroke="#6077F5" stroke-width="2"/>
+                <Path d="M7.5 15L12.5 10L7.5 5" stroke="#6077F5" strokeWidth="2"/>
               </Svg>
             </View> 
-            { speakerSelected.length == 0 ? 
-            <Pressable className="items-center justify-between flex flex-row w-[35%]" onPress={() => setOpenAddSpeaker(true)}>
-              <Text>Add a speaker</Text>
-              <Svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                <Circle cx="12" cy="8" r="4" stroke="#222222" stroke-linecap="round"/>
-                <Path fill-rule="evenodd" clip-rule="evenodd" d="M15.2749 16C13.8962 15.5613 12.3886 15.4073 10.9057 15.5538C9.26518 15.7157 7.71374 16.2397 6.4495 17.0712C5.18515 17.9028 4.25277 19.0137 3.80077 20.2789C3.70786 20.5389 3.84336 20.825 4.1034 20.9179C4.36345 21.0108 4.64957 20.8754 4.74247 20.6153C5.10951 19.588 5.88417 18.64 6.99902 17.9067C8.11398 17.1734 9.50702 16.6967 11.0039 16.5489C11.5538 16.4946 12.1066 16.4858 12.6526 16.521C13.008 16.1974 13.4805 16 13.999 16L15.2749 16Z" fill="#222222"/>
-                <Path d="M18 14L18 22" stroke="#222222" stroke-linecap="round"/>
-                <Path d="M22 18L14 18" stroke="#222222" stroke-linecap="round"/>
-              </Svg>
-            </Pressable>
-            : <Text>{speakerSelected.length} Speaker(s) Chosen</Text>}
+            {speakerSelected.length == 0 ? (
+              <Pressable 
+                className="flex-row items-center px-3 py-2 bg-blue-50 rounded-lg"
+                onPress={() => setOpenAddSpeaker(true)}
+              >
+                <Text className="text-blue-600 font-medium mr-2">Add Speaker</Text>
+                <Svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                  <Circle cx="10" cy="6" r="3" stroke="#6077F5" strokeLinecap="round"/>
+                  <Path fillRule="evenodd" clipRule="evenodd" d="M12.5 12C11.5 11.7 10.4 11.6 9.3 11.7C8.1 11.8 7.0 12.2 6.1 12.8C5.2 13.4 4.5 14.2 4.1 15.1C4.0 15.3 4.1 15.5 4.3 15.6C4.5 15.7 4.7 15.6 4.8 15.4C5.1 14.7 5.7 14.1 6.5 13.7C7.3 13.3 8.2 13.1 9.1 13.1C9.5 13.1 9.9 13.1 10.3 13.2C10.6 12.9 10.9 12.8 11.2 12.8L12.5 12Z" fill="#6077F5"/>
+                  <Path d="M15 10L15 16" stroke="#6077F5" strokeLinecap="round"/>
+                  <Path d="M18 13L12 13" stroke="#6077F5" strokeLinecap="round"/>
+                </Svg>
+              </Pressable>
+            ) : (
+              <Text className="text-green-600 font-medium">{speakerSelected.length} Speaker(s) Chosen</Text>
+            )}
           </View>
-
         </MenuTrigger>
-        <MenuOptions optionsContainerStyle={{  borderRadius  : 10, paddingHorizontal : 4, paddingVertical : 4}}>
-          {
-            speakers.speakers && speakers.speakers.length > 0 ? speakers.speakers.map(( speaker ) =>{
-              return(
-                <MenuOption onSelect={() => handleSpeakerPress(speaker.speaker_id)}>
-                  <Text className="text-black ">{speaker.speaker_name} { speakerSelected.includes(speaker.speaker_id) ? <Icon source={'check'} color="green" size={15}/> : <></>}</Text>
-                </MenuOption>
-              )
-            }) : <></>
-          }
+        <MenuOptions 
+          optionsContainerStyle={{  
+            borderRadius: 10, 
+            paddingHorizontal: 4, 
+            paddingVertical: 4,
+            maxHeight: 250,
+            backgroundColor: 'white',
+            shadowColor: '#000',
+            shadowOffset: { width: 0, height: 2 },
+            shadowOpacity: 0.25,
+            shadowRadius: 3.84,
+            elevation: 5
+          }}
+        >
+          <ScrollView 
+            nestedScrollEnabled={true}
+            showsVerticalScrollIndicator={true}
+            style={{ maxHeight: 250 }}
+          >
+            {
+              speakers.speakers && speakers.speakers.length > 0 ? speakers.speakers.map(( speaker ) =>{
+                return(
+                  <MenuOption key={speaker.speaker_id} onSelect={() => handleSpeakerPress(speaker.speaker_id)}>
+                    <Text className="text-black ">{speaker.speaker_name} { speakerSelected.includes(speaker.speaker_id) ? <Icon source={'check'} color="green" size={15}/> : <></>}</Text>
+                  </MenuOption>
+                )
+              }) : <></>
+            }
+          </ScrollView>
         </MenuOptions>
       </Menu>
     )
@@ -234,289 +256,390 @@ const AddNewProgramScreen = () => {
           )
         }}
       />
-      <View style={{ paddingHorizontal : 10, backgroundColor : 'white', paddingTop : 170}}>
+      <View className="flex-1 bg-gray-50">
         <ScrollView
-          contentContainerStyle={{ paddingBottom: tabHeight + 10 }}
+          contentContainerStyle={{ paddingBottom: tabHeight + 20, paddingTop: 180 }}
           showsVerticalScrollIndicator={false}
           ref={scrollViewRef}
           onScroll={(e) => {
             setKeyboardOffset(175 - e.nativeEvent.contentOffset.y)
            }}
+          className="px-6"
         >
-          <Text className="text-base font-bold mb-1 mt-2 ml-2">Program Details</Text>
-          <Text className="font-bold text-[13px] text-black my-3 ml-2">Time: </Text>
-          <Pressable className="flex flex-col bg-[#EDEDED] w-[40%] rounded-[10px] items-center py-3 px-3" onPress={() => setShowStartTimePicker(true)}>
-          <Text className=" text-black text-[11px]">
-             Start Time: { programStartTime ? format(programStartTime,'p') : '__'}
-            </Text>
-            {showStartTimePicker && (
-            <DateTimePicker
-              value={new Date(programStartTime!)}
-              mode="time"
-              display="default"
-              onChange={(event, time) => {
-                if (time) setProgramStartTime(time);
-              }}
-            />
-          )}
-          </Pressable>
-          <Text className="font-bold text-[13px] text-black my-3 ml-2">Date:</Text>
-          <View className="flex flex-row gap-x-2">
-          <Pressable className="flex flex-col bg-[#EDEDED] w-[40%] rounded-[10px] items-center py-3 px-3" onPress={() => setShowStartDatePicker(true)}>
-            <Text className="text-black text-[11px]">
-             Start Date: { programStartDate ? programStartDate.toLocaleDateString() : '__'}
-            </Text>
-            {showStartDatePicker && (
-              <DateTimePicker
-                value={ programStartDate ? programStartDate :new Date()}
-                mode="date"
-                display="default"
-                onChange={(event, date) => {
-                  setShowStartDatePicker(false);
-                  if (date) setProgramStartDate(date);
-                }}
-              />
-            )}
-          </Pressable>
-
-          <Pressable className="flex flex-col bg-[#EDEDED] w-[40%] rounded-[10px] items-center py-3 px-3" onPress={() => setShowEndDatePicker(true)}>
-          <Text className="text-black text-[11px]">
-             End Date: { programEndDate ? programEndDate.toLocaleDateString() : '__'}
-            </Text>
-            {showEndDatePicker && (
-              <DateTimePicker
-                value={ programEndDate ? programEndDate :new Date()}
-                mode="date"
-                display="default"
-                onChange={(event, date) => {
-                  setShowEndDatePicker(false);
-                  if (date) setProgramEndDate(date);
-                }}
-              />
-            )}
-          </Pressable>
-          </View>
-          
-          <Text className="text-base font-bold mb-4 mt-4 ml-2">
-          Select the day(s) this program is held:          
-          </Text>
-         <View className="flex flex-row  gap-5 flex-wrap">
-            {days.map((day, index) => (
-               <Pressable
-               key={index}
-               style={{ flexDirection: "row", alignItems: "center" }}
-               onPress={() => toggleDaySelection(day)}
-               className="w-[25%]"
-             >
-               <View className="border border-[#6077F5] h-[20px] w-[20px] items-center justify-center">
-                 {programDays.includes(day) ? <Icon  source={'check'} size={15} color="green"/> : <></>}
-               </View>
-               <Text className="ml-5">{day}</Text>
-             </Pressable>
-            ))}
-         </View>
-
-
-          <View ref={titleRef}>
-            <Text className="text-base font-bold mb-1 ml-2 mt-4">
-              Title
-            </Text>
-            <TextInput
-              mode="outlined"
-              theme={{ roundness: 10 }}
-              style={{ width: "100%", height: 45, marginBottom: 10, backgroundColor  : 'white' }}
-              activeOutlineColor="#0D509D"
-              value={programName}
-              onChangeText={setProgramName}
-              placeholder="Enter The Program... "
-              textColor="black"
-              onFocus={() => {
-                titleRef.current?.measure(
-                  (x, y, width, height, pageX, pageY) => {
-                  scrollViewRef.current?.scrollTo(
-                    {
-                      y: y,
-                      animated : true
-                    }
-                  )
-                })
-              }}
-            />
-          </View>
-
-          <View ref={descriptionRef}>
-            <Text className="text-base font-bold mb-1 mt-2 ml-2">
-              Description
-            </Text>
-            <TextInput
-              mode="outlined"
-              theme={{ roundness: 10 }}
-              style={{ width: "100%", height: 100, marginBottom: 10, backgroundColor  : 'white' }}
-              multiline
-              activeOutlineColor="#0D509D"
-              value={programDescription}
-              onChangeText={setProgramDescription}
-              placeholder="Enter The Description... "
-              textColor="black"
-              onFocus={() => {
-                descriptionRef.current?.measure(
-                  (x, y, width, height, pageX, pageY) => {
-                  scrollViewRef.current?.scrollTo(
-                    {
-                      y: y,
-                      animated : true
-                    }
-                  )
-                })
-              }}
-            />
-          </View>
-          <Text className="text-base font-bold mb-1 mt-2 ml-2 my-4">
-          Who is the Speaker of the Program 
-          </Text>
-         { speakers ? <SpeakersData speakers={speakers} /> : <Text>Fetching Speakers</Text>}
-
-          <Text className="text-base font-bold mb-1 mt-2 ml-2 my-4">
-            Upload Program Flyer
-          </Text>
-        
-          {programImage ? (
-            <Pressable onPress={pickImage}>
-            <Image
-              source={{ uri: programImage.uri }}
-              style={{
-                width: 170,
-                height:  170,
-                marginVertical: "1%",
-                alignSelf : "center",
-                borderRadius: 15
-              }}
-              resizeMode="cover"
-            />
-            </Pressable>) : (
-            <Button
-            mode="contained"
-            buttonColor="#57BA47"
-            textColor="white"
-            theme={{ roundness: 1 }}
-            onPress={pickImage}
-            className="w-[100%]"
-            >
-              Upload
-            </Button>)
-        }
-
-
-        <Text className="text-black font-bold ml-4 mt-4">Does the Program have recorded Youtube Videos? </Text>
-        <View className="flex flex-row justify-evenly">
-        <Pressable
-               style={{ flexDirection: "row", alignItems: "center" }}
-               className="w-[25%]"
-               onPress={() => sethasLectures(false)}
-             >
-               <View className="border border-[#6077F5] h-[20px] w-[20px] items-center justify-center rounded-full">
-                 {!hasLectures ? <Icon  source={'check'} size={15} color="green"/> : <></>}
-               </View>
-               <Text className="ml-5">No</Text>
-             </Pressable>
-
-             <Pressable
-               style={{ flexDirection: "row", alignItems: "center" }}
-               className="w-[25%]"
-               onPress={() => sethasLectures(true)}
-
-             >
-               <View className="border border-[#6077F5] h-[20px] w-[20px] items-center justify-center rounded-full my-4">
-                 {hasLectures? <Icon  source={'check'} size={15} color="green"/> : <></>}
-               </View>
-               <Text className="ml-5">Yes</Text>
-             </Pressable>
-        </View>
-
-
-        <Text className="text-black font-bold ml-4 mt-4">Program Type: (<Text className="text-black text-[10px] font-[300]"> It will go under the checked box section </Text>)</Text>
-
-
-         <View className="flex flex-row flex-wrap gap-3 my-4 w-[100%]  self-center ml-[0.5] items-center">
+          {/* Program Details Section */}
+          <View className="bg-white rounded-2xl p-6 mb-6 shadow-sm" style={{
+            shadowColor: '#000',
+            shadowOffset: { width: 0, height: 2 },
+            shadowOpacity: 0.1,
+            shadowRadius: 8,
+            elevation: 3
+          }}>
+            <Text className="text-xl font-bold text-gray-900 mb-6">Program Details</Text>
             
-            <Pressable
-              style={{
-                flexDirection: "row",
-                alignItems: "center",
-                marginBottom: "4%",
-              }}
-              onPress={() => setIsForKids(!isForKids)}
-              className="w-[40%] justify-between px-6 "
-            >
-              <View className="border border-[#6077F5] h-[20px] w-[20px] items-center justify-center ">
-                 {isForKids ? <Icon  source={'check'} size={15} color="green"/> : <></>}
+            {/* Time and Date Row */}
+            <View className="flex-row gap-4 mb-6">
+              <View className="flex-1">
+                <Text className="text-sm font-semibold text-gray-700 mb-2">Start Time</Text>
+                <Pressable 
+                  className="bg-gray-50 border border-gray-200 rounded-xl p-4 flex-row items-center justify-between"
+                  onPress={() => setShowStartTimePicker(true)}
+                >
+                  <Text className="text-gray-900 font-medium">
+                    {programStartTime ? format(programStartTime,'p') : 'Select Time'}
+                  </Text>
+                  <Icon source="clock-outline" size={20} color="#6077F5" />
+                </Pressable>
+                {showStartTimePicker && (
+                  <DateTimePicker
+                    value={new Date(programStartTime!)}
+                    mode="time"
+                    display="default"
+                    onChange={(event, time) => {
+                      if (time) setProgramStartTime(time);
+                    }}
+                  />
+                )}
               </View>
-              <Text className="text-base font-bold">Kids</Text>
-            </Pressable>
+            </View>
 
-            <Pressable
-              style={{
-                flexDirection: "row",
-                alignItems: "center",
-                marginBottom: "4%",
-              }}
-              onPress={() => setIsForKids(!isForKids)}
-              className="w-[40%] justify-between px-6"
-            >
-              <View className="border border-[#6077F5] h-[20px] w-[20px] items-center justify-center ">
-                 {!isForKids ? <Icon  source={'check'} size={15} color="green"/> : <></>}
+            {/* Date Row */}
+            <View className="flex-row gap-4 mb-6">
+              <View className="flex-1">
+                <Text className="text-sm font-semibold text-gray-700 mb-2">Start Date</Text>
+                <Pressable 
+                  className="bg-gray-50 border border-gray-200 rounded-xl p-4 flex-row items-center justify-between"
+                  onPress={() => setShowStartDatePicker(true)}
+                >
+                  <Text className="text-gray-900 font-medium">
+                    {programStartDate ? programStartDate.toLocaleDateString() : 'Select Date'}
+                  </Text>
+                  <Icon source="calendar-outline" size={20} color="#6077F5" />
+                </Pressable>
+                {showStartDatePicker && (
+                  <DateTimePicker
+                    value={programStartDate ? programStartDate : new Date()}
+                    mode="date"
+                    display="default"
+                    onChange={(event, date) => {
+                      setShowStartDatePicker(false);
+                      if (date) setProgramStartDate(date);
+                    }}
+                  />
+                )}
               </View>
-              <Text className="text-base font-bold ml-5">Program</Text>
+              <View className="flex-1">
+                <Text className="text-sm font-semibold text-gray-700 mb-2">End Date</Text>
+                <Pressable 
+                  className="bg-gray-50 border border-gray-200 rounded-xl p-4 flex-row items-center justify-between"
+                  onPress={() => setShowEndDatePicker(true)}
+                >
+                  <Text className="text-gray-900 font-medium">
+                    {programEndDate ? programEndDate.toLocaleDateString() : 'Select Date'}
+                  </Text>
+                  <Icon source="calendar-outline" size={20} color="#6077F5" />
+                </Pressable>
+                {showEndDatePicker && (
+                  <DateTimePicker
+                    value={programEndDate ? programEndDate : new Date()}
+                    mode="date"
+                    display="default"
+                    onChange={(event, date) => {
+                      setShowEndDatePicker(false);
+                      if (date) setProgramEndDate(date);
+                    }}
+                  />
+                )}
+              </View>
+            </View>
 
-              
-            </Pressable>
+            {/* Days Selection */}
+            <View>
+              <Text className="text-sm font-semibold text-gray-700 mb-4">Program Days</Text>
+              <View className="flex-row flex-wrap gap-3">
+                {days.map((day, index) => (
+                  <Pressable
+                    key={index}
+                    className={`flex-row items-center px-4 py-3 rounded-xl border-2 ${
+                      programDays.includes(day) 
+                        ? 'bg-blue-50 border-blue-500' 
+                        : 'bg-gray-50 border-gray-200'
+                    }`}
+                    onPress={() => toggleDaySelection(day)}
+                  >
+                    <View className={`w-5 h-5 rounded-full border-2 items-center justify-center mr-3 ${
+                      programDays.includes(day) 
+                        ? 'border-blue-500 bg-blue-500' 
+                        : 'border-gray-300'
+                    }`}>
+                      {programDays.includes(day) && (
+                        <Icon source="check" size={12} color="white" />
+                      )}
+                    </View>
+                    <Text className={`font-medium ${
+                      programDays.includes(day) ? 'text-blue-700' : 'text-gray-600'
+                    }`}>
+                      {day}
+                    </Text>
+                  </Pressable>
+                ))}
+              </View>
+            </View>
           </View>
 
+          {/* Program Information Section */}
+          <View className="bg-white rounded-2xl p-6 mb-6 shadow-sm" style={{
+            shadowColor: '#000',
+            shadowOffset: { width: 0, height: 2 },
+            shadowOpacity: 0.1,
+            shadowRadius: 8,
+            elevation: 3
+          }}>
+            <Text className="text-xl font-bold text-gray-900 mb-6">Program Information</Text>
+            
+            {/* Title */}
+            <View className="mb-6">
+              <Text className="text-sm font-semibold text-gray-700 mb-2">Program Title</Text>
+              <TextInput
+                mode="outlined"
+                theme={{ roundness: 12 }}
+                style={{ 
+                  backgroundColor: 'white',
+                  fontSize: 16
+                }}
+                activeOutlineColor="#6077F5"
+                value={programName}
+                onChangeText={setProgramName}
+                placeholder="Enter program title..."
+                textColor="black"
+              />
+            </View>
 
-          <Text className="text-black font-bold ml-5 mt-2">Is this { isForKids ? 'Kids Program' : 'Program'} Paid?</Text>
-          <Pressable
-              style={{
-                flexDirection: "row",
-                alignItems: "center",
-                marginVertical: "4%",
-              }}
-              onPress={() => setIsPaid(!isPaid)}
-              className="w-[35%] justify-between px-6 ml-5"
-            >
-              <View className="border border-[#6077F5] h-[20px] w-[20px] items-center justify-center ">
-                 {isPaid ? <Icon  source={'check'} size={15} color="green"/> : <></>}
+            {/* Description */}
+            <View className="mb-6">
+              <Text className="text-sm font-semibold text-gray-700 mb-2">Description</Text>
+              <TextInput
+                mode="outlined"
+                theme={{ roundness: 12 }}
+                style={{ 
+                  backgroundColor: 'white',
+                  minHeight: 100,
+                  fontSize: 16
+                }}
+                multiline
+                activeOutlineColor="#6077F5"
+                value={programDescription}
+                onChangeText={setProgramDescription}
+                placeholder="Enter program description..."
+                textColor="black"
+              />
+            </View>
+
+            {/* Speaker Selection */}
+            <View className="mb-6">
+              <Text className="text-sm font-semibold text-gray-700 mb-4">Speaker</Text>
+              {speakers ? <SpeakersData speakers={speakers} /> : (
+                <View className="bg-gray-50 rounded-xl p-4">
+                  <Text className="text-gray-500 text-center">Loading speakers...</Text>
+                </View>
+              )}
+            </View>
+
+            {/* Image Upload */}
+            <View>
+              <Text className="text-sm font-semibold text-gray-700 mb-4">Program Flyer</Text>
+              {programImage ? (
+                <Pressable onPress={pickImage} className="items-center">
+                  <Image
+                    source={{ uri: programImage.uri }}
+                    style={{
+                      width: 200,
+                      height: 200,
+                      borderRadius: 16,
+                      marginBottom: 12
+                    }}
+                    resizeMode="cover"
+                  />
+                  <View className="bg-blue-50 px-4 py-2 rounded-lg">
+                    <Text className="text-blue-600 font-medium">Tap to change image</Text>
+                  </View>
+                </Pressable>
+              ) : (
+                <Pressable
+                  onPress={pickImage}
+                  className="bg-gray-50 border-2 border-dashed border-gray-300 rounded-xl p-8 items-center"
+                >
+                  <Icon source="camera-plus" size={40} color="#9CA3AF" />
+                  <Text className="text-gray-500 font-medium mt-2">Tap to upload flyer</Text>
+                </Pressable>
+              )}
+            </View>
+          </View>
+
+          {/* Program Settings Section */}
+          <View className="bg-white rounded-2xl p-6 mb-6 shadow-sm" style={{
+            shadowColor: '#000',
+            shadowOffset: { width: 0, height: 2 },
+            shadowOpacity: 0.1,
+            shadowRadius: 8,
+            elevation: 3
+          }}>
+            <Text className="text-xl font-bold text-gray-900 mb-6">Program Settings</Text>
+            
+            {/* YouTube Videos */}
+            <View className="mb-6">
+              <Text className="text-sm font-semibold text-gray-700 mb-4">Recorded YouTube Videos?</Text>
+              <View className="flex-row gap-4">
+                <Pressable
+                  className={`flex-row items-center px-4 py-3 rounded-xl border-2 ${
+                    !hasLectures 
+                      ? 'bg-green-50 border-green-500' 
+                      : 'bg-gray-50 border-gray-200'
+                  }`}
+                  onPress={() => sethasLectures(false)}
+                >
+                  <View className={`w-5 h-5 rounded-full border-2 items-center justify-center mr-3 ${
+                    !hasLectures 
+                      ? 'border-green-500 bg-green-500' 
+                      : 'border-gray-300'
+                  }`}>
+                    {!hasLectures && <Icon source="check" size={12} color="white" />}
+                  </View>
+                  <Text className={`font-medium ${
+                    !hasLectures ? 'text-green-700' : 'text-gray-600'
+                  }`}>No</Text>
+                </Pressable>
+
+                <Pressable
+                  className={`flex-row items-center px-4 py-3 rounded-xl border-2 ${
+                    hasLectures 
+                      ? 'bg-green-50 border-green-500' 
+                      : 'bg-gray-50 border-gray-200'
+                  }`}
+                  onPress={() => sethasLectures(true)}
+                >
+                  <View className={`w-5 h-5 rounded-full border-2 items-center justify-center mr-3 ${
+                    hasLectures 
+                      ? 'border-green-500 bg-green-500' 
+                      : 'border-gray-300'
+                  }`}>
+                    {hasLectures && <Icon source="check" size={12} color="white" />}
+                  </View>
+                  <Text className={`font-medium ${
+                    hasLectures ? 'text-green-700' : 'text-gray-600'
+                  }`}>Yes</Text>
+                </Pressable>
               </View>
-              <Text className="text-base font-bold">Paid</Text>
-            </Pressable>
-            {isPaid && (
-              <KeyboardAvoidingView behavior="position" keyboardVerticalOffset={ keyboardOffset }>
-                <Text className="text-base font-bold pb-1 ml-2 bg-white rounded-[15px]">
-                  Enter Program Website Link
-                </Text>
-                <TextInput
-                  mode="outlined"
-                  theme={{ roundness: 10 }}
-                  style={{ width: "100%", height: 45, marginBottom: 10, backgroundColor : 'white' }}
-                  activeOutlineColor="#0D509D"
-                  value={programPaidLink}
-                  onChangeText={setProgramPaidLink}
-                  placeholder="Enter MAS Shop Link..."
-                  textColor="black"
-                />
-              </KeyboardAvoidingView>
-            )}
-         
-  
-          <Button
-            mode="contained"
-            buttonColor="#57BA47"
-            textColor="white"
-            theme={{ roundness: 1 }}
-            onPress={async() =>  await onSubmit()}
-            disabled={!submitDisabled}
-          >
-            Submit Program
-          </Button>
+            </View>
+
+            {/* Program Type */}
+            <View className="mb-6">
+              <Text className="text-sm font-semibold text-gray-700 mb-4">Program Type</Text>
+              <View className="flex-row gap-3">
+                <Pressable
+                  className={`flex-row items-center px-3 py-3 rounded-xl border-2 flex-1 ${
+                    isForKids 
+                      ? 'bg-blue-50 border-blue-500' 
+                      : 'bg-gray-50 border-gray-200'
+                  }`}
+                  onPress={() => setIsForKids(true)}
+                >
+                  <View className={`w-5 h-5 rounded-full border-2 items-center justify-center mr-3 ${
+                    isForKids 
+                      ? 'border-blue-500 bg-blue-500' 
+                      : 'border-gray-300'
+                  }`}>
+                    {isForKids && <Icon source="check" size={12} color="white" />}
+                  </View>
+                  <Text className={`font-medium text-sm ${
+                    isForKids ? 'text-blue-700' : 'text-gray-600'
+                  }`}>Kids</Text>
+                </Pressable>
+
+                <Pressable
+                  className={`flex-row items-center px-3 py-3 rounded-xl border-2 flex-1 ${
+                    !isForKids 
+                      ? 'bg-blue-50 border-blue-500' 
+                      : 'bg-gray-50 border-gray-200'
+                  }`}
+                  onPress={() => setIsForKids(false)}
+                >
+                  <View className={`w-5 h-5 rounded-full border-2 items-center justify-center mr-3 ${
+                    !isForKids 
+                      ? 'border-blue-500 bg-blue-500' 
+                      : 'border-gray-300'
+                  }`}>
+                    {!isForKids && <Icon source="check" size={12} color="white" />}
+                  </View>
+                  <Text className={`font-medium text-sm ${
+                    !isForKids ? 'text-blue-700' : 'text-gray-600'
+                  }`}>Regular</Text>
+                </Pressable>
+              </View>
+            </View>
+
+            {/* Paid Program */}
+            <View className="mb-6">
+              <Text className="text-sm font-semibold text-gray-700 mb-4">
+                Is this {isForKids ? 'Kids Program' : 'Program'} Paid?
+              </Text>
+              <Pressable
+                className={`flex-row items-center px-4 py-3 rounded-xl border-2 w-32 ${
+                  isPaid 
+                    ? 'bg-orange-50 border-orange-500' 
+                    : 'bg-gray-50 border-gray-200'
+                }`}
+                onPress={() => setIsPaid(!isPaid)}
+              >
+                <View className={`w-5 h-5 rounded-full border-2 items-center justify-center mr-3 ${
+                  isPaid 
+                    ? 'border-orange-500 bg-orange-500' 
+                    : 'border-gray-300'
+                }`}>
+                  {isPaid && <Icon source="check" size={12} color="white" />}
+                </View>
+                <Text className={`font-medium ${
+                  isPaid ? 'text-orange-700' : 'text-gray-600'
+                }`}>Paid</Text>
+              </Pressable>
+              
+              {isPaid && (
+                <KeyboardAvoidingView behavior="position" keyboardVerticalOffset={keyboardOffset}>
+                  <View className="mt-4">
+                    <Text className="text-sm font-semibold text-gray-700 mb-2">Payment Link</Text>
+                    <TextInput
+                      mode="outlined"
+                      theme={{ roundness: 12 }}
+                      style={{ backgroundColor: 'white' }}
+                      activeOutlineColor="#6077F5"
+                      value={programPaidLink}
+                      onChangeText={setProgramPaidLink}
+                      placeholder="Enter MAS Shop link..."
+                      textColor="black"
+                    />
+                  </View>
+                </KeyboardAvoidingView>
+              )}
+            </View>
+          </View>
+
+          {/* Submit Button */}
+          <View className="mb-6">
+            <Button
+              mode="contained"
+              buttonColor="#6077F5"
+              textColor="white"
+              theme={{ roundness: 12 }}
+              onPress={async() => await onSubmit()}
+              disabled={!submitDisabled}
+              style={{ 
+                paddingVertical: 12,
+                fontSize: 16,
+                fontWeight: '600'
+              }}
+            >
+              Create Program
+            </Button>
+          </View>
 
         </ScrollView>
         <AddSpeakerModal setIsOpen={setOpenAddSpeaker} isOpen={addSpeaker}/>

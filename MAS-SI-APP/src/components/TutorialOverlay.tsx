@@ -5,12 +5,13 @@ import { number } from "zod";
 import ArrowRightIcon from "../components/ArrowRightIcon";
 import ArrowLeftIcon from "../components/ArrowLeftIcon";
 import Animated, { useSharedValue, useAnimatedStyle, withTiming, Easing } from "react-native-reanimated";
+import { Video } from 'expo-av';
 
 const tutorialImages = [
-  require("../app/images/iphone.png"),
-  require("../app/images/iphone.png"),
-  require("../app/images/iphone.png"),
-  require("../app/images/iphone.png"),
+  require("../app/images/MyRecording.mov"),
+  require("../app/images/Tutorialdraft.mp4"),
+  require("../app/images/Tutorialdraft.mp4"),
+  require("../app/images/Tutorialdraft.mp4"),
 ];
 
 const tutorialBenefits = [
@@ -87,7 +88,15 @@ const TutorialOverlay = ({ visible, onClose }: { visible: boolean; onClose: () =
         </View>
 
         <Animated.View style={[styles.videoContainer, slideAnimation]}>
-          <Image source={tutorialImages[step]} style={styles.image} resizeMode="contain" />
+        <Video
+            source={tutorialImages[step]}
+            resizeMode="cover"
+            shouldPlay
+            isLooping
+            useNativeControls={false}
+            style={styles.image}
+        />
+
         </Animated.View>
 
         <View style={styles.pageIndicator}>
@@ -166,21 +175,19 @@ const styles = StyleSheet.create({
   videoContainer: {
     width: 350,
     height: 380,
-    flexShrink: 0,
     backgroundColor: "#FFF",
-    //borderRadius: 20,
     justifyContent: "center",
     alignItems: "center",
     marginTop: 35,
-    borderRadius: 50, 
-  borderWidth: 3, 
-  borderColor: "#A8A8A8",
-
+    borderRadius: 50,
+    borderWidth: 3,
+    borderColor: "#A8A8A8",
+    overflow: "hidden", // ✅ This clips the zoomed video
   },
   image: {
-    width: "100%",
-    height: "100%",
-    borderRadius: 20,
+    width: "105%",   // Zoom in horizontally
+    height: "105%",  // Zoom in vertically
+   // alignSelf: "center",
   },
   pageIndicator: {
     flexDirection: "row",

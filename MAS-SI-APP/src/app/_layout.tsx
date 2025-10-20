@@ -2,7 +2,7 @@ import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native
 import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
-//import AsyncStorage from '@react-native-async-storage/async-storage';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useEffect, useState } from 'react';
 import 'react-native-reanimated';
 import PrayerTimesProvider from '../providers/prayerTimesProvider';
@@ -13,18 +13,15 @@ import { PaperProvider } from 'react-native-paper';
 import { MenuProvider } from "react-native-popup-menu";
 import AuthProvider from '../providers/AuthProvider';
 import { StripeProvider } from '@stripe/stripe-react-native';
-import NotificationProvider from '../providers/NotificationProvider';
+//import NotificationProvider from '../providers/NotificationProvider';
 import { Text } from 'react-native';
-//import TutorialOverlay from "../components/TutorialOverlay"; // Import tutorial
 import LottieView from 'lottie-react-native';
 import Animated, { useSharedValue, withTiming, runOnJS, useAnimatedStyle } from 'react-native-reanimated';
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();
-  const [showTutorial, setShowTutorial] = useState(false);
-  const [isFirstLaunchChecked, setIsFirstLaunchChecked] = useState(false);
-  const [isFirstLaunch, setIsFirstLaunch] = useState(true); // Set to false for final version
   const [showLogo, setShowLogo] = useState(true);
+  const [isFirstLaunchChecked, setIsFirstLaunchChecked] = useState(false);
   const logoOpacity = useSharedValue(1);
 
   interface TextWithDefaultProps extends Text {
@@ -45,81 +42,20 @@ export default function RootLayout() {
     Poppins_800ExtraBold: require("../../assets/fonts/Poppins-ExtraBold.ttf"),
   });
 
-
   // ✅ Clear AsyncStorage on every launch (for testing)
-  // useEffect(() => {
-  //   const clearAsyncStorage = async () => {
-  //     try {
-  //       await AsyncStorage.clear();
-  //       console.log('✅ AsyncStorage cleared!');
-  //     } catch (e) {
-  //       console.error('❌ Failed to clear AsyncStorage', e);
-  //     }
-  //   };
-
-  //   clearAsyncStorage();
-  // }, []);
-
-
-
-
-
-
-// ✅ Simulate "haven’t used the app in a while" scenario
-  // useEffect(() => {
-  //   const updateLastUsed = async () => {
-  //     await AsyncStorage.setItem('last_used', Date.now().toString());
-  //   };
-  
-  //   const checkLastUsed = async () => {
-  //     const lastUsed = await AsyncStorage.getItem('last_used');
-  //     if (lastUsed) {
-  //       const diff = Date.now() - parseInt(lastUsed, 10);
-  //       const twoHours = 2 * 60 * 60 * 1000;
-  //       if (diff > twoHours) {
-  //         console.log('🚨 Simulating "haven’t used the app in a while" scenario');
-  //         // Add test logic here to simulate your bug or behavior
-  //       } else {
-  //         console.log('✅ User has used app recently');
-  //       }
-  //     }
-  //     updateLastUsed(); // Update timestamp every time app launches
-  //   };
-  
-  //   checkLastUsed();
-  // }, []);
-
-
-
-
-
-  
-  // ✅ Force tutorial to show on every launch (for testing)
   useEffect(() => {
-    setIsFirstLaunch(true); // Change to false for final version  //pretty sure this entire block gets commented out for full version (double check with GPT)
-    setIsFirstLaunchChecked(true);
-  }, []);
-
-  // ✅ Uncomment this block for final version to check only first-time users
-  /*
-  useEffect(() => {
-    async function checkFirstLaunch() {
-      const hasSeenTutorial = await AsyncStorage.getItem('hasSeenTutorial');
-      if (!hasSeenTutorial) {
-        setIsFirstLaunch(true);
-      } else {
-        setIsFirstLaunch(false);
+    const clearAsyncStorage = async () => {
+      try {
+        await AsyncStorage.clear();
+        console.log('✅ AsyncStorage cleared!');
+      } catch (e) {
+        console.error('❌ Failed to clear AsyncStorage', e);
       }
-      setIsFirstLaunchChecked(true);
-    }
-    checkFirstLaunch();
-  }, []);
-  */
+      setIsFirstLaunchChecked(true); // Set this after clearing AsyncStorage
+    };
 
-  const handleTutorialFinish = async () => {
-    setShowTutorial(false);
-    // await AsyncStorage.setItem('hasSeenTutorial', 'true'); // Enable for final version
-  };
+    clearAsyncStorage();
+  }, []);
 
   // ✅ Logo fade animation
   const logoAnimation = useAnimatedStyle(() => ({
@@ -129,9 +65,6 @@ export default function RootLayout() {
   const hideLogo = () => {
     logoOpacity.value = withTiming(0, { duration: 600 }, () => {
       runOnJS(setShowLogo)(false);
-      if (isFirstLaunch) {
-        runOnJS(setShowTutorial)(true);
-      }
     });
   };
 
@@ -157,7 +90,7 @@ export default function RootLayout() {
       <StripeProvider publishableKey={process.env.EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY!}>
         <AuthProvider>
           <PrayerTimesProvider>
-             <NotificationProvider>
+             {/* <NotificationProvider> */}
             <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
               <BottomSheetModalProvider>
                 <MenuProvider>
@@ -181,14 +114,11 @@ export default function RootLayout() {
                       <Stack.Screen name="(auth)" options={{ headerShown: false, animation: 'none' }} />
                       <Stack.Screen name="+not-found" options={{ animation: 'none' }} />
                     </Stack>
-
-                    {/* ✅ Tutorial (every time for now) */} 
-                    {/* {showTutorial && <TutorialOverlay visible={showTutorial} onClose={handleTutorialFinish} />} */}
                   </PaperProvider>
                 </MenuProvider>
               </BottomSheetModalProvider>
             </ThemeProvider>
-             </NotificationProvider> 
+             {/* </NotificationProvider>  */}
           </PrayerTimesProvider>
         </AuthProvider>
       </StripeProvider>

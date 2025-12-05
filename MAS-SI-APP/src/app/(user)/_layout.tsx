@@ -18,90 +18,90 @@ import ClassicTabBar from '../../components/ClassicTabBar';
 // import TutorialOverlay from "@/src/components/TutorialOverlay";
 
 const toastConfig = {
-  addProgramToNotificationsToast : ( {props} : any ) => (
+  addProgramToNotificationsToast: ({ props }: any) => (
     <Pressable className='rounded-xl overflow-hidden ' onPress={props.onPress}>
-        <BlurView intensity={40} className='flex-row items-center justify-between px-4 rounded-xl p-1 max-w-[85%] max-h-[60]' 
+      <BlurView intensity={40} className='flex-row items-center justify-between px-4 rounded-xl p-1 max-w-[85%] max-h-[60]'
         experimentalBlurMethod={'dimezisBlurView'}
-        >
+      >
+        <View>
+          <Image source={props.props.program_img ? { uri: props.props.program_img } : require("@/assets/images/MASHomeLogo.png")} style={{ width: 50, height: 50, objectFit: 'fill', borderRadius: 10 }} />
+        </View>
+        <View className='flex-col pl-2'>
           <View>
-              <Image source={props.props.program_img ? { uri : props.props.program_img } : require("@/assets/images/MASHomeLogo.png")} style={{ width : 50, height : 50 , objectFit : 'fill', borderRadius : 10 }}/>
+            <Text>1 Program Added To Notifications</Text>
           </View>
-          <View className='flex-col pl-2'>
-            <View>
-              <Text>1 Program Added To Notifications</Text>
-            </View>
-            <View className='flex-row'>
-              <Text className='text-sm'>{props.props.program_name}</Text>
-              <Icon source={'chevron-right'} size={20} />
-            </View>
+          <View className='flex-row'>
+            <Text className='text-sm'>{props.props.program_name}</Text>
+            <Icon source={'chevron-right'} size={20} />
           </View>
-        </BlurView>
-      </Pressable>
+        </View>
+      </BlurView>
+    </Pressable>
   ),
-  LectureAddedToPlaylist : ( {props} : any) => (
+  LectureAddedToPlaylist: ({ props }: any) => (
     <Pressable className='rounded-xl overflow-hidden' onPress={props.onPress}>
-        <BlurView intensity={40} className='flex-row items-center justify-between px-3 p-1 max-w-[85%] max-h-[60]'
+      <BlurView intensity={40} className='flex-row items-center justify-between px-3 p-1 max-w-[85%] max-h-[60]'
         experimentalBlurMethod={'dimezisBlurView'}
-        >
-          <View className=''>
-              <Image source={props.props?.playlist_img  ? { uri : props.props.playlist_img } : require("@/assets/images/MASHomeLogo.png") } style={{ width : 50, height : 50 , objectFit : 'fill', borderRadius : 10 }}/>
-          </View>
-          <View className='flex-col pl-2'>
-            <View>
-              <Text numberOfLines={1} allowFontScaling adjustsFontSizeToFit >1 lecture added</Text>
-            </View>
-            <View className='flex-row'>
-              <Text>{props.props?.playlist_name}</Text>
-              <Icon source={'chevron-right'} size={20} />
-            </View>
-          </View>
-        </BlurView>
-      </Pressable>
-  ),
-  ProgramAddedToPrograms : ({props} : any) => (
-    <Pressable className='rounded-xl overflow-hidden ' onPress={props.onPress}>
-        <BlurView intensity={40} className='flex-row items-center justify-between px-4 rounded-xl p-1 max-w-[85%] max-h-[60]' 
-        experimentalBlurMethod={'dimezisBlurView'}
-        >
+      >
+        <View className=''>
+          <Image source={props.props?.playlist_img ? { uri: props.props.playlist_img } : require("@/assets/images/MASHomeLogo.png")} style={{ width: 50, height: 50, objectFit: 'fill', borderRadius: 10 }} />
+        </View>
+        <View className='flex-col pl-2'>
           <View>
-              <Image source={ props.props.program_img  ? { uri : props.props.program_img } : require("@/assets/images/MASHomeLogo.png")} style={{ width : 50, height : 50 , objectFit : 'fill', borderRadius : 10 }}/>
+            <Text numberOfLines={1} allowFontScaling adjustsFontSizeToFit >1 lecture added</Text>
           </View>
-          <View className='flex-col pl-2'>
-            <View>
-              <Text>1 Program Added to Library</Text>
-            </View>
-            <View className='flex-row'>
-              <Text className='text-sm'>{props.props.program_name}</Text>
-              <Icon source={'chevron-right'} size={20} />
-            </View>
+          <View className='flex-row'>
+            <Text>{props.props?.playlist_name}</Text>
+            <Icon source={'chevron-right'} size={20} />
           </View>
-        </BlurView>
-      </Pressable>
+        </View>
+      </BlurView>
+    </Pressable>
   ),
-  addEventToNotificationsToast : ( {props} : any ) => (
+  ProgramAddedToPrograms: ({ props }: any) => (
     <Pressable className='rounded-xl overflow-hidden ' onPress={props.onPress}>
-        <BlurView intensity={40} className='flex-row items-center justify-between px-4 rounded-xl p-1 max-w-[85%] max-h-[60]' 
+      <BlurView intensity={40} className='flex-row items-center justify-between px-4 rounded-xl p-1 max-w-[85%] max-h-[60]'
         experimentalBlurMethod={'dimezisBlurView'}
-        >
+      >
+        <View>
+          <Image source={props.props.program_img ? { uri: props.props.program_img } : require("@/assets/images/MASHomeLogo.png")} style={{ width: 50, height: 50, objectFit: 'fill', borderRadius: 10 }} />
+        </View>
+        <View className='flex-col pl-2'>
           <View>
-              <Image source={props.props.event_img ? { uri :  props.props.event_img } : require("@/assets/images/MASHomeLogo.png") } style={{ width : 50, height : 50 , objectFit : 'fill', borderRadius : 10 }}/>
+            <Text>1 Program Added to Library</Text>
           </View>
-          <View className='flex-col pl-2'>
-            <View>
-              <Text>1 Program Added To Notifications</Text>
-            </View>
-            <View className='flex-row'>
-              <Text className='text-sm'>{props.props.event_name}</Text>
-              <Icon source={'chevron-right'} size={20} />
-            </View>
+          <View className='flex-row'>
+            <Text className='text-sm'>{props.props.program_name}</Text>
+            <Icon source={'chevron-right'} size={20} />
           </View>
-        </BlurView>
-      </Pressable>
+        </View>
+      </BlurView>
+    </Pressable>
   ),
-  ConfirmNotificationOption : ( { props } : any ) => (
+  addEventToNotificationsToast: ({ props }: any) => (
     <Pressable className='rounded-xl overflow-hidden ' onPress={props.onPress}>
-      <BlurView intensity={40} className='flex-row items-center justify-between px-4 rounded-xl p-2 max-w-[90%] max-h-[60]' 
-      experimentalBlurMethod={'dimezisBlurView'}
+      <BlurView intensity={40} className='flex-row items-center justify-between px-4 rounded-xl p-1 max-w-[85%] max-h-[60]'
+        experimentalBlurMethod={'dimezisBlurView'}
+      >
+        <View>
+          <Image source={props.props.event_img ? { uri: props.props.event_img } : require("@/assets/images/MASHomeLogo.png")} style={{ width: 50, height: 50, objectFit: 'fill', borderRadius: 10 }} />
+        </View>
+        <View className='flex-col pl-2'>
+          <View>
+            <Text>1 Program Added To Notifications</Text>
+          </View>
+          <View className='flex-row'>
+            <Text className='text-sm'>{props.props.event_name}</Text>
+            <Icon source={'chevron-right'} size={20} />
+          </View>
+        </View>
+      </BlurView>
+    </Pressable>
+  ),
+  ConfirmNotificationOption: ({ props }: any) => (
+    <Pressable className='rounded-xl overflow-hidden ' onPress={props.onPress}>
+      <BlurView intensity={40} className='flex-row items-center justify-between px-4 rounded-xl p-2 max-w-[90%] max-h-[60]'
+        experimentalBlurMethod={'dimezisBlurView'}
       >
 
         <View className='flex-col pl-2'>
@@ -112,9 +112,9 @@ const toastConfig = {
             <Text className='text-md font-bold text-white'>{props.prayer}</Text>
           </View>
         </View>
-        <View className="pl-5"/>
+        <View className="pl-5" />
         <View className="bg-white p-1 rounded-full">
-              <Icon source={'check'} size={20} color="green"/>
+          <Icon source={'check'} size={20} color="green" />
         </View>
       </BlurView>
     </Pressable>
@@ -134,7 +134,7 @@ const TabButton = ({ props, items }: TabButtonProps) => {
   useEffect(() => {
     if (focused) {
       textRef.current?.transitionTo({ scale: 1.2 });
-      Haptics.notificationAsync (
+      Haptics.notificationAsync(
         Haptics.NotificationFeedbackType.Success
       )
     } else {
@@ -147,8 +147,8 @@ const TabButton = ({ props, items }: TabButtonProps) => {
       {...restProps}
       onPress={onPress}
       accessibilityState={accessibilityState}
-      style={{ alignItems: "center", flex: 1, marginTop: 7, height : '200%' }}
-      // style={{ alignItems: "center", flex: 1, marginTop: 8, height: '100%', paddingVertical: 6 }}
+      style={{ alignItems: "center", flex: 1, marginTop: 7, height: '200%' }}
+    // style={{ alignItems: "center", flex: 1, marginTop: 8, height: '100%', paddingVertical: 6 }}
     >
       <Animatable.View
         className='justify-center items-center'
@@ -160,7 +160,7 @@ const TabButton = ({ props, items }: TabButtonProps) => {
       </Animatable.View>
       <Animatable.Text
         ref={textRef}
-        style={{ fontSize: 10, color: focused ? "#57BA47" : '#0D509D', textAlign: "center", fontWeight: focused ? "bold"  : 'regular', opacity : focused ? 1 : 0.5 }}
+        style={{ fontSize: 10, color: focused ? "#57BA47" : '#0D509D', textAlign: "center", fontWeight: focused ? "bold" : 'regular', opacity: focused ? 1 : 0.5 }}
         numberOfLines={1}
       >
         {items?.title ? items?.title : ""}
@@ -180,7 +180,7 @@ const UserLayout = () => {
   }
 
   ((Text as unknown) as TextWithDefaultProps).defaultProps =
-  ((Text as unknown) as TextWithDefaultProps).defaultProps || {};
+    ((Text as unknown) as TextWithDefaultProps).defaultProps || {};
   ((Text as unknown) as TextWithDefaultProps).defaultProps!.allowFontScaling = false;
   const playMASAnimation = useAnimatedStyle(() => {
     return {
@@ -232,7 +232,7 @@ const UserLayout = () => {
           />
         </Animated.View>
       )}
-      
+
       <Tabs
         tabBar={(props) => <ClassicTabBar {...props} />}
         screenOptions={{
@@ -257,7 +257,7 @@ const UserLayout = () => {
           />
         ))}
       </Tabs>
-      
+
       {/* Floating Account Button */}
       {/* <Pressable
         onPress={() => {
@@ -287,12 +287,12 @@ const UserLayout = () => {
 
       {/* Account Modal */}
       {/* <AccountModal visible={accountModalVisible} onClose={() => setAccountModalVisible(false)} /> */}
-      
+
       {/* {showTutorial && <TutorialOverlay visible={showTutorial} onClose={handleTutorialFinish} />} */}
-      
+
       {/* Toast in Portal - must be last to appear above all modals */}
       <Portal>
-        <View 
+        <View
           pointerEvents="box-none"
           style={{
             position: 'absolute',
@@ -312,4 +312,3 @@ const UserLayout = () => {
 };
 
 export default UserLayout;
-

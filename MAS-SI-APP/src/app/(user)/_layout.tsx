@@ -4,7 +4,7 @@ import { Pressable, TouchableOpacity, Modal, StyleSheet } from "react-native";
 import { useEffect, useRef, useState } from "react";
 import TabArray from './tabArray';
 import { TabArrayType } from '@/src/types';
-import { Icon } from "react-native-paper";
+import { Icon, Portal } from "react-native-paper";
 import { BottomTabBarButtonProps } from '@react-navigation/bottom-tabs';
 import { useAuth } from "@/src/providers/AuthProvider";
 import LottieView from 'lottie-react-native';
@@ -14,6 +14,7 @@ import { View, Text, Image } from 'react-native'
 import { BlurView } from 'expo-blur';
 import * as Haptics from 'expo-haptics'
 import AccountModal from '../../components/AccountModal';
+import ClassicTabBar from '../../components/ClassicTabBar';
 // import TutorialOverlay from "@/src/components/TutorialOverlay";
 
 const toastConfig = {
@@ -233,27 +234,11 @@ const UserLayout = () => {
       )}
       
       <Tabs
+        tabBar={(props) => <ClassicTabBar {...props} />}
         screenOptions={{
-          tabBarStyle: {
-            backgroundColor: "rgba(209, 213, 219, 0.8)",
-            height: 55,
-            position: "absolute",
-            bottom: 30,
-            right: 10,
-            left: 10,
-            borderRadius: 50,
-            marginBottom: 0,
-            shadowColor: "black",
-            shadowOffset: { width: 0, height: 4 },
-            shadowOpacity: 0.15,
-            shadowRadius: 12,
-            justifyContent: "center",
-            alignItems: "center",
-            elevation: 8,
-            borderTopWidth: 0,
-            borderWidth: 0,
-          },
-          tabBarItemStyle: { height: 45, },
+          headerShown: false,
+          tabBarAllowFontScaling: false,
+          headerTitleAllowFontScaling: false,
         }}
       >
         <Tabs.Screen name="index" options={{ href: null }} />
@@ -266,17 +251,15 @@ const UserLayout = () => {
             options={{
               title: tab.title,
               headerShown: false,
-              tabBarButton: (props) => <TabButton items={TabArray[i]} props={{ ...props }} />,
-              tabBarAllowFontScaling : false,
-              headerTitleAllowFontScaling : false
+              tabBarAllowFontScaling: false,
+              headerTitleAllowFontScaling: false,
             }}
-            
           />
         ))}
       </Tabs>
       
       {/* Floating Account Button */}
-      <Pressable
+      {/* <Pressable
         onPress={() => {
           Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
           setAccountModalVisible(true);
@@ -300,13 +283,30 @@ const UserLayout = () => {
         }}
       >
         <Icon source="account-circle" size={28} color="white" />
-      </Pressable>
+      </Pressable> */}
 
       {/* Account Modal */}
-      <AccountModal visible={accountModalVisible} onClose={() => setAccountModalVisible(false)} />
+      {/* <AccountModal visible={accountModalVisible} onClose={() => setAccountModalVisible(false)} /> */}
       
-      <Toast config={toastConfig}/>
       {/* {showTutorial && <TutorialOverlay visible={showTutorial} onClose={handleTutorialFinish} />} */}
+      
+      {/* Toast in Portal - must be last to appear above all modals */}
+      <Portal>
+        <View 
+          pointerEvents="box-none"
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            zIndex: 999999,
+            elevation: 9999,
+          }}
+        >
+          <Toast config={toastConfig} />
+        </View>
+      </Portal>
     </>
   );
 };

@@ -197,11 +197,11 @@ const Index = () => {
     )
   }
   return (
-    <View style={{ flex: 1, backgroundColor: '#1a1a1a' }}>
+    <View style={{ flex: 1, backgroundColor: '#000000' }}>
       {/* Background with gradient pattern - sibling to BlurView */}
       <View style={StyleSheet.absoluteFillObject}>
         <LinearGradient
-          colors={['#3B82F6', '#2563EB', '#1E40AF', '#1E3A8A']}
+          colors={['#000000', '#000000', '#000000', '#000000']}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
           style={{ flex: 1 }}
@@ -412,7 +412,7 @@ const Index = () => {
                 backgroundColor: pressed ? 'rgba(249, 250, 251, 0.5)' : 'transparent',
               })}
             >
-              <Text className='text-sm text-gray-700 flex-1'>Saved Programs/Events</Text>
+              <Text className='text-sm text-white flex-1'>Saved Programs/Events</Text>
               <Svg width="14" height="14" viewBox="0 0 20 20" fill="none">
                 <Path d="M7.5 15L12.5 10L7.5 5" stroke="#9CA3AF" strokeWidth="2" strokeLinecap="round"/>
               </Svg>
@@ -426,7 +426,7 @@ const Index = () => {
                   backgroundColor: pressed ? 'rgba(249, 250, 251, 0.5)' : 'transparent',
                 })}
               >
-                <Text className='text-sm text-gray-700 flex-1'>Playlist</Text>
+                <Text className='text-sm text-white flex-1'>Playlist</Text>
                 <Svg width="14" height="14" viewBox="0 0 20 20" fill="none">
                   <Path d="M7.5 15L12.5 10L7.5 5" stroke="#9CA3AF" strokeWidth="2" strokeLinecap="round"/>
                 </Svg>
@@ -458,7 +458,7 @@ const Index = () => {
                 backgroundColor: pressed ? 'rgba(249, 250, 251, 0.5)' : 'transparent',
               })}
             >
-              <Text className='text-sm text-gray-700 flex-1'>Phase 1</Text>
+              <Text className='text-sm text-white flex-1'>Phase 1</Text>
               <Svg width="14" height="14" viewBox="0 0 20 20" fill="none">
                 <Path d="M7.5 15L12.5 10L7.5 5" stroke="#9CA3AF" strokeWidth="2" strokeLinecap="round"/>
               </Svg>
@@ -472,7 +472,7 @@ const Index = () => {
                   backgroundColor: pressed ? 'rgba(249, 250, 251, 0.5)' : 'transparent',
                 })}
               >
-                <Text className='text-sm text-gray-700 flex-1'>Phase 2</Text>
+                <Text className='text-sm text-white flex-1'>Phase 2</Text>
                 <Svg width="14" height="14" viewBox="0 0 20 20" fill="none">
                   <Path d="M7.5 15L12.5 10L7.5 5" stroke="#9CA3AF" strokeWidth="2" strokeLinecap="round"/>
                   </Svg>
@@ -487,7 +487,7 @@ const Index = () => {
                   backgroundColor: pressed ? 'rgba(249, 250, 251, 0.5)' : 'transparent',
                 })}
               >
-                <Text className='text-sm text-gray-700 flex-1'>View Full Project</Text>
+                <Text className='text-sm text-white flex-1'>View Full Project</Text>
                 <Svg width="14" height="14" viewBox="0 0 20 20" fill="none">
                   <Path d="M7.5 15L12.5 10L7.5 5" stroke="#9CA3AF" strokeWidth="2" strokeLinecap="round"/>
                   </Svg>
@@ -519,7 +519,7 @@ const Index = () => {
                 backgroundColor: pressed ? 'rgba(249, 250, 251, 0.5)' : 'transparent',
               })}
             >
-              <Text className='text-sm text-gray-700 flex-1'>Prayer</Text>
+              <Text className='text-sm text-white flex-1'>Prayer</Text>
               <Svg width="14" height="14" viewBox="0 0 20 20" fill="none">
                 <Path d="M7.5 15L12.5 10L7.5 5" stroke="#9CA3AF" strokeWidth="2" strokeLinecap="round"/>
               </Svg>
@@ -533,7 +533,7 @@ const Index = () => {
                   backgroundColor: pressed ? 'rgba(249, 250, 251, 0.5)' : 'transparent',
                 })}
               >
-                <Text className='text-sm text-gray-700 flex-1'>Program</Text>
+                <Text className='text-sm text-white flex-1'>Program</Text>
                 <Svg width="14" height="14" viewBox="0 0 20 20" fill="none">
                   <Path d="M7.5 15L12.5 10L7.5 5" stroke="#9CA3AF" strokeWidth="2" strokeLinecap="round"/>
                 </Svg>
@@ -548,7 +548,7 @@ const Index = () => {
                   backgroundColor: pressed ? 'rgba(249, 250, 251, 0.5)' : 'transparent',
                 })}
               >
-                <Text className='text-sm text-gray-700 flex-1'>Event</Text>
+                <Text className='text-sm text-white flex-1'>Event</Text>
                 <Svg width="14" height="14" viewBox="0 0 20 20" fill="none">
                   <Path d="M7.5 15L12.5 10L7.5 5" stroke="#9CA3AF" strokeWidth="2" strokeLinecap="round"/>
                 </Svg>
@@ -563,7 +563,7 @@ const Index = () => {
                   backgroundColor: pressed ? 'rgba(249, 250, 251, 0.5)' : 'transparent',
                 })}
               >
-                <Text className='text-sm text-gray-700 flex-1'>Settings (Preferences)</Text>
+                <Text className='text-sm text-white flex-1'>Settings (Preferences)</Text>
                 <Svg width="14" height="14" viewBox="0 0 20 20" fill="none">
                   <Path d="M7.5 15L12.5 10L7.5 5" stroke="#9CA3AF" strokeWidth="2" strokeLinecap="round"/>
                 </Svg>
@@ -595,7 +595,7 @@ const Index = () => {
                 backgroundColor: pressed ? 'rgba(249, 250, 251, 0.5)' : 'transparent',
               })}
             >
-              <Text className='text-sm text-gray-700 flex-1'>Merch</Text>
+              <Text className='text-sm text-white flex-1'>Merch</Text>
               <Svg width="14" height="14" viewBox="0 0 20 20" fill="none">
                 <Path d="M7.5 15L12.5 10L7.5 5" stroke="#9CA3AF" strokeWidth="2" strokeLinecap="round"/>
               </Svg>
@@ -609,7 +609,7 @@ const Index = () => {
                   backgroundColor: pressed ? 'rgba(249, 250, 251, 0.5)' : 'transparent',
                 })}
               >
-                <Text className='text-sm text-gray-700 flex-1'>Programs/Events</Text>
+                <Text className='text-sm text-white flex-1'>Programs/Events</Text>
                 <Svg width="14" height="14" viewBox="0 0 20 20" fill="none">
                   <Path d="M7.5 15L12.5 10L7.5 5" stroke="#9CA3AF" strokeWidth="2" strokeLinecap="round"/>
                 </Svg>
@@ -624,7 +624,7 @@ const Index = () => {
                   backgroundColor: pressed ? 'rgba(249, 250, 251, 0.5)' : 'transparent',
                 })}
               >
-                <Text className='text-sm text-gray-700 flex-1'>Classes</Text>
+                <Text className='text-sm text-white flex-1'>Classes</Text>
                 <Svg width="14" height="14" viewBox="0 0 20 20" fill="none">
                   <Path d="M7.5 15L12.5 10L7.5 5" stroke="#9CA3AF" strokeWidth="2" strokeLinecap="round"/>
                 </Svg>
@@ -656,7 +656,7 @@ const Index = () => {
                 backgroundColor: pressed ? 'rgba(249, 250, 251, 0.5)' : 'transparent',
               })}
             >
-              <Text className='text-sm text-gray-700 flex-1'>Start an Application</Text>
+              <Text className='text-sm text-white flex-1'>Start an Application</Text>
               <Svg width="14" height="14" viewBox="0 0 20 20" fill="none">
                 <Path d="M7.5 15L12.5 10L7.5 5" stroke="#9CA3AF" strokeWidth="2" strokeLinecap="round"/>
               </Svg>
@@ -670,7 +670,7 @@ const Index = () => {
                   backgroundColor: pressed ? 'rgba(249, 250, 251, 0.5)' : 'transparent',
                 })}
               >
-                <Text className='text-sm text-gray-700 flex-1'>Check the Status</Text>
+                <Text className='text-sm text-white flex-1'>Check the Status</Text>
                 <Svg width="14" height="14" viewBox="0 0 20 20" fill="none">
                   <Path d="M7.5 15L12.5 10L7.5 5" stroke="#9CA3AF" strokeWidth="2" strokeLinecap="round"/>
                   </Svg>
@@ -702,7 +702,7 @@ const Index = () => {
                 backgroundColor: pressed ? 'rgba(249, 250, 251, 0.5)' : 'transparent',
               })}
             >
-              <Text className='text-sm text-gray-700 flex-1'>Profile Page</Text>
+              <Text className='text-sm text-white flex-1'>Profile Page</Text>
               <Svg width="14" height="14" viewBox="0 0 20 20" fill="none">
                 <Path d="M7.5 15L12.5 10L7.5 5" stroke="#9CA3AF" strokeWidth="2" strokeLinecap="round"/>
               </Svg>
@@ -716,7 +716,7 @@ const Index = () => {
                   backgroundColor: pressed ? 'rgba(249, 250, 251, 0.5)' : 'transparent',
                 })}
               >
-                <Text className='text-sm text-gray-700 flex-1'>Username and Password</Text>
+                <Text className='text-sm text-white flex-1'>Username and Password</Text>
                 <Svg width="14" height="14" viewBox="0 0 20 20" fill="none">
                   <Path d="M7.5 15L12.5 10L7.5 5" stroke="#9CA3AF" strokeWidth="2" strokeLinecap="round"/>
                 </Svg>
@@ -731,7 +731,7 @@ const Index = () => {
                   backgroundColor: pressed ? 'rgba(249, 250, 251, 0.5)' : 'transparent',
                 })}
               >
-                <Text className='text-sm text-gray-700 flex-1'>Change Password</Text>
+                <Text className='text-sm text-white flex-1'>Change Password</Text>
                 <Svg width="14" height="14" viewBox="0 0 20 20" fill="none">
                   <Path d="M7.5 15L12.5 10L7.5 5" stroke="#9CA3AF" strokeWidth="2" strokeLinecap="round"/>
                       </Svg>
@@ -763,7 +763,7 @@ const Index = () => {
                 backgroundColor: pressed ? 'rgba(249, 250, 251, 0.5)' : 'transparent',
               })}
             >
-              <Text className='text-sm text-gray-700 flex-1'>Feature Request</Text>
+              <Text className='text-sm text-white flex-1'>Feature Request</Text>
               <Svg width="14" height="14" viewBox="0 0 20 20" fill="none">
                 <Path d="M7.5 15L12.5 10L7.5 5" stroke="#9CA3AF" strokeWidth="2" strokeLinecap="round"/>
                     </Svg>
@@ -777,7 +777,7 @@ const Index = () => {
                   backgroundColor: pressed ? 'rgba(249, 250, 251, 0.5)' : 'transparent',
                 })}
               >
-                <Text className='text-sm text-gray-700 flex-1'>Report a Bug</Text>
+                <Text className='text-sm text-white flex-1'>Report a Bug</Text>
                 <Svg width="14" height="14" viewBox="0 0 20 20" fill="none">
                   <Path d="M7.5 15L12.5 10L7.5 5" stroke="#9CA3AF" strokeWidth="2" strokeLinecap="round"/>
                 </Svg>
@@ -792,7 +792,7 @@ const Index = () => {
                   backgroundColor: pressed ? 'rgba(249, 250, 251, 0.5)' : 'transparent',
                 })}
               >
-                <Text className='text-sm text-gray-700 flex-1'>Other Comments</Text>
+                <Text className='text-sm text-white flex-1'>Other Comments</Text>
                 <Svg width="14" height="14" viewBox="0 0 20 20" fill="none">
                   <Path d="M7.5 15L12.5 10L7.5 5" stroke="#9CA3AF" strokeWidth="2" strokeLinecap="round"/>
                 </Svg>
@@ -840,8 +840,8 @@ const Index = () => {
                         </Svg>
                   </View>
                   <View className='flex-1'>
-                    <Text className='text-sm font-semibold text-gray-900'>Admin Panel</Text>
-                    <Text className='text-xs text-gray-500'>Manage app content</Text>
+                    <Text className='text-sm font-semibold text-white'>Admin Panel</Text>
+                    <Text className='text-xs text-white'>Manage app content</Text>
                   </View>
                   <Svg width="16" height="16" viewBox="0 0 20 20" fill="none">
                     <Path d="M7.5 15L12.5 10L7.5 5" stroke="#9CA3AF" strokeWidth="2" strokeLinecap="round"/>
@@ -878,7 +878,7 @@ const Index = () => {
             }
           }} 
           className='items-center justify-between flex flex-row w-[100%] h-[100%] py-2 px-2 rounded-[15px]'>
-            <Text className='font-bold' style={{ color: feedbackOpen ? 'white' : 'black' }}>{feedbackOpen ? 'Send' : 'Feature Request'}</Text>
+            <Text className='font-bold' style={{ color: feedbackOpen ? 'white' : 'white' }}>{feedbackOpen ? 'Send' : 'Feature Request'}</Text>
             {
             feedbackOpen ? <></> : 
             <Animated.View style={FeedBackArrowOpacity} >
@@ -899,7 +899,7 @@ const Index = () => {
                 onChangeText={setFeedBackMessage}
                 placeholder="Enter Feedback Message..."
                 className=''
-                textColor="black"
+                textColor="white"
                 activeOutlineColor="#0D509D"
                 enterKeyHint='done'
                 contentStyle={{ }}
@@ -931,7 +931,7 @@ const Index = () => {
               backgroundColor: '#6077F5',
               marginRight: 8,
             }} />
-            <Text className='text-gray-900 text-lg font-bold'>Created By</Text>
+            <Text className='text-white text-lg font-bold'>Created By</Text>
             <View style={{
               width: 8,
               height: 8,
@@ -940,7 +940,7 @@ const Index = () => {
               marginLeft: 8,
             }} />
         </View>
-          <Text className='text-gray-800 text-xl font-extrabold mb-2'>AppFlow Creations</Text>
+          <Text className='text-white text-xl font-extrabold mb-2'>AppFlow Creations</Text>
           <Pressable 
             onPress={() => Linking.openURL('mailto:appflowcreations@gmail.com')}
             className='flex-row items-center bg-blue-50 px-4 py-2 rounded-full'
@@ -949,7 +949,7 @@ const Index = () => {
               <Path d="M2.66667 2.66666H13.3333C14.0667 2.66666 14.6667 3.26666 14.6667 4V12C14.6667 12.7333 14.0667 13.3333 13.3333 13.3333H2.66667C1.93333 13.3333 1.33333 12.7333 1.33333 12V4C1.33333 3.26666 1.93333 2.66666 2.66667 2.66666Z" stroke="#6077F5" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
               <Path d="M14.6667 4L8 8.66667L1.33333 4" stroke="#6077F5" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
             </Svg>
-            <Text className='text-[#6077F5] font-semibold text-sm'>appflowcreations@gmail.com</Text>
+            <Text className='text-white font-semibold text-sm'>appflowcreations@gmail.com</Text>
           </Pressable>
       </View>
       </View>
@@ -966,10 +966,10 @@ const Index = () => {
                }}>
                 <View className='flex-col'>
                   <View>
-                    <Text className='text-center font-bold text-3xl'>Edit Profile </Text>
+                    <Text className='text-center font-bold text-3xl text-white'>Edit Profile </Text>
                   </View>
                   <View>
-                    <Text className='mt-2 mb-1 ml-3'>Enter Your First Name</Text>
+                    <Text className='mt-2 mb-1 ml-3 text-white'>Enter Your First Name</Text>
                     <TextInput
                     mode='outlined'
                     theme={{ roundness : 50 }}
@@ -978,9 +978,9 @@ const Index = () => {
                     value={profileFirstName}
                     onChangeText={setProfileFirstName}
                     placeholder="First Name"
-                    textColor='black'
+                    textColor='white'
                     />
-                    <Text className='mt-2 mb-1 ml-3'>Enter Your Last Name</Text>
+                    <Text className='mt-2 mb-1 ml-3 text-white'>Enter Your Last Name</Text>
                   <TextInput
                     mode='outlined'
                     theme={{ roundness : 50 }}
@@ -989,9 +989,9 @@ const Index = () => {
                     value={profileLastName}
                     onChangeText={setProfileLastName}
                     placeholder="Last Name"
-                    textColor='black'
+                    textColor='white'
                     />
-                  <Text className='mt-2 mb-1 ml-3'>Enter Your Email</Text>
+                  <Text className='mt-2 mb-1 ml-3 text-white'>Enter Your Email</Text>
                   <TextInput
                     mode='outlined'
                     theme={{ roundness : 50 }}
@@ -1000,7 +1000,7 @@ const Index = () => {
                     value={profileEmail}
                     onChangeText={setProfileEmail}
                     placeholder="Email"
-                    textColor='black'
+                    textColor='white'
                     />
                   </View>
                   <View className='self-center'>

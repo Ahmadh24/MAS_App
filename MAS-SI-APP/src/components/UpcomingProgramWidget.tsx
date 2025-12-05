@@ -1,14 +1,132 @@
-import { View, Text, Pressable, ImageBackground, ScrollView, Animated, Image } from 'react-native';
+import { View, Text, Pressable, ImageBackground, ScrollView, Animated, Image, Dimensions, Linking, PanResponder } from 'react-native';
 import React, { useState, useEffect, useRef, useCallback } from 'react'
-import { Program, EventsType } from '../types';
+import { Program, EventsType, Lectures, SheikDataType } from '../types';
 import moment from 'moment';
 import { Link, useRouter } from 'expo-router';
-import { Icon, Modal, Portal } from 'react-native-paper';
+import { Icon, Modal, Portal, Button } from 'react-native-paper';
 import { supabase } from '@/src/lib/supabase';
-import { parse, isBefore } from 'date-fns';
+import { parse, isBefore, format } from 'date-fns';
 import { useAuth } from '@/src/providers/AuthProvider';
+import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
 import * as Haptics from 'expo-haptics';
 import Toast from 'react-native-toast-message';
+import { FlyerSkeleton } from './FlyerSkeleton';
+import YoutubePlayer from "react-native-youtube-iframe";
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { BlurView } from 'expo-blur';
+
+// Toast configuration
+const toastConfig = {
+  addProgramToNotificationsToast: ({ props }: any) => (
+    <Pressable className='rounded-xl overflow-hidden ' onPress={props.onPress}>
+      <BlurView intensity={40} className='flex-row items-center justify-between px-4 rounded-xl p-1 max-h-[60]' 
+        experimentalBlurMethod={'dimezisBlurView'}
+        style={{ width: '100%', maxWidth: '100%' }}
+      >
+        <View>
+          <Image source={props.props.program_img ? { uri: props.props.program_img } : require("@/assets/images/MASHomeLogo.png")} style={{ width: 50, height: 50, objectFit: 'fill', borderRadius: 10 }}/>
+        </View>
+        <View className='flex-col pl-2'>
+          <View>
+            <Text>1 Program Added To Notifications</Text>
+          </View>
+          <View className='flex-row'>
+            <Text className='text-sm'>{props.props.program_name}</Text>
+            <Icon source={'chevron-right'} size={20} />
+          </View>
+        </View>
+      </BlurView>
+    </Pressable>
+  ),
+  LectureAddedToPlaylist: ({ props }: any) => (
+    <Pressable className='rounded-xl overflow-hidden' onPress={props.onPress}>
+      <BlurView intensity={40} className='flex-row items-center justify-between px-3 p-1 max-w-[85%] max-h-[60]'
+        experimentalBlurMethod={'dimezisBlurView'}
+      >
+        <View className=''>
+          <Image source={props.props?.playlist_img ? { uri: props.props.playlist_img } : require("@/assets/images/MASHomeLogo.png")} style={{ width: 50, height: 50, objectFit: 'fill', borderRadius: 10 }}/>
+        </View>
+        <View className='flex-col pl-2'>
+          <View>
+            <Text numberOfLines={1} allowFontScaling adjustsFontSizeToFit>1 lecture added</Text>
+          </View>
+          <View className='flex-row'>
+            <Text>{props.props?.playlist_name}</Text>
+            <Icon source={'chevron-right'} size={20} />
+          </View>
+        </View>
+      </BlurView>
+    </Pressable>
+  ),
+  ProgramAddedToPrograms: ({ props }: any) => (
+    <Pressable className='rounded-xl overflow-hidden ' onPress={props.onPress}>
+      <BlurView intensity={40} className='flex-row items-center justify-between px-4 rounded-xl p-1 max-w-[85%] max-h-[60]' 
+        experimentalBlurMethod={'dimezisBlurView'}
+      >
+        <View>
+          <Image source={props.props.program_img ? { uri: props.props.program_img } : require("@/assets/images/MASHomeLogo.png")} style={{ width: 50, height: 50, objectFit: 'fill', borderRadius: 10 }}/>
+        </View>
+        <View className='flex-col pl-2'>
+          <View>
+            <Text>1 Program Added to Library</Text>
+          </View>
+          <View className='flex-row'>
+            <Text className='text-sm'>{props.props.program_name}</Text>
+            <Icon source={'chevron-right'} size={20} />
+          </View>
+        </View>
+      </BlurView>
+    </Pressable>
+  ),
+  addEventToNotificationsToast: ({ props }: any) => (
+    <Pressable className='rounded-xl overflow-hidden ' onPress={props.onPress}>
+      <BlurView intensity={40} className='flex-row items-center justify-between px-4 rounded-xl p-1 max-h-[60]' 
+        experimentalBlurMethod={'dimezisBlurView'}
+        style={{ width: '100%', maxWidth: '100%' }}
+      >
+        <View>
+          <Image source={props.props.event_img ? { uri: props.props.event_img } : require("@/assets/images/MASHomeLogo.png")} style={{ width: 50, height: 50, objectFit: 'fill', borderRadius: 10 }}/>
+        </View>
+        <View className='flex-col pl-2'>
+          <View>
+            <Text>1 Program Added To Notifications</Text>
+          </View>
+          <View className='flex-row'>
+            <Text className='text-sm'>{props.props.event_name}</Text>
+            <Icon source={'chevron-right'} size={20} />
+          </View>
+        </View>
+      </BlurView>
+    </Pressable>
+  ),
+  ConfirmNotificationOption: ({ props }: any) => (
+    <Pressable className='rounded-xl overflow-hidden ' onPress={props.onPress}>
+      <BlurView intensity={40} className='flex-row items-center justify-between px-4 rounded-xl p-2 max-w-[90%] max-h-[60]' 
+        experimentalBlurMethod={'dimezisBlurView'}
+      >
+        <View className='flex-col pl-2'>
+          <View>
+            <Text className="text-white">{props.message} : {props.time}</Text>
+          </View>
+          <View className='flex-row'>
+            <Text className='text-md font-bold text-white'>{props.prayer}</Text>
+          </View>
+        </View>
+        <View className="pl-5"/>
+        <View className="bg-white p-1 rounded-full">
+          <Icon source={'check'} size={20} color="green"/>
+        </View>
+      </BlurView>
+    </Pressable>
+  )
+}
+
+// Helper function to extract video ID from YouTube URL
+const getVideoIdFromUrl = (url: string) => {
+  if (!url) return null;
+  const match = url.match(/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/);
+  return match ? match[1] : null;
+};
 
 type UpcomingProgramWidgetProp = {
   // No props needed - will fetch data internally
@@ -63,9 +181,27 @@ export default function UpcomingProgramWidget() {
   const [loading, setLoading] = useState(true);
   const [modalVisible, setModalVisible] = useState(false);
   const [itemInNotifications, setItemInNotifications] = useState(false);
+  const [itemInPrograms, setItemInPrograms] = useState(false);
   const [programData, setProgramData] = useState<Program | null>(null);
   const [eventData, setEventData] = useState<EventsType | null>(null);
   const slideAnim = useRef(new Animated.Value(0)).current;
+  const panY = useRef(new Animated.Value(0)).current;
+  const [modalLectures, setModalLectures] = useState<Lectures[] | null>(null);
+  const [modalSpeakerData, setModalSpeakerData] = useState<SheikDataType[]>([]);
+  const [modalSpeakerString, setModalSpeakerString] = useState('');
+  const [modalImageReady, setModalImageReady] = useState(false);
+  const [modalVisibleState, setModalVisibleState] = useState(false);
+  const [selectedLecture, setSelectedLecture] = useState<Lectures | null>(null);
+  const [playing, setPlaying] = useState(false);
+  const [watchedLectures, setWatchedLectures] = useState<Set<string>>(new Set());
+  const [startedLectures, setStartedLectures] = useState<Set<string>>(new Set());
+  const modalScrollRef = useRef<ScrollView>(null);
+  const isScrolling = useRef(false);
+  const scrollOffset = useRef(0);
+  const isClosing = useRef(false);
+  const [modalToast, setModalToast] = useState<{ type: string; props: any } | null>(null);
+  const Tab = useBottomTabBarHeight();
+  const { width, height } = Dimensions.get("window");
 
   // Get current day of the week
   const getCurrentDay = () => {
@@ -121,6 +257,86 @@ export default function UpcomingProgramWidget() {
     return moment();
   };
   
+  // Pan responder for slide-down gesture - only on drag handle
+  const panResponder = useRef(
+    PanResponder.create({
+      onStartShouldSetPanResponder: () => {
+        // Only respond if ScrollView is at the top
+        return scrollOffset.current === 0 && !isScrolling.current;
+      },
+      onMoveShouldSetPanResponder: (evt, gestureState) => {
+        // Only respond to downward gestures when scroll is at top
+        if (scrollOffset.current > 0 || isScrolling.current) return false;
+        // Require significant downward movement to avoid conflicts
+        return gestureState.dy > 15 && Math.abs(gestureState.dy) > Math.abs(gestureState.dx) * 2;
+      },
+      onPanResponderGrant: () => {
+        panY.setValue(0);
+      },
+      onPanResponderMove: (evt, gestureState) => {
+        // Only allow downward movement, with resistance at the top
+        if (gestureState.dy > 0) {
+          // Add slight resistance for smoother feel
+          const resistance = gestureState.dy < 50 ? 0.5 : 1;
+          panY.setValue(gestureState.dy * resistance);
+        }
+      },
+      onPanResponderTerminate: () => {
+        // Snap back
+        Animated.spring(panY, {
+          toValue: 0,
+          useNativeDriver: true,
+          tension: 40,
+          friction: 8,
+        }).start();
+      },
+      onPanResponderRelease: (evt, gestureState) => {
+        const threshold = height * 0.25; // Close if dragged down more than 25% of screen height
+        
+        if (gestureState.dy > threshold || gestureState.vy > 0.5) {
+          // Mark as closing to prevent re-renders
+          isClosing.current = true;
+          
+          // Stop any ongoing animations
+          slideAnim.stopAnimation();
+          panY.stopAnimation();
+          
+          // Get current panY value from gesture
+          const currentPanY = gestureState.dy;
+          const remainingDistance = height - currentPanY;
+          
+          // Ensure panY is at current position before animating
+          panY.setValue(currentPanY);
+          
+          // Animate panY from current position to height
+          Animated.timing(panY, {
+            toValue: height,
+            duration: Math.max(150, Math.min(300, 300 * (remainingDistance / height))),
+            useNativeDriver: true,
+          }).start((finished) => {
+            if (finished) {
+              // Clean up after animation completes
+              closeModal();
+              panY.setValue(0);
+              slideAnim.setValue(0);
+              scrollOffset.current = 0;
+              isScrolling.current = false;
+              isClosing.current = false;
+            }
+          });
+        } else {
+          // Snap back to open position
+          Animated.spring(panY, {
+            toValue: 0,
+            useNativeDriver: true,
+            tension: 50,
+            friction: 9,
+          }).start();
+        }
+      },
+    })
+  ).current;
+
   // Helper function to format time as 12-hour format
   const formatTime12Hour = (timeString: string): string => {
     if (!timeString) return 'TBD';
@@ -298,13 +514,13 @@ export default function UpcomingProgramWidget() {
       // Store full program/event data for notifications
       if (nextItem) {
         if (nextItem.type === 'program') {
-          const fullProgram = safePrograms.find(p => p.program_id === nextItem.id);
+          const fullProgram = safePrograms.find(p => p.program_id === nextItem!.id);
           if (fullProgram) {
             setProgramData(fullProgram);
             setEventData(null);
           }
         } else {
-          const fullEvent = safeEvents.find(e => e.event_id === nextItem.id);
+          const fullEvent = safeEvents.find(e => e.event_id === nextItem!.id);
           if (fullEvent) {
             setEventData(fullEvent);
             setProgramData(null);
@@ -345,6 +561,24 @@ export default function UpcomingProgramWidget() {
       }
     } catch (error) {
       console.error('Error checking notification status:', error);
+    }
+  };
+
+  // Check if item is already in programs
+  const checkProgramStatus = async () => {
+    if (!session?.user.id || !upcomingItem || upcomingItem.type !== 'program') return;
+    
+    try {
+      const { data } = await supabase
+        .from('added_programs')
+        .select('*')
+        .eq('user_id', session.user.id)
+        .eq('program_id', upcomingItem.id)
+        .single();
+      
+      setItemInPrograms(!!data);
+    } catch (error) {
+      console.error('Error checking program status:', error);
     }
   };
 
@@ -440,17 +674,22 @@ export default function UpcomingProgramWidget() {
             );
           }
           
-          // Show toast
-          const goToProgram = () => {
-            router.push(`/myPrograms/notifications/ClassesAndLectures/${upcomingItem.id}`);
-          };
-          
-          Toast.show({
+          // Show toast in modal
+          setModalToast({
             type: 'addProgramToNotificationsToast',
-            props: { props: programData, onPress: goToProgram },
-            position: 'top',
-            topOffset: 50,
+            props: { props: programData, onPress: () => {} }
           });
+          // Also show root toast for when modal is closed
+          // Toast.show({
+          //   type: 'addProgramToNotificationsToast',
+          //   props: { props: programData, onPress: goToProgram },
+          //   position: 'top',
+          //   topOffset: 50,
+          // });
+          // Auto-hide modal toast after 3 seconds
+          setTimeout(() => setModalToast(null), 3000);
+          // Auto-hide modal toast after 3 seconds
+          setTimeout(() => setModalToast(null), 3000);
         }
       } else if (upcomingItem.type === 'event' && eventData) {
         const { error } = await supabase
@@ -487,21 +726,66 @@ export default function UpcomingProgramWidget() {
             );
           }
           
-          // Show toast
-          const goToEvent = () => {
-            router.push(`/myPrograms/notifications/${upcomingItem.id}`);
-          };
-          
-          Toast.show({
+          // Show toast in modal
+          setModalToast({
             type: 'addEventToNotificationsToast',
-            props: { props: eventData, onPress: goToEvent },
-            position: 'top',
-            topOffset: 50,
+            props: { props: eventData, onPress: () => {} }
           });
+          // Also show root toast for when modal is closed
+          // Toast.show({
+          //   type: 'addEventToNotificationsToast',
+          //   props: { props: eventData, onPress: goToEvent },
+          //   position: 'top',
+          //   topOffset: 50,
+          // });
+          // Auto-hide modal toast after 3 seconds
+          setTimeout(() => setModalToast(null), 3000);
         }
       }
       
       setItemInNotifications(true);
+    }
+  };
+
+  // Handle add to programs button press
+  const handleAddToProgramsPress = async () => {
+    if (!session?.user.id || !upcomingItem) return;
+    
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    
+    if (itemInPrograms) {
+      // Remove from programs
+      if (upcomingItem.type === 'program') {
+        const { error } = await supabase
+          .from('added_programs')
+          .delete()
+          .eq('user_id', session.user.id)
+          .eq('program_id', upcomingItem.id);
+      }
+      
+      setItemInPrograms(false);
+    } else {
+      // Add to programs
+      if (upcomingItem.type === 'program') {
+        const { error } = await supabase
+          .from('added_programs')
+          .insert({
+            user_id: session.user.id,
+            program_id: upcomingItem.id
+          });
+        
+        if (!error) {
+          setItemInPrograms(true);
+          
+          // Show toast in modal
+          setModalToast({
+            type: 'ProgramAddedToPrograms',
+            props: { props: programData, onPress: () => {} }
+          });
+          // Auto-hide modal toast after 3 seconds
+          setTimeout(() => setModalToast(null), 3000);
+        }
+      }
     }
   };
 
@@ -567,8 +851,17 @@ export default function UpcomingProgramWidget() {
   useEffect(() => {
     if (upcomingItem && session?.user.id) {
       checkNotificationStatus();
+      checkProgramStatus();
     }
   }, [upcomingItem, session?.user.id]);
+
+  // Fetch modal data when modal opens
+  useEffect(() => {
+    if (modalVisible && upcomingItem && (programData || eventData)) {
+      fetchModalData();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [modalVisible, upcomingItem, programData, eventData]);
 
   // Update time every second
   useEffect(() => {
@@ -618,20 +911,214 @@ export default function UpcomingProgramWidget() {
 
   const timeToNextProgram = getTimeToNextProgram();
 
-  const closeModal = useCallback(() => {
-    setModalVisible(false);
-    slideAnim.setValue(0);
+  const closeModal = useCallback((skipAnimation?: boolean) => {
+    if (skipAnimation) {
+      setModalVisible(false);
+      setModalVisibleState(false);
+      slideAnim.setValue(0);
+      panY.setValue(0);
+      setModalSpeakerData([]);
+      setModalSpeakerString('');
+      setModalImageReady(false);
+      scrollOffset.current = 0;
+      isScrolling.current = false;
+      isClosing.current = false;
+      return;
+    }
+    
+    // Stop any ongoing animations
+    slideAnim.stopAnimation();
+    panY.stopAnimation();
+    
+    // Animate closing
+    Animated.parallel([
+      Animated.timing(slideAnim, {
+        toValue: 0,
+        duration: 300,
+        useNativeDriver: true,
+      }),
+      Animated.timing(panY, {
+        toValue: 0,
+        duration: 300,
+        useNativeDriver: true,
+      }),
+    ]).start(() => {
+      setModalVisible(false);
+      setModalVisibleState(false);
+      setModalSpeakerData([]);
+      setModalSpeakerString('');
+      setModalImageReady(false);
+      panY.setValue(0);
+      scrollOffset.current = 0;
+      isScrolling.current = false;
+      isClosing.current = false;
+    });
   }, []);
+
+  const checkWatchedStatus = async (lecturesData: Lectures[]) => {
+    try {
+      const watchedKeys = lecturesData.map(lecture => `watched_lecture_${lecture.lecture_id}`);
+      const startedKeys = lecturesData.map(lecture => `started_lecture_${lecture.lecture_id}`);
+      const allKeys = [...watchedKeys, ...startedKeys];
+      const allValues = await AsyncStorage.multiGet(allKeys);
+      const watched = new Set<string>();
+      const started = new Set<string>();
+      allValues.forEach(([key, value]) => {
+        if (value === 'true') {
+          if (key.startsWith('watched_lecture_')) {
+            const lectureId = key.replace('watched_lecture_', '');
+            watched.add(lectureId);
+          } else if (key.startsWith('started_lecture_')) {
+            const lectureId = key.replace('started_lecture_', '');
+            if (!watched.has(lectureId)) {
+              started.add(lectureId);
+            }
+          }
+        }
+      });
+      setWatchedLectures(watched);
+      setStartedLectures(started);
+    } catch (error) {
+      console.log('Error checking watched status:', error);
+    }
+  };
+
+  const onStateChange = useCallback((state: string) => {
+    if (state === "ended") {
+      setPlaying(false);
+      if (selectedLecture) {
+        AsyncStorage.setItem(`watched_lecture_${selectedLecture.lecture_id}`, 'true');
+        setWatchedLectures(prev => new Set([...prev, selectedLecture.lecture_id]));
+      }
+    }
+  }, [selectedLecture]);
+
+  const fetchModalData = useCallback(async () => {
+    if (!upcomingItem) return;
+    
+    // Handle programs - Only fetch speaker data for modal (no lectures/videos)
+    if (upcomingItem.type === 'program' && programData) {
+      // Fetch speaker data
+      if (programData.program_speaker && Array.isArray(programData.program_speaker) && programData.program_speaker.length > 0) {
+        const speakers: SheikDataType[] = [];
+        const speakerArray = programData.program_speaker;
+        let speaker_string: string[] = speakerArray.map(() => '');
+        
+        await Promise.all(
+          speakerArray.map(async (speaker_id: string, index: number) => {
+            const { data: speakerInfo } = await supabase
+              .from('speaker_data')
+              .select('*')
+              .eq('speaker_id', speaker_id)
+              .single();
+            
+            if (speakerInfo) {
+              if (index === speakerArray.length - 1) {
+                speaker_string[index] = speakerInfo.speaker_name;
+              } else {
+                speaker_string[index] = speakerInfo.speaker_name + ' & ';
+              }
+              speakers.push(speakerInfo);
+            }
+          })
+        );
+        
+        setModalSpeakerData(speakers);
+        setModalSpeakerString(speaker_string.join(''));
+      }
+    } 
+    // Handle events
+    else if (upcomingItem.type === 'event') {
+      // Events might have speakers too, but for now we'll leave it empty
+      setModalSpeakerData([]);
+      setModalSpeakerString('');
+    }
+  }, [upcomingItem, programData, eventData]);
 
   const openModal = useCallback(() => {
     setModalVisible(true);
+    setModalVisibleState(false);
+    setModalImageReady(false);
+    panY.setValue(0); // Reset pan gesture
+    scrollOffset.current = 0;
+    isScrolling.current = false;
+    isClosing.current = false;
     Animated.spring(slideAnim, {
       toValue: 1,
       useNativeDriver: true,
       tension: 40,
       friction: 8,
     }).start();
-  }, []);
+    
+    // Fetch modal data - will be handled by useEffect
+  }, [slideAnim, panY]);
+  
+  const GetSheikData = () => {
+    return (
+      <View className='flex-1'>
+        {modalSpeakerData?.map((speakerData, index) => (
+          <BlurView
+            key={index}
+            intensity={80}
+            tint="dark"
+            style={{
+              borderRadius: 50,
+              padding: 16,
+              marginVertical: 8,
+              shadowColor: '#000',
+              shadowOffset: { width: 0, height: 2 },
+              shadowOpacity: 0.15,
+              shadowRadius: 8,
+              elevation: 4,
+              backgroundColor: 'rgba(107, 114, 128, 0.6)',
+              overflow: 'hidden',
+            }}
+          >
+            <View className='flex-row items-center mb-4'>
+              <View style={{
+                width: 100,
+                height: 100,
+                borderRadius: 50,
+                overflow: 'hidden',
+                borderWidth: 3,
+                borderColor: '#E5E7EB',
+                marginRight: 16,
+              }}>
+                <Image 
+                  source={speakerData?.speaker_img ? { uri: speakerData.speaker_img } : require("@/assets/images/MASHomeLogo.png")} 
+                  style={{ width: '100%', height: '100%' }} 
+                  resizeMode='cover'
+                />
+              </View>
+              <View className='flex-1'>
+                <Text className='text-xs text-gray-300 font-medium mb-1'>SPEAKER</Text>
+                <Text className='text-xl font-bold text-white' numberOfLines={2}>
+                  {speakerData?.speaker_name}
+                </Text>
+              </View>
+            </View>
+            <View className='border-t border-gray-400 pt-4'>
+              {speakerData?.speaker_name === "MAS" ? (
+                <Text className='text-sm font-bold text-white mb-3'>Impact</Text>
+              ) : (
+                <Text className='text-sm font-bold text-white mb-3'>Credentials</Text>
+              )}
+              <View className='flex-col'>
+                {speakerData?.speaker_creds?.map((cred, i) => (
+                  <View key={i} className='flex-row items-start mb-2'>
+                    <View style={{ marginRight: 8, marginTop: 2 }}>
+                      <Icon source="cards-diamond-outline" size={16} color='#60A5FA'/>
+                    </View>
+                    <Text className='text-sm text-gray-100 flex-1'>{cred}</Text>
+                  </View>
+                ))}
+              </View>
+            </View>
+          </BlurView>
+        ))}
+      </View>
+    );
+  };
 
   if (loading) {
     return (
@@ -710,7 +1197,10 @@ export default function UpcomingProgramWidget() {
         <Pressable 
           className="pt-6" 
           style={{ position: 'relative', zIndex: 1 }}
-          onPress={() => router.push(upcomingItem.link as any)}
+          onPress={() => {
+            // Always open modal like "read full description"
+            openModal();
+          }}
         >
           {/* Header */}
           <View className="flex-row items-center justify-between mb-3">
@@ -823,87 +1313,322 @@ export default function UpcomingProgramWidget() {
         </View>
       )}
 
-      {/* Full Description Modal */}
-      {upcomingItem && (
+      {/* Full Description Modal - Program Detail Page Style */}
+      {upcomingItem && (modalVisible || isClosing.current) && (
         <Portal>
           <Modal
-            visible={modalVisible}
-            onDismiss={closeModal}
-            dismissable={true}
+            visible={modalVisible || isClosing.current}
+            onDismiss={() => {}}
+            dismissable={false}
             contentContainerStyle={{
-              backgroundColor: 'white',
-              marginHorizontal: 24,
-              marginVertical: 16,
-              borderRadius: 20,
+              backgroundColor: 'transparent',
+              margin: 0,
               padding: 0,
-              maxHeight: '100%',
+              height: '100%',
+              width: '100%',
               borderWidth: 0,
             }}
-            style={{ justifyContent: 'center' }}
+            style={{ justifyContent: 'flex-end', margin: 0, padding: 0 }}
           >
             <Animated.View
               style={{
                 opacity: slideAnim,
-                overflow: 'hidden',
-                borderRadius: 20,
+                flex: 1,
+                backgroundColor: 'transparent',
               }}
             >
-                  {/* Program Image - Always show with fallback */}
+              <Pressable 
+                style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.5)' }}
+                onPress={closeModal}
+              />
+              <Animated.View
+                style={{
+                  height: height * 0.95,
+                  backgroundColor: '#0A1628',
+                  borderTopLeftRadius: 20,
+                  borderTopRightRadius: 20,
+                  borderBottomLeftRadius: 0,
+                  borderBottomRightRadius: 0,
+                  borderBottomWidth: 0,
+                  overflow: 'hidden',
+                  transform: [{
+                    translateY: Animated.add(
+                      slideAnim.interpolate({
+                        inputRange: [0, 1],
+                        outputRange: [height, 0],
+                      }),
+                      panY
+                    )
+                  }]
+                }}
+              >
+                {/* Drag Handle - Separate view with pan responder */}
+                <Animated.View
+                  {...panResponder.panHandlers}
+                  style={{
+                    width: '100%',
+                    paddingTop: 8,
+                    paddingBottom: 12,
+                    alignItems: 'center',
+                  }}
+                >
+                  <View style={{
+                    width: 40,
+                    height: 4,
+                    borderRadius: 2,
+                    backgroundColor: 'rgba(255, 255, 255, 0.3)',
+                  }} />
+                </Animated.View>
+                
+                <ScrollView 
+                  ref={modalScrollRef}
+                  showsVerticalScrollIndicator={true}
+                  scrollEnabled={true}
+                  scrollEventThrottle={16}
+                  onScrollBeginDrag={() => {
+                    isScrolling.current = true;
+                    // Reset pan if user starts scrolling
+                    panY.setValue(0);
+                  }}
+                  onScrollEndDrag={() => {
+                    // Small delay to ensure scroll has ended
+                    setTimeout(() => {
+                      isScrolling.current = false;
+                    }, 100);
+                  }}
+                  onMomentumScrollBegin={() => {
+                    isScrolling.current = true;
+                  }}
+                  onMomentumScrollEnd={() => {
+                    setTimeout(() => {
+                      isScrolling.current = false;
+                    }, 100);
+                  }}
+                  onScroll={(event) => {
+                    const offset = event.nativeEvent.contentOffset.y;
+                    scrollOffset.current = offset;
+                    // If user scrolls down, cancel any active pan gesture
+                    if (offset > 5) {
+                      panY.setValue(0);
+                    }
+                  }}
+                  bounces={true}
+                  contentContainerStyle={{
+                    justifyContent: "flex-start",
+                    alignItems: "stretch",
+                    backgroundColor: '#0A1628',
+                    paddingBottom: 100
+                  }}
+                  style={{ backgroundColor: '#0A1628' }}
+                >
+                  {/* Program Image */}
                   <View style={{
                     width: '100%',
-                    height: 300,
-                    borderTopLeftRadius: 20,
-                    borderTopRightRadius: 20,
+                    height: height * 0.5,
+                    borderRadius: 0,
                     overflow: 'hidden',
+                    alignSelf: 'stretch',
+                    backgroundColor: '#0A1628',
                   }}>
+                    {!modalImageReady && (
+                      <FlyerSkeleton 
+                        width={width} 
+                        height={height * 0.5} 
+                        style={{ position: 'absolute', top: 0, zIndex: 2 }} 
+                      />
+                    )}
                     <Image
                       source={upcomingItem.image ? { uri: upcomingItem.image } : require("@/assets/images/MASHomeLogo.png")}
                       style={{
                         width: '100%',
                         height: '100%',
+                        borderRadius: 0,
                       }}
                       resizeMode="cover"
+                      onLoad={() => setModalImageReady(true)}
                     />
-                  </View>
-                  
-                  <ScrollView 
-                    showsVerticalScrollIndicator={true}
-                    style={{ maxHeight: 300 }}
-                    contentContainerStyle={{ paddingBottom: 10, borderWidth: 0}}
-                  >
-                    <View className="px-5 pt-4" style={{ borderWidth: 0 }}>
-                      {/* Header with Time */}
-                      <View className="flex-row items-center mb-3">
-                        <View className="flex-row items-center">
-                          <Icon source="clock-outline" size={18} color="#0D509D" />
-                          <Text className="text-[#0D509D] font-semibold text-base ml-2">
-                            {formatTime12Hour(upcomingItem.time)}
-                          </Text>
-                        </View>
+                    {/* Header Buttons - Close, Notification, Add to Programs */}
+                    <View style={{ 
+                        position: 'absolute', 
+                        top: 0, 
+                        left: 0, 
+                        right: 0, 
+                        zIndex: 100, 
+                        paddingTop: 50, 
+                        paddingHorizontal: 10, 
+                        flexDirection: 'row', 
+                        justifyContent: 'space-between', 
+                        alignItems: 'center' 
+                    }}>
+                      <BlurView intensity={20} tint="dark" style={{ borderRadius: 16, overflow: 'hidden' }}>
+                        <Pressable onPress={closeModal} style={{ width: 36, height: 36, alignItems: 'center', justifyContent: 'center' }}>
+                          <Icon source="chevron-left" size={20} color="white" />
+                        </Pressable>
+                      </BlurView>
+                      <View style={{ flexDirection: 'row', gap: 10 }}>
+                        {((upcomingItem.type === 'program' && programData && isBefore(new Date().toISOString(), programData.program_end_date || '')) ||
+                          (upcomingItem.type === 'event' && eventData && isBefore(new Date().toISOString(), eventData.event_end_date || ''))) ? (
+                          <>
+                            <BlurView intensity={20} tint="dark" style={{ borderRadius: 16, overflow: 'hidden' }}>
+                              <Pressable onPress={handleNotificationPress} style={{ width: 36, height: 36, alignItems: 'center', justifyContent: 'center' }}>
+                                {itemInNotifications ? <Icon source={"bell-check"} color='white' size={20}/> : <Icon source={"bell-outline"} color='white' size={20}/>}
+                              </Pressable>
+                            </BlurView>
+                            <BlurView intensity={20} tint="dark" style={{ borderRadius: 16, overflow: 'hidden' }}>
+                              <Pressable onPress={handleAddToProgramsPress} style={{ width: 36, height: 36, alignItems: 'center', justifyContent: 'center' }}>
+                                {itemInPrograms ? <Icon source={'minus-circle-outline'} color='white' size={20}/> : <Icon source={"plus-circle-outline"} color='white' size={20}/>}
+                              </Pressable>
+                            </BlurView>
+                          </>
+                        ) : null}
                       </View>
+                    </View>
+                    
 
-                    {/* Program Name */}
-                    <Text className="text-[#0D509D] font-bold text-xl mb-4">
-                      {upcomingItem.name}
-                    </Text>
-
-                    {/* Full Description */}
-                    {upcomingItem.description ? (
-                      <Text className="text-gray-800 text-sm leading-6">
-                        {upcomingItem.description}
-                      </Text>
-                    ) : (
-                      <Text className="text-gray-500 text-sm italic">
-                        No description available.
-                      </Text>
+                    {/* Sign Up Button - Bottom Right of Flyer */}
+                    {((upcomingItem.type === 'program' && programData && programData.program_is_paid) || 
+                      (upcomingItem.type === 'event' && eventData && eventData.is_paid)) && (
+                      <View
+                        style={{
+                          position: 'absolute',
+                          bottom: 16,
+                          right: 16,
+                          zIndex: 100,
+                          elevation: 10,
+                        }}
+                      >
+                        <BlurView intensity={20} tint="dark" style={{ borderRadius: 16, overflow: 'hidden' }}>
+                          <Pressable
+                            onPress={() => {
+                              const paidLink = (upcomingItem.type === 'program' && programData?.paid_link) || 
+                                              (upcomingItem.type === 'event' && eventData?.paid_link);
+                              if (paidLink) {
+                                Linking.canOpenURL(paidLink).then(() => {
+                                  Linking.openURL(paidLink);
+                                });
+                              }
+                            }}
+                            style={{ paddingHorizontal: 12, paddingVertical: 8, flexDirection: 'row', alignItems: 'center', gap: 6 }}
+                          >
+                            <Icon source={"cart-variant"} color='white' size={16}/>
+                            <Text className='text-white font-semibold' style={{ fontSize: 12 }}>Sign Up Now</Text>
+                          </Pressable>
+                        </BlurView>
+                      </View>
                     )}
                   </View>
+                  
+                  {/* Content Section - Dark Background */}
+                  <View style={{ width: '100%', paddingBottom: 0, backgroundColor: '#0A1628', paddingHorizontal: 16 }}>
+                    <Text style={{ textAlign: 'center', marginTop: 16, fontSize: 24, color: 'white', fontWeight: 'bold' }}>
+                      {upcomingItem.type === 'program' && programData ? programData.program_name : upcomingItem.name}
+                    </Text>
+                    
+                    {modalSpeakerString && (
+                      <Pressable onPress={() => setModalVisibleState(true)}>
+                        <Text style={{ textAlign: 'center', marginTop: 8, color: '#60A5FA', width: '60%', alignSelf: 'center', fontWeight: '600' }} numberOfLines={1}>
+                          {modalSpeakerString}
+                        </Text>
+                      </Pressable>
+                    )}
+
+                    {/* Description Content */}
+                    <View style={{ marginTop: 20, marginBottom: 20 }}>
+                      <Text style={{ 
+                        color: 'white', 
+                        fontSize: 18, 
+                        fontWeight: 'bold',
+                        marginBottom: 12,
+                        textAlign: 'left'
+                      }}>
+                        Description
+                      </Text>
+                      {upcomingItem.description ? (
+                        <Text style={{ 
+                          color: '#D1D5DB', 
+                          fontSize: 16, 
+                          lineHeight: 24,
+                          textAlign: 'left'
+                        }}>
+                          {upcomingItem.description}
+                        </Text>
+                      ) : (
+                        <Text style={{ 
+                          color: '#9CA3AF', 
+                          fontSize: 16, 
+                          lineHeight: 24,
+                          textAlign: 'left',
+                          fontStyle: 'italic'
+                        }}>
+                          No description available
+                        </Text>
+                      )}
+                    </View>
+                  </View>
                 </ScrollView>
+              </Animated.View>
             </Animated.View>
+            
+            {/* Speaker Modal */}
+            <Portal>
+              <Modal
+                visible={modalVisibleState}
+                onDismiss={() => setModalVisibleState(false)}
+                contentContainerStyle={{
+                  backgroundColor: 'transparent',
+                  padding: 20,
+                  minHeight: 400,
+                  maxHeight: "70%",
+                  width: "95%",
+                  borderRadius: 35,
+                  alignSelf: "center"
+                }}
+              >
+                <View className='flex-1'>
+                  <GetSheikData />
+                </View>
+              </Modal>
+            </Portal>
           </Modal>
+          
+          {/* Custom Toast Notification - Renders inside modal Portal to appear on top */}
+          {modalToast && (
+            <View
+              style={{
+                position: 'absolute',
+                top: 50,
+                left: 0,
+                right: 0,
+                alignItems: 'flex-start',
+                justifyContent: 'flex-start',
+                zIndex: 999999,
+                elevation: 9999,
+                pointerEvents: 'box-none',
+                paddingHorizontal: 16,
+              }}
+            >
+              <View style={{ width: '100%', maxWidth: '100%' }}>
+                <Pressable 
+                  onPress={() => {
+                    if (modalToast.props.onPress) {
+                      modalToast.props.onPress();
+                    }
+                    setModalToast(null);
+                  }}
+                  className='rounded-xl overflow-hidden'
+                  style={{ width: '100%', maxWidth: '100%' }}
+                >
+                  <View style={{ maxWidth: '100%', overflow: 'hidden' }}>
+                    {toastConfig[modalToast.type as keyof typeof toastConfig]?.({ props: modalToast.props })}
+                  </View>
+                </Pressable>
+              </View>
+            </View>
+          )}
         </Portal>
       )}
     </>
   );
 }
+
 

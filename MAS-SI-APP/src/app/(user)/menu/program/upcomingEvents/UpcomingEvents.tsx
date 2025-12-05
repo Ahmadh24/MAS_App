@@ -17,6 +17,7 @@ const UpcomingEvents = () => {
   const TabBarHeight = useBottomTabBarHeight()
   const [ upcoming, setUpcoming ] = useState<Program[]>([])
   const [ upcomingEvents, setUpcomingEvents ] = useState<EventsType[]>([])
+  const [ programsWithLectures, setProgramsWithLectures ] = useState<Program[]>([])
   const [refreshing, setRefreshing] = React.useState(false);
   const [selectedDay, setSelectedDay] = useState<string>('');
   const [showCategoryModal, setShowCategoryModal] = useState(false);
@@ -34,6 +35,32 @@ const UpcomingEvents = () => {
     const isoString = date.toISOString();
     const { data : programs , error } = await supabase.from('programs').select('*').gte('program_end_date', isoString)
     const { data : events , error : eventsError } = await supabase.from('events').select('*').gte('event_end_date', isoString)
+    // Get all programs with recorded lectures (both past and upcoming)
+    const { data : allProgramsWithLectures , error : lecturesError } = await supabase.from('programs').select('*').eq('has_lectures', true)
+    
+    // Filter programs to only include those with YouTube video links
+    if( allProgramsWithLectures ){
+        const programsWithYouTubeLectures = []
+        for (const program of allProgramsWithLectures) {
+            const { data: programLectures } = await supabase
+                .from('program_lectures')
+                .select('lecture_link')
+                .eq('lecture_program', program.program_id)
+            
+            // Check if any lecture has a YouTube link
+            const hasYouTubeLink = programLectures?.some(lecture => 
+                lecture.lecture_link && 
+                lecture.lecture_link.trim() !== '' && 
+                lecture.lecture_link !== 'N/A'
+            )
+            
+            if (hasYouTubeLink) {
+                programsWithYouTubeLectures.push(program)
+            }
+        }
+        setProgramsWithLectures(programsWithYouTubeLectures)
+    }
+    
     if( programs ){
         setUpcoming(programs)
     } 
@@ -61,38 +88,40 @@ const UpcomingEvents = () => {
     : upcomingEvents.filter(events => events.pace == true)
 
   return (
-    <View className='bg-[#214E91] flex-1'>
+    <View className='bg-[#548EBE] flex-1'>
       <View className="bg-white flex-1" style={{borderTopLeftRadius: 40, borderTopRightRadius: 40 }}>
         <Stack.Screen options={{ 
-            headerStyle : { backgroundColor : '#214E91' },
+            headerStyle : { backgroundColor : '#548EBE' },
             headerTintColor : 'white',
             headerShown: false
         }} />
         
         {/* Header with Back Button, Title, and Category Filter */}
-        <View className="flex-row items-center justify-between px-4 pt-16 pb-4" style={{ backgroundColor: '#214E91' }}>
-          <Pressable 
-            onPress={() => router.back()}
-            className="w-10 h-10 items-center justify-center rounded-full"
-            style={{ backgroundColor: 'rgba(255, 255, 255, 0.2)' }}
-          >
-            <Icon source="chevron-left" size={24} color="#FFFFFF" />
-          </Pressable>
+        <View className="flex-row items-center justify-between px-4 pt-16 pb-4" style={{ backgroundColor: '#548EBE' }}>
+          <BlurView intensity={20} tint="dark" style={{ borderRadius: 16, overflow: 'hidden' }}>
+            <Pressable 
+              onPress={() => router.back()}
+              style={{ width: 36, height: 36, alignItems: 'center', justifyContent: 'center' }}
+            >
+              <Icon source="chevron-left" size={20} color="white" />
+            </Pressable>
+          </BlurView>
           
           <Text className="text-lg font-semibold" style={{ color: '#FFFFFF' }}>
             Upcoming Events
           </Text>
           
-          <Pressable
-            onPress={() => setShowCategoryModal(true)}
-            className="flex-row items-center px-4 py-2 rounded-full"
-            style={{ backgroundColor: 'rgba(255, 255, 255, 0.2)' }}
-          >
-            <Text className="text-sm font-medium mr-1" style={{ color: '#FFFFFF' }}>
-              {selectedDay || 'All Days'}
-            </Text>
-            <Icon source="chevron-down" size={16} color="#FFFFFF" />
-          </Pressable>
+          <BlurView intensity={20} tint="dark" style={{ borderRadius: 16, overflow: 'hidden' }}>
+            <Pressable
+              onPress={() => setShowCategoryModal(true)}
+              style={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: 12, paddingVertical: 8, gap: 4 }}
+            >
+              <Text className="text-sm font-medium" style={{ color: '#FFFFFF' }}>
+                {selectedDay || 'All Days'}
+              </Text>
+              <Icon source="chevron-down" size={16} color="white" />
+            </Pressable>
+          </BlurView>
         </View>
 
         {/* Category Modal/Dropdown */}
@@ -178,7 +207,7 @@ const UpcomingEvents = () => {
           >
           {selectedDayKidsPrograms.length > 0 && (
             <View className="mb-6">
-              <View className="flex-row items-center mb-4">
+              <View className="flex-row items-center mb-4" style={{ paddingLeft: 8 }}>
                 <View className="w-8 h-8 rounded-full mr-3 items-center justify-center" style={{ backgroundColor: '#F59E0B' }}>
                   <Icon source="star" size={18} color="#FFFFFF" />
                 </View>
@@ -204,7 +233,7 @@ const UpcomingEvents = () => {
 
           {selectedDayRegularPrograms.length > 0 && (
             <View className="mb-6">
-              <View className="flex-row items-center mb-4">
+              <View className="flex-row items-center mb-4" style={{ paddingLeft: 8 }}>
                 <View className="w-8 h-8 rounded-full mr-3 items-center justify-center" style={{ backgroundColor: '#0D509D' }}>
                   <Icon source="book-open-variant" size={18} color="#FFFFFF" />
                 </View>
@@ -230,7 +259,7 @@ const UpcomingEvents = () => {
 
           {selectedDayEvents.length > 0 && (
             <View className="mb-6">
-              <View className="flex-row items-center mb-4">
+              <View className="flex-row items-center mb-4" style={{ paddingLeft: 8 }}>
                 <View className="w-8 h-8 rounded-full mr-3 items-center justify-center" style={{ backgroundColor: '#10B981' }}>
                   <Icon source="calendar-star" size={18} color="#FFFFFF" />
                 </View>
@@ -256,7 +285,7 @@ const UpcomingEvents = () => {
 
           {selectedDayPace.length > 0 && (
             <View className="mb-6">
-              <View className="flex-row items-center mb-4">
+              <View className="flex-row items-center mb-4" style={{ paddingLeft: 8 }}>
                 <View className="w-8 h-8 rounded-full mr-3 items-center justify-center" style={{ backgroundColor: '#8B5CF6' }}>
                   <Icon source="account-group" size={18} color="#FFFFFF" />
                 </View>
@@ -280,10 +309,33 @@ const UpcomingEvents = () => {
             </View>
           )}
 
+          {programsWithLectures.length > 0 && (
+            <View className="mb-6">
+              <View className="flex-row items-center mb-4" style={{ paddingLeft: 8 }}>
+                <View className="w-8 h-8 rounded-full mr-3 items-center justify-center" style={{ backgroundColor: '#EF4444' }}>
+                  <Icon source="play-circle" size={18} color="#FFFFFF" />
+                </View>
+                <Text className="text-gray-800 font-semibold text-lg">Recorded Lectures</Text>
+              </View>
+              <View style={{ marginRight: -50 }}>
+                <FlatList 
+                  data={programsWithLectures}
+                  renderItem={({item, index}) => (
+                    <FlyerImageComponent item={item} key={item.program_id} />
+                  )}
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                  contentContainerStyle={{ paddingRight: 16 }}
+                />
+              </View>
+            </View>
+          )}
+
           {selectedDayKidsPrograms.length === 0 && 
            selectedDayRegularPrograms.length === 0 && 
            selectedDayEvents.length === 0 && 
-           selectedDayPace.length === 0 && (
+           selectedDayPace.length === 0 && 
+           programsWithLectures.length === 0 && (
             <View className="items-center justify-center py-20">
               <Icon source="calendar-blank" size={64} color="#D1D5DB" />
               <Text className="text-gray-400 text-lg font-semibold mt-4">No programs scheduled</Text>

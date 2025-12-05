@@ -1,4 +1,4 @@
-import { View, Text, Pressable, FlatList, Image, TouchableOpacity, Dimensions, Easing, Alert, StatusBar, Linking, Platform } from 'react-native'
+import { View, Text, Pressable, FlatList, Image, TouchableOpacity, Dimensions, Easing, Alert, StatusBar, Linking, Platform, ImageBackground, ScrollView as RNScrollView } from 'react-native'
 import React, { useEffect, useState, useRef, useCallback } from 'react'
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useLocalSearchParams, Stack, useRouter, Link, useNavigation } from 'expo-router';
@@ -68,6 +68,9 @@ const ProgramLectures = () => {
   const [ playing, setPlaying ] = useState(false)
   const [ watchedLectures, setWatchedLectures ] = useState<Set<string>>(new Set())
   const [ startedLectures, setStartedLectures ] = useState<Set<string>>(new Set())
+  const [activeTab, setActiveTab] = useState<'description' | 'classes'>('description')
+  const [videoTab, setVideoTab] = useState<'keynotes' | 'summary'>('summary')
+  const [currentSpeakerIndex, setCurrentSpeakerIndex] = useState(0)
   const bottomSheetRef = useRef<BottomSheetModal>(null);
   const handlePresentModalPress = () => bottomSheetRef.current?.present();
   const hideAddToPlaylist = () => setAddToPlaylistVisible(false)
@@ -104,21 +107,27 @@ const ProgramLectures = () => {
     const { data : checkIfExists , error } = await supabase.from("added_notifications_programs").select("*").eq("user_id", session?.user.id).eq("program_id", programId).single()
     const { data : programExists , error : programError } = await supabase.from('added_programs').select('*').eq('user_id', session?.user.id).eq('program_id', programId).single()
     const speakers : any[] = []
-    let speaker_string : string[] = data.program_speaker.map(() => {return ''})
-    await Promise.all(
-      data.program_speaker.map( async ( speaker_id : string, index : number) => {
-        const {data : speakerInfo, error : speakerInfoError } = await supabase.from('speaker_data').select('*').eq('speaker_id', speaker_id).single()
-        if ( speakerInfo ){
-          if (index == data.program_speaker.length - 1 ){
-            speaker_string[index]=speakerInfo.speaker_name
+    let speaker_string : string[] = []
+    
+    // Check if program_speaker exists and is an array
+    if (data.program_speaker && Array.isArray(data.program_speaker) && data.program_speaker.length > 0) {
+      speaker_string = data.program_speaker.map(() => {return ''})
+      await Promise.all(
+        data.program_speaker.map( async ( speaker_id : string, index : number) => {
+          const {data : speakerInfo, error : speakerInfoError } = await supabase.from('speaker_data').select('*').eq('speaker_id', speaker_id).single()
+          if ( speakerInfo ){
+            if (index == data.program_speaker.length - 1 ){
+              speaker_string[index]=speakerInfo.speaker_name
+            }
+            else {
+              speaker_string[index]= speakerInfo.speaker_name + ' & '
+            }
+            speakers.push(speakerInfo)
           }
-          else {
-            speaker_string[index]= speakerInfo.speaker_name + ' & '
-          }
-          speakers.push(speakerInfo)
-        }
-      })
-    )
+        })
+      )
+    }
+    
     setSpeakerData(speakers)
     setSpeakerString(speaker_string.join(''))
     if( checkIfExists ){
@@ -268,30 +277,215 @@ async function getUserPlaylists(){
     setPlaylistAddingTo([])
   }, [!addToPlaylistVisible])
 
-  const GetSheikData =  () => {
-    return( 
-      <View className='flex-1'>
-        
-        { 
-          speakerData?.map((speakerData) => (
-          <View className='border-2 border-gray-400 border-solid rounded-[25px] p-2 my-1'>
-            <Animated.View className=' flex-row'>
-                <Image source={speakerData?.speaker_img ? { uri : speakerData?.speaker_img }  : require("@/assets/images/MASHomeLogo.png")} style={{width: 110, height: 110, borderRadius: 50}} resizeMode='cover'/>
-            <View className='flex-col px-1'>
-              <Text className='text-xl font-bold'>Name: </Text>
-              <Text className='pt-2 font-semibold' numberOfLines={1}> {speakerData?.speaker_name} </Text>
-            </View>
-          </Animated.View>
+  // Reset speaker index when modal opens
+  useEffect(() => {
+    if (visible) {
+      setCurrentSpeakerIndex(0);
+    }
+  }, [visible])
+
+  const renderSpeakerCard = (speakerData: SheikDataType) => {
+    const cardWidth = width * 0.75;
+    const maxCardHeight = height * 0.45; // 45% of screen height
     
-          <View className='flex-col py-3'>
-            { speakerData?.speaker_name == "MAS" ? <Text className='font-bold'>Impact </Text> :  <Text className='font-bold'>Credentials: </Text> } 
-            { speakerData?.speaker_creds.map( (cred, i) => {
-              return <Text key={i}> <Icon source="cards-diamond-outline"  size={15} color='black'/> {cred} {'\n'}</Text>
-            })}
+    return (
+      <View 
+        key={speakerData.speaker_name}
+        style={{ 
+          width: width,
+          height: maxCardHeight,
+          justifyContent: 'center', 
+          alignItems: 'center',
+        }}
+      >
+        <BlurView
+          intensity={80}
+          tint="dark"
+          style={{
+            borderRadius: 50,
+            shadowColor: '#000',
+            shadowOffset: { width: 0, height: 2 },
+            shadowOpacity: 0.15,
+            shadowRadius: 8,
+            elevation: 4,
+            backgroundColor: 'rgba(107, 114, 128, 0.6)',
+            overflow: 'hidden',
+            width: cardWidth,
+            height: maxCardHeight,
+          }}
+        >
+          <RNScrollView
+            showsVerticalScrollIndicator={true}
+            scrollEventThrottle={16}
+            contentContainerStyle={{
+              paddingTop: 24,
+              paddingBottom: 30,
+              paddingHorizontal: 24,
+            }}
+            style={{ flex: 1 }}
+          >
+            <View className='flex-row items-center mb-4'>
+              <View style={{
+                width: 80,
+                height: 80,
+                borderRadius: 40,
+                overflow: 'hidden',
+                borderWidth: 3,
+                borderColor: '#E5E7EB',
+                marginRight: 16,
+              }}>
+                <Image 
+                  source={speakerData?.speaker_img ? { uri : speakerData.speaker_img }  : require("@/assets/images/MASHomeLogo.png")} 
+                  style={{width: '100%', height: '100%'}} 
+                  resizeMode='cover'
+                />
+              </View>
+              <View className='flex-1'>
+                <Text className='text-xs text-gray-300 font-medium mb-1'>SPEAKER</Text>
+                <Text className='text-xl font-bold text-white' numberOfLines={2}>
+                  {speakerData?.speaker_name}
+                </Text>
+              </View>
+            </View>
+    
+            <View style={{ borderTopWidth: 1, borderTopColor: 'rgba(156, 163, 175, 0.4)', paddingTop: 16, marginTop: 4 }}>
+              { speakerData?.speaker_name == "MAS" ? (
+                <Text className='text-sm font-bold text-white mb-3'>Impact</Text>
+              ) : (
+                <Text className='text-sm font-bold text-white mb-3'>Credentials</Text>
+              )}
+              <View className='flex-col'>
+                { speakerData?.speaker_creds.map( (cred, i) => {
+                  return (
+                    <View key={i} className='flex-row items-start mb-2'>
+                      <View style={{ marginRight: 8, marginTop: 2 }}>
+                        <Icon source="cards-diamond-outline" size={16} color='#60A5FA'/>
+                      </View>
+                      <Text className='text-sm text-gray-100 flex-1'>{cred}</Text>
+                    </View>
+                  )
+                })}
+              </View>
+            </View>
+          </RNScrollView>
+        </BlurView>
+      </View>
+    );
+  };
+
+  const GetSheikData =  () => {
+    if (!speakerData || speakerData.length === 0) {
+      return (
+        <View className='flex-1 items-center justify-center'>
+          <Text className='text-white'>No speaker data available</Text>
+        </View>
+      );
+    }
+
+    const cardWidth = width * 0.75;
+    const maxCardHeight = height * 0.45;
+    const buttonSize = 32;
+    const buttonMargin = 12;
+    const cardLeft = (width - cardWidth) / 2;
+    const cardRight = cardLeft + cardWidth;
+    
+    const goToNext = () => {
+      if (currentSpeakerIndex < speakerData.length - 1) {
+        setCurrentSpeakerIndex(currentSpeakerIndex + 1);
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+      }
+    };
+
+    const goToPrevious = () => {
+      if (currentSpeakerIndex > 0) {
+        setCurrentSpeakerIndex(currentSpeakerIndex - 1);
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+      }
+    };
+    
+    const currentSpeaker = speakerData[currentSpeakerIndex];
+    
+    return (
+      <View style={{ flex: 1, width: '100%', justifyContent: 'center', alignItems: 'center' }}>
+        <View style={{ width: '100%', position: 'relative', justifyContent: 'center', alignItems: 'center' }}>
+          {currentSpeaker && renderSpeakerCard(currentSpeaker)}
+          
+          {/* Navigation Buttons */}
+          {speakerData.length > 1 && (
+            <>
+              {currentSpeakerIndex > 0 && (
+                <TouchableOpacity
+                  onPress={goToPrevious}
+                  activeOpacity={0.7}
+                  style={{
+                    position: 'absolute',
+                    left: cardLeft - buttonSize / 2 - buttonMargin,
+                    top: '50%',
+                    transform: [{ translateY: -buttonSize / 2 }],
+                    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+                    borderRadius: buttonSize / 2,
+                    width: buttonSize,
+                    height: buttonSize,
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    zIndex: 10,
+                  }}
+                >
+                  <Icon source="chevron-left" size={20} color="#FFFFFF" />
+                </TouchableOpacity>
+              )}
+              {currentSpeakerIndex < speakerData.length - 1 && (
+                <TouchableOpacity
+                  onPress={goToNext}
+                  activeOpacity={0.7}
+                  style={{
+                    position: 'absolute',
+                    left: cardRight - buttonSize / 2 + buttonMargin,
+                    top: '50%',
+                    transform: [{ translateY: -buttonSize / 2 }],
+                    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+                    borderRadius: buttonSize / 2,
+                    width: buttonSize,
+                    height: buttonSize,
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    zIndex: 10,
+                  }}
+                >
+                  <Icon source="chevron-right" size={20} color="#FFFFFF" />
+                </TouchableOpacity>
+              )}
+            </>
+          )}
+        </View>
+        {/* Pagination Indicators */}
+        {speakerData.length > 1 && (
+          <View style={{
+            flexDirection: 'row',
+            justifyContent: 'center',
+            alignItems: 'center',
+            marginTop: 20,
+            gap: 8,
+            paddingBottom: 10,
+          }}>
+            {speakerData.map((_, index) => (
+              <TouchableOpacity
+                key={index}
+                onPress={() => {
+                  setCurrentSpeakerIndex(index);
+                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                }}
+                activeOpacity={0.7}
+                style={{
+                  width: currentSpeakerIndex === index ? 24 : 8,
+                  height: 8,
+                  borderRadius: 4,
+                  backgroundColor: currentSpeakerIndex === index ? '#60A5FA' : 'rgba(255, 255, 255, 0.3)',
+                }}
+              />
+            ))}
           </View>
-          </View>
-          ))
-        }
+        )}
       </View>
     )
   } 
@@ -375,13 +569,13 @@ async function getUserPlaylists(){
  
   
    return(
-    <View className='flex-row items-center gap-x-3'>
-      <BlurView intensity={20} tint="dark" style={{ borderRadius: 16, overflow: 'hidden', backgroundColor: 'rgba(128, 128, 128, 0.2)' }}>
+    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+      <BlurView intensity={20} tint="light" style={{ borderRadius: 16, overflow: 'hidden', backgroundColor: 'rgba(255, 255, 255, 0.2)', width: 36, height: 36 }}>
         <Pressable onPress={handlePress} style={{ width: 36, height: 36, alignItems: 'center', justifyContent: 'center' }}>
           {programInNotfications ?  <Icon source={"bell-check"} color='white' size={20}/> : <Icon source={"bell-outline"} color='white' size={20}/> }
         </Pressable>
       </BlurView>
-      <BlurView intensity={20} tint="dark" style={{ borderRadius: 16, overflow: 'hidden', backgroundColor: 'rgba(128, 128, 128, 0.2)' }}>
+      <BlurView intensity={20} tint="light" style={{ borderRadius: 16, overflow: 'hidden', backgroundColor: 'rgba(255, 255, 255, 0.2)', width: 36, height: 36 }}>
         <Pressable onPress={addToPrograms} style={{ width: 36, height: 36, alignItems: 'center', justifyContent: 'center' }}>
           { programInPrograms ?  <Icon source={'minus-circle-outline'} color='white' size={20}/> : <Icon source={"plus-circle-outline"} color='white' size={20}/>}
         </Pressable>
@@ -420,7 +614,7 @@ async function getUserPlaylists(){
       )
     }
     return(
-      <BlurView intensity={20} tint="dark" style={{ borderRadius: 16, overflow: 'hidden', backgroundColor: 'rgba(128, 128, 128, 0.2)' }}>
+      <BlurView intensity={20} tint="light" style={{ borderRadius: 16, overflow: 'hidden', backgroundColor: 'rgba(255, 255, 255, 0.2)', width: 36, height: 36 }}>
         <Pressable onPress={addToPrograms} style={{ width: 36, height: 36, alignItems: 'center', justifyContent: 'center' }}>
           { programInPrograms ?  <Icon source={'minus-circle'} color='white' size={20}/> : <Icon source={"plus-circle-outline"} color='white' size={20}/>}
         </Pressable>
@@ -472,33 +666,72 @@ async function getUserPlaylists(){
   }, [playlistAddingTo.length > 0])
   const currDate = new Date().toISOString()
   return (
-    <View className='flex-1' style={{flexGrow: 1, backgroundColor: '#0A1628'}}>
+    <View className='flex-1' style={{flexGrow: 1}}>
+      <View
+        style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          height: 150,
+          backgroundColor: '#214E91',
+        }}
+      />
+      <View
+        style={{
+          position: 'absolute',
+          top: 150,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: '#FFFFFF',
+        }}
+      />
      <Stack.Screen options={ { 
        headerShown: false
      } } />
      <StatusBar barStyle={"light-content"}/>
      {/* Custom Header with Liquid Glass Buttons */}
-     <View style={{ position: 'absolute', top: 0, left: 0, right: 0, zIndex: 100, paddingTop: 50, paddingHorizontal: 10, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-       <BlurView intensity={20} tint="dark" style={{ borderRadius: 16, overflow: 'hidden', backgroundColor: 'rgba(128, 128, 128, 0.2)' }}>
+     <View style={{ position: 'absolute', top: 0, left: 0, right: 0, zIndex: 100, paddingTop: 50, paddingBottom: 15, paddingHorizontal: 10, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', backgroundColor: '#214E91' }}>
+       <BlurView intensity={20} tint="light" style={{ borderRadius: 16, overflow: 'hidden', backgroundColor: 'rgba(255, 255, 255, 0.2)', width: 36, height: 36 }}>
          <Pressable onPress={() => navigation.goBack()} style={{ width: 36, height: 36, alignItems: 'center', justifyContent: 'center' }}>
            <Icon source="chevron-left" size={20} color="white" />
          </Pressable>
        </BlurView>
-       <View style={{ flexDirection: 'row', gap: 10 }}>
+       <View style={{ flexDirection: 'row', gap: 10, alignItems: 'center' }}>
          {isBefore(currDate, program?.program_end_date!) ? <NotificationBell /> : <AddToProgramsButton />}
        </View>
      </View>
-      <Animated.ScrollView ref={scrollRef}  scrollEventThrottle={16} contentContainerStyle={{justifyContent: "flex-start", alignItems: "stretch", backgroundColor: '#0A1628' }} style={{ backgroundColor: '#0A1628' }}>
-          
-          <View className=' relative' style={{width: '100%', height: height * 0.5, borderRadius: 0, overflow: 'hidden', marginTop: 100, alignSelf: 'stretch', backgroundColor: '#0A1628' }}>
-            {selectedLecture ? (
+      <Animated.ScrollView ref={scrollRef}  scrollEventThrottle={16} contentContainerStyle={{justifyContent: "flex-start", alignItems: "stretch" }} style={{ flex: 1 }}>
+          <View className=' relative' style={{width: '100%', height: height * 0.5, borderBottomLeftRadius: 20, borderBottomRightRadius: 20, overflow: 'hidden', marginTop: 100, alignSelf: 'stretch' }}>
+            {selectedLecture && selectedLecture.lecture_link && selectedLecture.lecture_link.trim() !== '' && selectedLecture.lecture_link !== 'N/A' ? (
               <YoutubePlayer 
                 height={height * 0.5}
                 width={width}
                 play={playing}
-                videoId={selectedLecture.lecture_link ? getVideoIdFromUrl(selectedLecture.lecture_link) : undefined}
+                videoId={getVideoIdFromUrl(selectedLecture.lecture_link)}
                 onChangeState={onStateChange}
+                initialPlayerParams={{
+                  modestbranding: 1,
+                  rel: 0,
+                  playsinline: 1,
+                }}
+                webViewStyle={{
+                  opacity: 0.99,
+                  borderBottomLeftRadius: 20,
+                  borderBottomRightRadius: 20,
+                }}
+                webViewProps={{
+                  androidLayerType: 'hardware',
+                  androidHardwareAccelerationDisabled: false,
+                }}
               />
+            ) : selectedLecture && (!selectedLecture.lecture_link || selectedLecture.lecture_link.trim() === '' || selectedLecture.lecture_link === 'N/A') ? (
+              <View style={{ width: '100%', height: '100%', backgroundColor: '#1A2332', justifyContent: 'center', alignItems: 'center' }}>
+                <Icon source="play-circle-outline" size={64} color="#9CA3AF" />
+                <Text className="text-gray-400 text-lg font-semibold mt-4">No video available</Text>
+                <Text className="text-gray-500 text-sm mt-2">View keynotes and summary below</Text>
+              </View>
             ) : (
               <>
                 {/* Show the skeleton until the image is loaded or errored */}
@@ -520,7 +753,7 @@ async function getUserPlaylists(){
                     { width: '100%', height: '100%', borderRadius: 0 },
                     imageAnimatedStyle
                   ]}
-                  resizeMode="cover"
+                  resizeMode="contain"
                   onLoad={() => setImageReady(true)}
                   onError={() => {
                     // Mark that an error occurred and hide the skeleton
@@ -531,25 +764,526 @@ async function getUserPlaylists(){
               </>
             )}
           </View>
+
+          {/* Keynotes and Summary Tabs with Recommended Section - Shown when video IS playing */}
+          {selectedLecture && selectedLecture.lecture_link && selectedLecture.lecture_link.trim() !== '' && selectedLecture.lecture_link !== 'N/A' && (
+            <View style={{ 
+              paddingHorizontal: 16,
+              paddingTop: 0,
+              paddingBottom: 8,
+              width: '100%',
+              backgroundColor: '#FFFFFF',
+              marginTop: -170,
+            }}>
+              <View style={{
+                flexDirection: 'row',
+                gap: 6,
+                marginBottom: 8,
+              }}>
+                {/* Summary Tab */}
+                <Pressable
+                  onPress={() => {
+                    setVideoTab('summary');
+                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                  }}
+                  style={{
+                    flex: 1,
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    paddingVertical: 8,
+                    paddingHorizontal: 8,
+                    borderRadius: 20,
+                    backgroundColor: videoTab === 'summary' ? '#60A5FA' : '#F3F4F6',
+                    borderWidth: videoTab === 'summary' ? 0 : 1,
+                    borderColor: '#E5E7EB',
+                    shadowColor: "#000",
+                    shadowOffset: { width: 0, height: 2 },
+                    shadowOpacity: 0.1,
+                    shadowRadius: 4,
+                    elevation: 2,
+                  }}
+                >
+                  <Icon 
+                    source={videoTab === 'summary' ? 'file-document' : 'file-document-outline'} 
+                    size={14} 
+                    color={videoTab === 'summary' ? '#FFFFFF' : '#6B7280'} 
+                  />
+                  <Text style={{ 
+                    fontSize: 13, 
+                    fontWeight: videoTab === 'summary' ? '600' : '400',
+                    color: videoTab === 'summary' ? '#FFFFFF' : '#374151',
+                    marginLeft: 4,
+                  }}>
+                    Summary
+                  </Text>
+                </Pressable>
+                
+                {/* Keynotes Tab */}
+                <Pressable
+                  onPress={() => {
+                    setVideoTab('keynotes');
+                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                  }}
+                  style={{
+                    flex: 1,
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    paddingVertical: 8,
+                    paddingHorizontal: 8,
+                    borderRadius: 20,
+                    backgroundColor: videoTab === 'keynotes' ? '#60A5FA' : '#F3F4F6',
+                    borderWidth: videoTab === 'keynotes' ? 0 : 1,
+                    borderColor: '#E5E7EB',
+                    shadowColor: "#000",
+                    shadowOffset: { width: 0, height: 2 },
+                    shadowOpacity: 0.1,
+                    shadowRadius: 4,
+                    elevation: 2,
+                  }}
+                >
+                  <Icon 
+                    source={videoTab === 'keynotes' ? 'text-box' : 'text-box-outline'} 
+                    size={14} 
+                    color={videoTab === 'keynotes' ? '#FFFFFF' : '#6B7280'} 
+                  />
+                  <Text style={{ 
+                    fontSize: 13, 
+                    fontWeight: videoTab === 'keynotes' ? '600' : '400',
+                    color: videoTab === 'keynotes' ? '#FFFFFF' : '#374151',
+                    marginLeft: 4,
+                  }}>
+                    Keynotes
+                  </Text>
+                </Pressable>
+              </View>
+
+              {/* Video Tab Content */}
+              {videoTab === 'keynotes' ? (
+                selectedLecture.lecture_ai && selectedLecture.lecture_ai !== "N/A" ? (
+                  <View className='px-4 py-3 rounded-xl' style={{
+                    backgroundColor: '#1A2332',
+                    shadowColor: "#000",
+                    shadowOffset: { width: 0, height: 2 },
+                    shadowOpacity: 0.3,
+                    shadowRadius: 4,
+                    elevation: 3,
+                  }}>
+                    <Text className='text-base text-gray-300 leading-6'>
+                      {selectedLecture.lecture_ai}
+                    </Text>
+                  </View>
+                ) : (
+                  <View className='px-4 py-3 rounded-xl' style={{
+                    backgroundColor: '#1A2332',
+                    shadowColor: "#000",
+                    shadowOffset: { width: 0, height: 2 },
+                    shadowOpacity: 0.3,
+                    shadowRadius: 4,
+                    elevation: 3,
+                  }}>
+                    <Text className='text-base text-gray-400 leading-6 text-center'>
+                      No keynotes available for this lecture
+                    </Text>
+                  </View>
+                )
+              ) : (
+                <View className='px-4 py-3 rounded-xl' style={{
+                  backgroundColor: '#1A2332',
+                  shadowColor: "#000",
+                  shadowOffset: { width: 0, height: 2 },
+                  shadowOpacity: 0.3,
+                  shadowRadius: 4,
+                  elevation: 3,
+                }}>
+                  <Text className='text-base text-gray-400 leading-6 text-center'>
+                    Summary coming soon
+                  </Text>
+                </View>
+              )}
+
+              {/* Recommended Videos Section - Below the tabs */}
+              {lectures && lectures.length > 1 && (
+                <View style={{ marginTop: 12 }}>
+                  <Text style={{ 
+                    fontSize: 16, 
+                    fontWeight: '600', 
+                    color: '#000000', 
+                    marginBottom: 12,
+                    paddingHorizontal: 4,
+                  }}>
+                    Recommended
+                  </Text>
+                  <View>
+                    {lectures
+                      .filter(lecture => 
+                        lecture.lecture_id !== selectedLecture.lecture_id &&
+                        lecture.lecture_link && 
+                        lecture.lecture_link.trim() !== '' && 
+                        lecture.lecture_link !== 'N/A'
+                      )
+                      .sort((a, b) => {
+                        // Sort by lecture_date if available, otherwise maintain order
+                        if (a.lecture_date && b.lecture_date) {
+                          return new Date(a.lecture_date).getTime() - new Date(b.lecture_date).getTime();
+                        }
+                        return 0;
+                      })
+                      .map((lecture) => {
+                        const formatLectureDate = (dateString: string) => {
+                          try {
+                            const date = new Date(dateString)
+                            return format(date, 'MMM d, yyyy')
+                          } catch {
+                            return dateString
+                          }
+                        }
+
+                        const videoId = lecture.lecture_link ? getVideoIdFromUrl(lecture.lecture_link) : null
+                        
+                        return (
+                          <Pressable
+                            key={lecture.lecture_id}
+                            onPress={() => {
+                              setSelectedLecture(lecture)
+                              setPlaying(true)
+                              scrollRef.current?.scrollTo({ y: 0, animated: true })
+                              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)
+                            }}
+                            className='mb-3 rounded-xl overflow-hidden'
+                            style={{
+                              backgroundColor: '#1A2332',
+                              shadowColor: "#000",
+                              shadowOffset: { width: 0, height: 2 },
+                              shadowOpacity: 0.3,
+                              shadowRadius: 4,
+                              elevation: 3,
+                            }}
+                          >
+                            <View className='flex-row'>
+                              {/* Thumbnail */}
+                              <View 
+                                className='bg-gray-700'
+                                style={{ 
+                                  width: 140, 
+                                  height: 105,
+                                  justifyContent: 'center',
+                                  alignItems: 'center'
+                                }}
+                              >
+                                {videoId ? (
+                                  <Image
+                                    source={{ uri: `https://img.youtube.com/vi/${videoId}/hqdefault.jpg` }}
+                                    style={{ width: 140, height: 105 }}
+                                    resizeMode="cover"
+                                  />
+                                ) : (
+                                  <Icon source="play-circle-outline" size={40} color="#9CA3AF" />
+                                )}
+                                <View className='absolute inset-0 bg-black/30 items-center justify-center'>
+                                  <Icon source="play-circle" size={30} color="white" />
+                                </View>
+                                {watchedLectures.has(lecture.lecture_id) && (
+                                  <View className='absolute top-2 right-2 bg-green-500 px-2 py-1 rounded-full'>
+                                    <Icon source="check" size={14} color="white" />
+                                  </View>
+                                )}
+                                {startedLectures.has(lecture.lecture_id) && !watchedLectures.has(lecture.lecture_id) && (
+                                  <View className='absolute top-2 right-2 bg-blue-500 px-2 py-1 rounded-full'>
+                                    <Icon source="play" size={14} color="white" />
+                                  </View>
+                                )}
+                              </View>
+
+                              {/* Content */}
+                              <View className='flex-1 p-3 justify-between'>
+                                <View>
+                                  <Text className='text-base font-semibold text-white mb-1' numberOfLines={2}>
+                                    {lecture.lecture_name || 'Class'}
+                                  </Text>
+                                  <Text className='text-sm text-gray-400 mt-1'>
+                                    {lecture.lecture_date ? formatLectureDate(lecture.lecture_date) : ''}
+                                  </Text>
+                                  {watchedLectures.has(lecture.lecture_id) ? (
+                                    <View className='flex-row items-center mt-2'>
+                                      <Icon source="check-circle" size={16} color="#10B981" />
+                                      <Text className='text-green-500 text-sm font-semibold ml-1'>Watched</Text>
+                                    </View>
+                                  ) : startedLectures.has(lecture.lecture_id) ? (
+                                    <View className='flex-row items-center mt-2'>
+                                      <Icon source="play-circle" size={16} color="#60A5FA" />
+                                      <Text className='text-blue-400 text-sm font-semibold ml-1'>Continue</Text>
+                                    </View>
+                                  ) : null}
+                                </View>
+                              </View>
+                            </View>
+                          </Pressable>
+                        )
+                      })}
+                  </View>
+                </View>
+              )}
+            </View>
+          )}
+
+          {/* Keynotes and Summary Tabs - Only shown when NO video is available */}
+          {selectedLecture && (!selectedLecture.lecture_link || selectedLecture.lecture_link.trim() === '' || selectedLecture.lecture_link === 'N/A') && (
+            <View style={{ 
+              paddingHorizontal: 16,
+              paddingTop: 16,
+              paddingBottom: 8,
+              width: '100%',
+              backgroundColor: '#0F172A',
+            }}>
+              <View style={{
+                flexDirection: 'row',
+                gap: 6,
+                marginBottom: 12,
+              }}>
+                {/* Summary Tab */}
+                <Pressable
+                  onPress={() => {
+                    setVideoTab('summary');
+                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                  }}
+                  style={{
+                    flex: 1,
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    paddingVertical: 8,
+                    paddingHorizontal: 8,
+                    borderRadius: 20,
+                    backgroundColor: videoTab === 'summary' ? '#60A5FA' : '#1A2332',
+                    borderWidth: videoTab === 'summary' ? 0 : 1,
+                    borderColor: '#2D3748',
+                    shadowColor: "#000",
+                    shadowOffset: { width: 0, height: 2 },
+                    shadowOpacity: 0.3,
+                    shadowRadius: 4,
+                    elevation: 5,
+                  }}
+                >
+                  <Icon 
+                    source={videoTab === 'summary' ? 'file-document' : 'file-document-outline'} 
+                    size={14} 
+                    color={videoTab === 'summary' ? '#FFFFFF' : '#9CA3AF'} 
+                  />
+                  <Text style={{ 
+                    fontSize: 13, 
+                    fontWeight: videoTab === 'summary' ? '600' : '400',
+                    color: videoTab === 'summary' ? '#FFFFFF' : '#9CA3AF',
+                    marginLeft: 4,
+                  }}>
+                    Summary
+                  </Text>
+                </Pressable>
+                
+                {/* Keynotes Tab */}
+                <Pressable
+                  onPress={() => {
+                    setVideoTab('keynotes');
+                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                  }}
+                  style={{
+                    flex: 1,
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    paddingVertical: 8,
+                    paddingHorizontal: 8,
+                    borderRadius: 20,
+                    backgroundColor: videoTab === 'keynotes' ? '#60A5FA' : '#1A2332',
+                    borderWidth: videoTab === 'keynotes' ? 0 : 1,
+                    borderColor: '#2D3748',
+                    shadowColor: "#000",
+                    shadowOffset: { width: 0, height: 2 },
+                    shadowOpacity: 0.3,
+                    shadowRadius: 4,
+                    elevation: 5,
+                  }}
+                >
+                  <Icon 
+                    source={videoTab === 'keynotes' ? 'text-box' : 'text-box-outline'} 
+                    size={14} 
+                    color={videoTab === 'keynotes' ? '#FFFFFF' : '#9CA3AF'} 
+                  />
+                  <Text style={{ 
+                    fontSize: 13, 
+                    fontWeight: videoTab === 'keynotes' ? '600' : '400',
+                    color: videoTab === 'keynotes' ? '#FFFFFF' : '#9CA3AF',
+                    marginLeft: 4,
+                  }}>
+                    Keynotes
+                  </Text>
+                </Pressable>
+              </View>
+
+              {/* Video Tab Content */}
+              {videoTab === 'keynotes' ? (
+                selectedLecture.lecture_ai && selectedLecture.lecture_ai !== "N/A" ? (
+                  <View className='px-4 py-3 rounded-xl' style={{
+                    backgroundColor: '#1A2332',
+                    shadowColor: "#000",
+                    shadowOffset: { width: 0, height: 2 },
+                    shadowOpacity: 0.3,
+                    shadowRadius: 4,
+                    elevation: 3,
+                  }}>
+                    <Text className='text-base text-gray-300 leading-6'>
+                      {selectedLecture.lecture_ai}
+                    </Text>
+                  </View>
+                ) : (
+                  <View className='px-4 py-3 rounded-xl' style={{
+                    backgroundColor: '#1A2332',
+                    shadowColor: "#000",
+                    shadowOffset: { width: 0, height: 2 },
+                    shadowOpacity: 0.3,
+                    shadowRadius: 4,
+                    elevation: 3,
+                  }}>
+                    <Text className='text-base text-gray-400 leading-6 text-center'>
+                      No keynotes available for this lecture
+                    </Text>
+                  </View>
+                )
+              ) : (
+                <View className='px-4 py-3 rounded-xl' style={{
+                  backgroundColor: '#1A2332',
+                  shadowColor: "#000",
+                  shadowOffset: { width: 0, height: 2 },
+                  shadowOpacity: 0.3,
+                  shadowRadius: 4,
+                  elevation: 3,
+                }}>
+                  <Text className='text-base text-gray-400 leading-6 text-center'>
+                    Summary coming soon
+                  </Text>
+                </View>
+              )}
+            </View>
+          )}
        
-          <View className='w-[100%]' style={{paddingBottom : Tab * 3, backgroundColor: '#0A1628'}}>
-            <Text className='text-center mt-4 text-2xl text-white font-bold'>{program?.program_name}</Text>
+          {/* Hide everything below when a YouTube video is selected */}
+          {!(selectedLecture && selectedLecture.lecture_link && selectedLecture.lecture_link.trim() !== '' && selectedLecture.lecture_link !== 'N/A') && (
+          <View className='w-[100%]' style={{paddingBottom : Tab * 3}}>
+            <Text className='text-center mt-4 text-2xl text-black font-bold'>{program?.program_name}</Text>
             <Pressable onPress={showModal}>
               <Text className='text-center mt-2 text-[#60A5FA] w-[60%] self-center font-semibold' numberOfLines={1}>{speakerString}</Text>
             </Pressable>
 
-            {/* About This Series Section */}
-            {program?.program_desc && (
-              <View className='px-4 mt-6 mb-4'>
-                <Text className='text-2xl font-bold text-white mb-3'>About This Series</Text>
-                <Text className='text-base text-gray-300 leading-6'>{program.program_desc}</Text>
+            {/* Tab Buttons - Description, Classes, and Keynotes */}
+            <View style={{ paddingHorizontal: 16, marginTop: 12, marginBottom: 8, width: '100%' }}>
+              <View style={{
+                flexDirection: 'row',
+                gap: 6,
+                marginBottom: 12,
+              }}>
+                {/* Description Button */}
+                <Pressable
+                  onPress={() => {
+                    setActiveTab('description');
+                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                  }}
+                  style={{
+                    flex: 1,
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    paddingVertical: 8,
+                    paddingHorizontal: 8,
+                    borderRadius: 20,
+                    backgroundColor: activeTab === 'description' ? '#60A5FA' : '#1A2332',
+                    borderWidth: activeTab === 'description' ? 0 : 1,
+                    borderColor: '#2D3748',
+                  }}
+                >
+                  <Icon 
+                    source={activeTab === 'description' ? 'text-box' : 'text-box-outline'} 
+                    size={14} 
+                    color={activeTab === 'description' ? '#FFFFFF' : '#9CA3AF'} 
+                  />
+                  <Text style={{ 
+                    fontSize: 13, 
+                    fontWeight: activeTab === 'description' ? '600' : '400',
+                    color: activeTab === 'description' ? '#FFFFFF' : '#9CA3AF',
+                    marginLeft: 4,
+                  }}>
+                    Description
+                  </Text>
+                </Pressable>
+                
+                {/* Classes Button */}
+                <Pressable
+                  onPress={() => {
+                    setActiveTab('classes');
+                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                  }}
+                  style={{
+                    flex: 1,
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    paddingVertical: 8,
+                    paddingHorizontal: 8,
+                    borderRadius: 20,
+                    backgroundColor: activeTab === 'classes' ? '#60A5FA' : '#1A2332',
+                    borderWidth: activeTab === 'classes' ? 0 : 1,
+                    borderColor: '#2D3748',
+                  }}
+                >
+                  <Icon 
+                    source={activeTab === 'classes' ? 'play-circle' : 'play-circle-outline'} 
+                    size={14} 
+                    color={activeTab === 'classes' ? '#FFFFFF' : '#9CA3AF'} 
+                  />
+                  <Text style={{ 
+                    fontSize: 13, 
+                    fontWeight: activeTab === 'classes' ? '600' : '400',
+                    color: activeTab === 'classes' ? '#FFFFFF' : '#9CA3AF',
+                    marginLeft: 4,
+                  }}>
+                    Classes
+                  </Text>
+                </Pressable>
+                
               </View>
-            )}
 
-            {/* Classes Section */}
-            {(program?.has_lectures || (lectures && lectures?.length >= 1)) && lectures && lectures.length > 0 && (
-              <View className='px-4 mt-4 mb-6'>
-                <Text className='text-2xl font-bold text-white mb-4'>Classes</Text>
+              {/* Tab Content */}
+              {activeTab === 'description' ? (
+                // Description Tab Content
+                program?.program_desc ? (
+                  <View className='px-4 py-3 rounded-xl' style={{
+                    backgroundColor: '#1A2332',
+                    shadowColor: "#000",
+                    shadowOffset: { width: 0, height: 2 },
+                    shadowOpacity: 0.3,
+                    shadowRadius: 4,
+                    elevation: 3,
+                  }}>
+                    <Text className='text-base text-gray-300 leading-6'>{program.program_desc}</Text>
+                  </View>
+                ) : (
+                  <View className='px-4 py-3 rounded-xl' style={{
+                    backgroundColor: '#1A2332',
+                    shadowColor: "#000",
+                    shadowOffset: { width: 0, height: 2 },
+                    shadowOpacity: 0.3,
+                    shadowRadius: 4,
+                    elevation: 3,
+                  }}>
+                    <Text className='text-base text-gray-400 leading-6 text-center'>
+                      No description available
+                    </Text>
+                  </View>
+                )
+              ) : activeTab === 'classes' ? (
+                // Classes Tab Content
+                lectures && lectures.length > 0 ? (
+                  <View>
                 {lectures.map((lecture, idx) => {
                   const formatLectureDate = (dateString: string) => {
                     try {
@@ -572,8 +1306,10 @@ async function getUserPlaylists(){
                           setPlaying(false)
                         } else {
                           setSelectedLecture(lecture)
-                          setPlaying(true)
-                          // Scroll to top to show the video player
+                          // Only set playing to true if lecture has a YouTube link
+                          const hasVideoLink = !!(lecture.lecture_link && lecture.lecture_link.trim() !== '' && lecture.lecture_link !== 'N/A')
+                          setPlaying(hasVideoLink)
+                          // Scroll to top to show the video player or keynotes/summary
                           scrollRef.current?.scrollTo({ y: 0, animated: true })
                         }
                       }}
@@ -657,25 +1393,24 @@ async function getUserPlaylists(){
                     </Pressable>
                   )
                 })}
-              </View>
-            )}
+                  </View>
+                ) : (
+                  <View className='px-4 py-3 rounded-xl' style={{
+                    backgroundColor: '#1A2332',
+                    shadowColor: "#000",
+                    shadowOffset: { width: 0, height: 2 },
+                    shadowOpacity: 0.3,
+                    shadowRadius: 4,
+                    elevation: 3,
+                  }}>
+                    <Text className='text-base text-gray-400 leading-6 text-center'>
+                      No classes available
+                    </Text>
+                  </View>
+                )
+              ) : null}
+            </View>
 
-            {/* Description for non-lecture programs */}
-            {program?.has_lectures == false && program?.program_desc && (
-              <View className='px-4 mt-4 mb-6'>
-                <Text className='text-2xl font-bold text-white mb-3'>Description</Text>
-                <View className='px-4 py-3 rounded-xl' style={{
-                  backgroundColor: '#1A2332',
-                  shadowColor: "#000",
-                  shadowOffset: { width: 0, height: 2 },
-                  shadowOpacity: 0.3,
-                  shadowRadius: 4,
-                  elevation: 3,
-                }}>
-                  <Text className='text-base text-gray-300 leading-6'>{program.program_desc}</Text>
-                </View>
-              </View>
-            )}
                 <View className='items-center justify-center'>
                     {
                       program?.program_is_paid ? 
@@ -691,15 +1426,78 @@ async function getUserPlaylists(){
                     }
                 </View>
           </View>
+          )}
           
           <Portal>
-            <Modal visible={visible} onDismiss={hideModal} contentContainerStyle={{backgroundColor: 'white', padding: 20, minHeight : 400, maxHeight: "70%", width: "95%", borderRadius: 35, alignSelf: "center"}} >
-              <ScrollView className='flex-1'
-              showsVerticalScrollIndicator={true}
-              
-              >
+            <Modal 
+              visible={visible} 
+              onDismiss={() => {
+                hideModal();
+                setCurrentSpeakerIndex(0);
+              }} 
+              contentContainerStyle={{
+                backgroundColor: 'transparent', 
+                padding: 0, 
+                margin: 0,
+                height: '100%', 
+                width: '100%', 
+                borderRadius: 0, 
+                alignSelf: "center",
+                justifyContent: 'center',
+                alignItems: 'center',
+              }}
+              style={{
+                margin: 0,
+                padding: 0,
+              }}
+            >
+              <View style={{ 
+                position: 'absolute',
+                top: -1000,
+                left: 0,
+                width: Dimensions.get('screen').width,
+                height: Dimensions.get('screen').height + 1000,
+              }}>
+                <BlurView
+                  intensity={30}
+                  tint="dark"
+                  style={{
+                    width: Dimensions.get('screen').width,
+                    height: Dimensions.get('screen').height + 1000,
+                  }}
+                />
+                <View style={{
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  width: Dimensions.get('screen').width,
+                  height: Dimensions.get('screen').height + 1000,
+                  backgroundColor: 'rgba(0, 0, 0, 0.3)',
+                }} />
+              </View>
+              <View style={{ flex: 1, width: '100%', justifyContent: 'center', alignItems: 'center', zIndex: 1 }}>
+                <TouchableOpacity
+                  onPress={() => {
+                    hideModal();
+                    setCurrentSpeakerIndex(0);
+                  }}
+                  style={{
+                    position: 'absolute',
+                    top: 20,
+                    right: 20,
+                    zIndex: 10,
+                    width: 40,
+                    height: 40,
+                    borderRadius: 20,
+                    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                  }}
+                >
+                  <Icon source="close" size={24} color="#FFFFFF" />
+                </TouchableOpacity>
                 <GetSheikData />
-              </ScrollView>
+              </View>
             </Modal>
           </Portal>
 

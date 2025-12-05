@@ -365,18 +365,6 @@ export default function LecturesData() {
             </Animated.View>
           ) }
 
-          {/* About This Series Section */}
-          {program?.program_desc ? (
-            <View className='px-4 mt-6 mb-4'>
-              <Text className='text-2xl font-bold text-black mb-3'>About This Series</Text>
-              <Text className='text-base text-gray-700 leading-6'>{program.program_desc}</Text>
-            </View>
-          ) : program && (
-            <View className='px-4 mt-6 mb-4'>
-              <Text className='text-2xl font-bold text-black mb-3'>About This Series</Text>
-              <Text className='text-base text-gray-700 leading-6'>No description available for this series.</Text>
-            </View>
-          )}
 
           {/* Classes Section */}
           {allLectures.length > 0 ? (

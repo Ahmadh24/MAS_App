@@ -78,13 +78,12 @@ const NotificationEventSettings = () => {
       contentContainerStyle={{justifyContent: "center", alignItems: "center", marginTop: "2%", backgroundColor : "white", paddingBottom : tabBarHeight}} 
       >
           
-          <View>
-            <Animated.Image 
-              source={ event?.event_img ? { uri: event.event_img  } : require("@/assets/images/MASHomeLogo.png")}
-              style={ [{width: width / 1.2, height: 300, borderRadius: 8 }, imageAnimatedStyle] }
-              resizeMode='stretch'
-            />
-          </View>
+          <Animated.Image 
+            source={ event?.event_img ? { uri: event.event_img  } : require("@/assets/images/MASHomeLogo.png")}
+            style={ [{width: width / 1.2, height: 300, borderRadius: 8 }, imageAnimatedStyle] }
+            resizeMode='stretch'
+            sharedTransitionTag={`event-image-${event_id}`}
+          />
           <View className='flex-col bg-white w-[100%] h-[80]'>
             <Text className='font-bold text-2xl text-center'>{event?.event_name}</Text>
             <Text className='font-bold text-gray-400 text-center'>{speaker ? speaker.join('&') : ''}</Text>

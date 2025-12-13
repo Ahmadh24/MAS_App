@@ -17,6 +17,7 @@
       "supportsTablet": true,
       "bundleIdentifier": "com.MAS-SI-APP",
       "usesAppleSignIn": true,
+      "newArchEnabled": true,
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
       }

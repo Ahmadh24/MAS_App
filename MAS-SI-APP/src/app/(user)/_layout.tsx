@@ -1,4 +1,4 @@
-import { Tabs, Redirect } from "expo-router";
+import { Tabs, Redirect, useSegments } from "expo-router";
 import * as Animatable from 'react-native-animatable';
 import { Pressable, TouchableOpacity, Modal, StyleSheet } from "react-native";
 import { useEffect, useRef, useState } from "react";
@@ -171,7 +171,12 @@ const UserLayout = () => {
   const [loading, setLoading] = useState(true);
   const [showTutorial, setShowTutorial] = useState(false);
   const [accountModalVisible, setAccountModalVisible] = useState(false);
+  const segments = useSegments();
   const opacity = useSharedValue(1);
+  
+  // Show account button only on home page (menu tab)
+  // segments will be ['(user)', 'menu'] when on home page
+  const isHomePage = segments.length >= 2 && segments[1] === 'menu' && segments[2] !== 'program';
   interface TextWithDefaultProps extends Text {
     defaultProps?: { allowFontScaling?: boolean };
   }
@@ -270,32 +275,34 @@ const UserLayout = () => {
         ))}
       </Tabs>
       
-      {/* Floating Account Button */}
-      <Pressable
-        onPress={() => {
-          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-          setAccountModalVisible(true);
-        }}
-        style={{
-          position: 'absolute',
-          top: 60,
-          right: 20,
-          width: 44,
-          height: 44,
-          borderRadius: 22,
-          backgroundColor: '#3B82F6',
-          justifyContent: 'center',
-          alignItems: 'center',
-          shadowColor: "#000",
-          shadowOffset: { width: 0, height: 4 },
-          shadowOpacity: 0.3,
-          shadowRadius: 8,
-          elevation: 8,
-          zIndex: 999,
-        }}
-      >
-        <Icon source="account-circle" size={28} color="white" />
-      </Pressable>
+      {/* Floating Account Button - Only show on home page */}
+      {isHomePage && (
+        <Pressable
+          onPress={() => {
+            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+            setAccountModalVisible(true);
+          }}
+          style={{
+            position: 'absolute',
+            top: 60,
+            right: 20,
+            width: 44,
+            height: 44,
+            borderRadius: 22,
+            backgroundColor: '#3B82F6',
+            justifyContent: 'center',
+            alignItems: 'center',
+            shadowColor: "#000",
+            shadowOffset: { width: 0, height: 4 },
+            shadowOpacity: 0.3,
+            shadowRadius: 8,
+            elevation: 8,
+            zIndex: 999,
+          }}
+        >
+          <Icon source="account-circle" size={28} color="white" />
+        </Pressable>
+      )}
 
       {/* Account Modal */}
       <AccountModal visible={accountModalVisible} onClose={() => setAccountModalVisible(false)} />

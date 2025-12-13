@@ -447,6 +447,21 @@ async function signUpWithEmail() {
           </View>           
         </View>
         </View>
+      </View>
+      <Divider className='my-2 w-[90%] self-center '/>
+      <View className='flex-row items-center ml-2 mt-2'>
+        <Link href={"/myPrograms/recordedLectures"} asChild>
+        <Pressable className='flex-row items-center justify-between w-[100%] pr-3'>
+          <View className='flex-row items-center justify-center'>
+            <Icon source="video" size={30} color="#007AFF" />
+            <View className='flex flex-col'>         
+              <Text className='text-xl font-bold px-[2]'>Recorded Lectures</Text>
+              <Text className='text-gray-400 text-sm mb-1'>View your recorded lectures</Text>
+            </View>  
+          </View>
+          <Text className='text-gray-400 text-right'>View <Icon source={"chevron-right"} size={15} color='gray-400'/></Text>
+        </Pressable>
+        </Link>
       </View> 
       <View className='flex-row w-[100%] flex-wrap justify-center mt-5' style={{ paddingBottom : tabBarHeight }} > 
         {userPrograms ? userPrograms.map((program, index) => {

@@ -1,0 +1,39 @@
+module.exports = function (api) {
+  api.cache(true);
+  
+  // Get nativewind config (which includes react-native-css-interop plugins)
+  const nativewindConfig = require('nativewind/babel')(api);
+  
+  // Get the resolved path for worklets plugin to filter duplicates
+  const workletsResolvedPath = require.resolve('react-native-worklets/plugin');
+  
+  // Filter out react-native-worklets/plugin from nativewind plugins
+  // since react-native-reanimated/plugin already includes it
+  const nativewindPlugins = (nativewindConfig.plugins || []).filter(plugin => {
+    try {
+      const pluginPath = Array.isArray(plugin) ? plugin[0] : plugin;
+      if (typeof pluginPath === 'string') {
+        // Check if this resolves to the worklets plugin
+        const resolved = require.resolve(pluginPath);
+        return resolved !== workletsResolvedPath;
+      }
+    } catch (e) {
+      // If resolve fails, keep the plugin
+    }
+    // Keep objects and other plugin formats
+    return true;
+  });
+  
+  return {
+    presets: ['babel-preset-expo'],
+    plugins: [
+      // Spread nativewind's plugins (without worklets plugin)
+      ...nativewindPlugins,
+      'react-native-paper/babel',
+      'react-native-reanimated/plugin', // Must be last (includes worklets plugin)
+    ],
+  };
+};
+
+
+

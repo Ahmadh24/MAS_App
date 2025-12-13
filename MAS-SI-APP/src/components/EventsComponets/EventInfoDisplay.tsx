@@ -22,7 +22,7 @@ const EventInfoDisplay = ({ event_img, event_speaker, event_name, event_desc, ev
     const [ visible, setVisible ] = useState(false);
     const showModal = () => setVisible(true);
     const hideModal = () => setVisible(false);
-    const [ speakerData, setSpeakerData ] = useState<SheikDataType[]>();
+    const [ speakerData, setSpeakerData ] = useState<SheikDataType[]>([]);
     const [ speakerString, setSpeakerString ] = useState('')
     const Tab = useBottomTabBarHeight()
   
@@ -34,18 +34,23 @@ const EventInfoDisplay = ({ event_img, event_speaker, event_name, event_desc, ev
         transform: [
           {
             translateY : interpolate(
-            scrollOffset.value,
+            scrollOffset,
             [-250, 0, 250 ],
             [-250/2, 0, 250 * 0.75]
             )
           },
           {
-            scale: interpolate(scrollOffset.value, [-250, 0, 250], [2, 1, 1])
+            scale: interpolate(scrollOffset, [-250, 0, 250], [2, 1, 1])
           }
         ]
       }
     })
         const getSpeakers = async () => {
+          if (!event_speaker || !Array.isArray(event_speaker)) {
+            setSpeakerData([])
+            setSpeakerString('')
+            return
+          }
           const speakers : any[] = []
           let speaker_string : string[] = event_speaker.map(() => {return ''})
           await Promise.all(
@@ -83,7 +88,7 @@ const EventInfoDisplay = ({ event_img, event_speaker, event_name, event_desc, ev
           
                 <View className='flex-col py-3'>
                   { speakerData?.speaker_name == "MAS" ? <Text className='font-bold'>Impact </Text> :  <Text className='font-bold'>Credentials: </Text> } 
-                  { speakerData?.speaker_creds.map( (cred, i) => {
+                  { speakerData?.speaker_creds?.map( (cred, i) => {
                     return <Text key={i}> <Icon source="cards-diamond-outline"  size={15} color='black'/> {cred} {'\n'}</Text>
                   })}
                 </View>

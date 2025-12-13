@@ -22,6 +22,7 @@ import Toast from 'react-native-toast-message';
 import { isBefore, format } from 'date-fns';
 import { FlyerSkeleton } from '@/src/components/FlyerSkeleton';
 import YoutubePlayer from "react-native-youtube-iframe";
+import DeckSwiper from 'react-native-deck-swiper';
 function setTimeToCurrentDate(timeString : string ) {
 
   // Split the time string into hours, minutes, and seconds
@@ -71,6 +72,7 @@ const ProgramLectures = () => {
   const [activeTab, setActiveTab] = useState<'description' | 'classes'>('description')
   const [videoTab, setVideoTab] = useState<'keynotes' | 'summary'>('summary')
   const [currentSpeakerIndex, setCurrentSpeakerIndex] = useState(0)
+  const deckSwiperRef = useRef<any>(null)
   const bottomSheetRef = useRef<BottomSheetModal>(null);
   const handlePresentModalPress = () => bottomSheetRef.current?.present();
   const hideAddToPlaylist = () => setAddToPlaylistVisible(false)
@@ -250,6 +252,13 @@ async function getUserPlaylists(){
       console.log('Error marking lecture as started:', error);
     }
   };
+
+  // Reset error state when programId changes
+  useEffect(() => {
+    setHasError(false);
+    setImageReady(false);
+  }, [programId]);
+
   useEffect(() => {
     getProgram()
     getProgramLectures()
@@ -281,12 +290,22 @@ async function getUserPlaylists(){
   useEffect(() => {
     if (visible) {
       setCurrentSpeakerIndex(0);
+      // Jump to first card when modal opens
+      setTimeout(() => {
+        if (deckSwiperRef.current && speakerData && speakerData.length > 0) {
+          try {
+            deckSwiperRef.current.jumpToCardIndex(0);
+          } catch (error) {
+            console.log('Error jumping to card index:', error);
+          }
+        }
+      }, 100);
     }
   }, [visible])
 
-  const renderSpeakerCard = (speakerData: SheikDataType) => {
+  const renderSpeakerCard = (speakerData: SheikDataType, index: number) => {
     const cardWidth = width * 0.75;
-    const maxCardHeight = height * 0.45; // 45% of screen height
+    const maxCardHeight = height * 0.55; // 55% of screen height for more content space
     
     return (
       <View 
@@ -314,13 +333,20 @@ async function getUserPlaylists(){
             height: maxCardHeight,
           }}
         >
-          <RNScrollView
+          <ScrollView
             showsVerticalScrollIndicator={true}
+            scrollEnabled={true}
+            nestedScrollEnabled={true}
             scrollEventThrottle={16}
+            directionalLockEnabled={true}
+            alwaysBounceVertical={false}
+            bounces={false}
+            keyboardShouldPersistTaps="handled"
             contentContainerStyle={{
               paddingTop: 24,
               paddingBottom: 30,
               paddingHorizontal: 24,
+              flexGrow: 1,
             }}
             style={{ flex: 1 }}
           >
@@ -367,7 +393,7 @@ async function getUserPlaylists(){
                 })}
               </View>
             </View>
-          </RNScrollView>
+          </ScrollView>
         </BlurView>
       </View>
     );
@@ -383,109 +409,123 @@ async function getUserPlaylists(){
     }
 
     const cardWidth = width * 0.75;
-    const maxCardHeight = height * 0.45;
-    const buttonSize = 32;
-    const buttonMargin = 12;
-    const cardLeft = (width - cardWidth) / 2;
-    const cardRight = cardLeft + cardWidth;
+    const maxCardHeight = height * 0.55; // 55% of screen height for more content space
     
-    const goToNext = () => {
-      if (currentSpeakerIndex < speakerData.length - 1) {
-        setCurrentSpeakerIndex(currentSpeakerIndex + 1);
-        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-      }
-    };
-
-    const goToPrevious = () => {
-      if (currentSpeakerIndex > 0) {
-        setCurrentSpeakerIndex(currentSpeakerIndex - 1);
-        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-      }
-    };
+    // If only one speaker, render the card directly without DeckSwiper
+    if (speakerData.length === 1) {
+      return (
+        <View style={{ flex: 1, width: '100%', justifyContent: 'center', alignItems: 'center' }}>
+          <View style={{ height: maxCardHeight, width: '100%', justifyContent: 'center', alignItems: 'center' }}>
+            {renderSpeakerCard(speakerData[0], 0)}
+          </View>
+        </View>
+      );
+    }
     
-    const currentSpeaker = speakerData[currentSpeakerIndex];
-    
+    // Multiple speakers - use DeckSwiper
     return (
       <View style={{ flex: 1, width: '100%', justifyContent: 'center', alignItems: 'center' }}>
-        <View style={{ width: '100%', position: 'relative', justifyContent: 'center', alignItems: 'center' }}>
-          {currentSpeaker && renderSpeakerCard(currentSpeaker)}
-          
-          {/* Navigation Buttons */}
-          {speakerData.length > 1 && (
-            <>
-              {currentSpeakerIndex > 0 && (
-                <TouchableOpacity
-                  onPress={goToPrevious}
-                  activeOpacity={0.7}
-                  style={{
-                    position: 'absolute',
-                    left: cardLeft - buttonSize / 2 - buttonMargin,
-                    top: '50%',
-                    transform: [{ translateY: -buttonSize / 2 }],
-                    backgroundColor: 'rgba(0, 0, 0, 0.6)',
-                    borderRadius: buttonSize / 2,
-                    width: buttonSize,
-                    height: buttonSize,
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                    zIndex: 10,
-                  }}
-                >
-                  <Icon source="chevron-left" size={20} color="#FFFFFF" />
-                </TouchableOpacity>
-              )}
-              {currentSpeakerIndex < speakerData.length - 1 && (
-                <TouchableOpacity
-                  onPress={goToNext}
-                  activeOpacity={0.7}
-                  style={{
-                    position: 'absolute',
-                    left: cardRight - buttonSize / 2 + buttonMargin,
-                    top: '50%',
-                    transform: [{ translateY: -buttonSize / 2 }],
-                    backgroundColor: 'rgba(0, 0, 0, 0.6)',
-                    borderRadius: buttonSize / 2,
-                    width: buttonSize,
-                    height: buttonSize,
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                    zIndex: 10,
-                  }}
-                >
-                  <Icon source="chevron-right" size={20} color="#FFFFFF" />
-                </TouchableOpacity>
-              )}
-            </>
-          )}
+        <View style={{ height: maxCardHeight, width: '100%' }}>
+          <DeckSwiper
+            ref={deckSwiperRef}
+            cards={speakerData}
+            renderCard={renderSpeakerCard}
+            cardIndex={currentSpeakerIndex}
+            onSwiped={(swipedIndex) => {
+              // After swiping, the next card becomes visible
+              const nextIndex = swipedIndex + 1;
+              if (nextIndex < speakerData.length) {
+                setCurrentSpeakerIndex(nextIndex);
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+              } else {
+                // If we've swiped all cards, reset to 0
+                setCurrentSpeakerIndex(0);
+              }
+            }}
+            onSwipedAll={() => {
+              setCurrentSpeakerIndex(0);
+            }}
+            cardVerticalMargin={0}
+            cardHorizontalMargin={0}
+            stackSize={3}
+            stackSeparation={0}
+            animateCardOpacity
+            disableTopSwipe
+            disableBottomSwipe
+            swipeBackCard
+            verticalSwipe={false}
+            backgroundColor="transparent"
+            overlayLabels={{
+              left: {
+                title: 'NOPE',
+                style: {
+                  label: {
+                    backgroundColor: 'transparent',
+                    borderColor: 'transparent',
+                    color: 'transparent',
+                  },
+                  wrapper: {
+                    flexDirection: 'column',
+                    alignItems: 'flex-end',
+                    justifyContent: 'flex-start',
+                    marginTop: 20,
+                    marginLeft: -20,
+                  }
+                }
+              },
+              right: {
+                title: 'LIKE',
+                style: {
+                  label: {
+                    backgroundColor: 'transparent',
+                    borderColor: 'transparent',
+                    color: 'transparent',
+                  },
+                  wrapper: {
+                    flexDirection: 'column',
+                    alignItems: 'flex-start',
+                    justifyContent: 'flex-start',
+                    marginTop: 20,
+                    marginLeft: 20,
+                  }
+                }
+              }
+            }}
+          />
         </View>
         {/* Pagination Indicators */}
-        {speakerData.length > 1 && (
-          <View style={{
-            flexDirection: 'row',
-            justifyContent: 'center',
-            alignItems: 'center',
-            marginTop: 20,
-            gap: 8,
-            paddingBottom: 10,
-          }}>
-            {speakerData.map((_, index) => (
-              <TouchableOpacity
-                key={index}
-                onPress={() => {
-                  setCurrentSpeakerIndex(index);
-                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                }}
-                activeOpacity={0.7}
-                style={{
-                  width: currentSpeakerIndex === index ? 24 : 8,
-                  height: 8,
-                  borderRadius: 4,
-                  backgroundColor: currentSpeakerIndex === index ? '#60A5FA' : 'rgba(255, 255, 255, 0.3)',
-                }}
-              />
-            ))}
-          </View>
-        )}
+        <View style={{
+          flexDirection: 'row',
+          justifyContent: 'center',
+          alignItems: 'center',
+          marginTop: 20,
+          gap: 8,
+          paddingBottom: 10,
+        }}>
+          {speakerData.map((_, index) => (
+            <TouchableOpacity
+              key={index}
+              onPress={() => {
+                setCurrentSpeakerIndex(index);
+                if (deckSwiperRef.current) {
+                  try {
+                    deckSwiperRef.current.jumpToCardIndex(index);
+                  } catch (error) {
+                    console.log('Error jumping to card index:', error);
+                  }
+                }
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+              }}
+              activeOpacity={0.7}
+              style={{
+                width: currentSpeakerIndex === index ? 24 : 8,
+                height: 8,
+                borderRadius: 4,
+                backgroundColor: currentSpeakerIndex === index ? '#60A5FA' : 'rgba(255, 255, 255, 0.3)',
+              }}
+            />
+          ))}
+        </View>
       </View>
     )
   } 
@@ -570,14 +610,14 @@ async function getUserPlaylists(){
   
    return(
     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-      <BlurView intensity={20} tint="light" style={{ borderRadius: 16, overflow: 'hidden', backgroundColor: 'rgba(255, 255, 255, 0.2)', width: 36, height: 36 }}>
+      <BlurView intensity={20} tint="dark" style={{ borderRadius: 16, overflow: 'hidden', width: 36, height: 36 }}>
         <Pressable onPress={handlePress} style={{ width: 36, height: 36, alignItems: 'center', justifyContent: 'center' }}>
-          {programInNotfications ?  <Icon source={"bell-check"} color='white' size={20}/> : <Icon source={"bell-outline"} color='white' size={20}/> }
+          {programInNotfications ?  <Icon source={"bell-check"} color='black' size={20}/> : <Icon source={"bell-outline"} color='black' size={20}/> }
         </Pressable>
       </BlurView>
-      <BlurView intensity={20} tint="light" style={{ borderRadius: 16, overflow: 'hidden', backgroundColor: 'rgba(255, 255, 255, 0.2)', width: 36, height: 36 }}>
+      <BlurView intensity={20} tint="dark" style={{ borderRadius: 16, overflow: 'hidden', width: 36, height: 36 }}>
         <Pressable onPress={addToPrograms} style={{ width: 36, height: 36, alignItems: 'center', justifyContent: 'center' }}>
-          { programInPrograms ?  <Icon source={'minus-circle-outline'} color='white' size={20}/> : <Icon source={"plus-circle-outline"} color='white' size={20}/>}
+          { programInPrograms ?  <Icon source={'minus-circle-outline'} color='black' size={20}/> : <Icon source={"plus-circle-outline"} color='black' size={20}/>}
         </Pressable>
       </BlurView>
     </View>
@@ -614,9 +654,9 @@ async function getUserPlaylists(){
       )
     }
     return(
-      <BlurView intensity={20} tint="light" style={{ borderRadius: 16, overflow: 'hidden', backgroundColor: 'rgba(255, 255, 255, 0.2)', width: 36, height: 36 }}>
+      <BlurView intensity={20} tint="dark" style={{ borderRadius: 16, overflow: 'hidden', width: 36, height: 36 }}>
         <Pressable onPress={addToPrograms} style={{ width: 36, height: 36, alignItems: 'center', justifyContent: 'center' }}>
-          { programInPrograms ?  <Icon source={'minus-circle'} color='white' size={20}/> : <Icon source={"plus-circle-outline"} color='white' size={20}/>}
+          { programInPrograms ?  <Icon source={'minus-circle'} color='black' size={20}/> : <Icon source={"plus-circle-outline"} color='black' size={20}/>}
         </Pressable>
       </BlurView>
     )
@@ -666,44 +706,42 @@ async function getUserPlaylists(){
   }, [playlistAddingTo.length > 0])
   const currDate = new Date().toISOString()
   return (
-    <View className='flex-1' style={{flexGrow: 1}}>
-      <View
-        style={{
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          right: 0,
-          height: 150,
-          backgroundColor: '#214E91',
-        }}
-      />
-      <View
-        style={{
-          position: 'absolute',
-          top: 150,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          backgroundColor: '#FFFFFF',
-        }}
-      />
+    <View className='flex-1' style={{flexGrow: 1, backgroundColor: '#FFFFFF'}}>
      <Stack.Screen options={ { 
        headerShown: false
      } } />
      <StatusBar barStyle={"light-content"}/>
-     {/* Custom Header with Liquid Glass Buttons */}
-     <View style={{ position: 'absolute', top: 0, left: 0, right: 0, zIndex: 100, paddingTop: 50, paddingBottom: 15, paddingHorizontal: 10, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', backgroundColor: '#214E91' }}>
-       <BlurView intensity={20} tint="light" style={{ borderRadius: 16, overflow: 'hidden', backgroundColor: 'rgba(255, 255, 255, 0.2)', width: 36, height: 36 }}>
-         <Pressable onPress={() => navigation.goBack()} style={{ width: 36, height: 36, alignItems: 'center', justifyContent: 'center' }}>
-           <Icon source="chevron-left" size={20} color="white" />
+     {/* Header with Back Button and Action Buttons */}
+     <View className="flex-row items-center justify-between px-4 pt-16 pb-4" style={{ backgroundColor: '#214E91', position: 'absolute', top: 0, left: 0, right: 0, zIndex: 100 }}>
+       <BlurView intensity={20} tint="dark" style={{ borderRadius: 16, overflow: 'hidden' }}>
+         <Pressable 
+           onPress={() => {
+             if (selectedLecture && selectedLecture.lecture_link && selectedLecture.lecture_link.trim() !== '' && selectedLecture.lecture_link !== 'N/A') {
+               // If a video is selected, deselect it instead of going back
+               setSelectedLecture(null);
+               setPlaying(false);
+               scrollRef.current?.scrollTo({ y: 0, animated: true });
+             } else {
+               // Navigate back smoothly - try to go back, or navigate to recorded lectures
+               if (navigation.canGoBack()) {
+                 router.back();
+               } else {
+                 router.push('/myPrograms/recordedLectures');
+               }
+             }
+           }}
+           style={{ width: 36, height: 36, alignItems: 'center', justifyContent: 'center' }}
+         >
+           <Icon source="chevron-left" size={20} color="black" />
          </Pressable>
        </BlurView>
+       
        <View style={{ flexDirection: 'row', gap: 10, alignItems: 'center' }}>
          {isBefore(currDate, program?.program_end_date!) ? <NotificationBell /> : <AddToProgramsButton />}
        </View>
      </View>
       <Animated.ScrollView ref={scrollRef}  scrollEventThrottle={16} contentContainerStyle={{justifyContent: "flex-start", alignItems: "stretch" }} style={{ flex: 1 }}>
-          <View className=' relative' style={{width: '100%', height: height * 0.5, borderBottomLeftRadius: 20, borderBottomRightRadius: 20, overflow: 'hidden', marginTop: 100, alignSelf: 'stretch' }}>
+          <View className=' relative' style={{width: '100%', height: height * 0.5, borderBottomLeftRadius: 20, borderBottomRightRadius: 10, overflow: 'hidden', marginTop: 105, alignSelf: 'stretch' }}>
             {selectedLecture && selectedLecture.lecture_link && selectedLecture.lecture_link.trim() !== '' && selectedLecture.lecture_link !== 'N/A' ? (
               <YoutubePlayer 
                 height={height * 0.5}
@@ -745,8 +783,8 @@ async function getUserPlaylists(){
                 <Animated.Image 
                   source={
                     // If there's an error or no URL, use the fallback image
-                    hasError || !program?.program_img 
-                      ? require("@/assets/images/MASHomeLogo.png")
+                    hasError || !program?.program_img || program.program_img.trim() === ''
+                      ? require("@/assets/images/massicliquidglassicon.png")
                       : { uri: program.program_img }
                   }
                   style={[
@@ -774,6 +812,7 @@ async function getUserPlaylists(){
               width: '100%',
               backgroundColor: '#FFFFFF',
               marginTop: -170,
+              zIndex: 2,
             }}>
               <View style={{
                 flexDirection: 'row',
@@ -861,6 +900,43 @@ async function getUserPlaylists(){
 
               {/* Video Tab Content */}
               {videoTab === 'keynotes' ? (
+                selectedLecture.lecture_key_notes && selectedLecture.lecture_key_notes.length > 0 ? (
+                  <View className='rounded-xl' style={{
+                    backgroundColor: '#1A2332',
+                    shadowColor: "#000",
+                    shadowOffset: { width: 0, height: 2 },
+                    shadowOpacity: 0.3,
+                    shadowRadius: 4,
+                    elevation: 3,
+                    maxHeight: 300,
+                  }}>
+                    <ScrollView 
+                      style={{ paddingHorizontal: 16, paddingVertical: 12 }}
+                      showsVerticalScrollIndicator={true}
+                      nestedScrollEnabled={true}
+                    >
+                      {selectedLecture.lecture_key_notes.map((keynote, index) => (
+                        <Text key={index} className='text-base text-gray-300 leading-6 mb-2'>
+                          • {keynote}
+                        </Text>
+                      ))}
+                    </ScrollView>
+                  </View>
+                ) : (
+                  <View className='px-4 py-3 rounded-xl' style={{
+                    backgroundColor: '#1A2332',
+                    shadowColor: "#000",
+                    shadowOffset: { width: 0, height: 2 },
+                    shadowOpacity: 0.3,
+                    shadowRadius: 4,
+                    elevation: 3,
+                  }}>
+                    <Text className='text-base text-gray-400 leading-6 text-center'>
+                      No keynotes available for this lecture
+                    </Text>
+                  </View>
+                )
+              ) : (
                 selectedLecture.lecture_ai && selectedLecture.lecture_ai !== "N/A" ? (
                   <View className='px-4 py-3 rounded-xl' style={{
                     backgroundColor: '#1A2332',
@@ -884,23 +960,10 @@ async function getUserPlaylists(){
                     elevation: 3,
                   }}>
                     <Text className='text-base text-gray-400 leading-6 text-center'>
-                      No keynotes available for this lecture
+                      No summary available for this lecture
                     </Text>
                   </View>
                 )
-              ) : (
-                <View className='px-4 py-3 rounded-xl' style={{
-                  backgroundColor: '#1A2332',
-                  shadowColor: "#000",
-                  shadowOffset: { width: 0, height: 2 },
-                  shadowOpacity: 0.3,
-                  shadowRadius: 4,
-                  elevation: 3,
-                }}>
-                  <Text className='text-base text-gray-400 leading-6 text-center'>
-                    Summary coming soon
-                  </Text>
-                </View>
               )}
 
               {/* Recommended Videos Section - Below the tabs */}
@@ -1035,7 +1098,8 @@ async function getUserPlaylists(){
               paddingTop: 16,
               paddingBottom: 8,
               width: '100%',
-              backgroundColor: '#0F172A',
+              backgroundColor: '#FFFFFF',
+              zIndex: 2,
             }}>
               <View style={{
                 flexDirection: 'row',
@@ -1123,6 +1187,43 @@ async function getUserPlaylists(){
 
               {/* Video Tab Content */}
               {videoTab === 'keynotes' ? (
+                selectedLecture.lecture_key_notes && selectedLecture.lecture_key_notes.length > 0 ? (
+                  <View className='rounded-xl' style={{
+                    backgroundColor: '#1A2332',
+                    shadowColor: "#000",
+                    shadowOffset: { width: 0, height: 2 },
+                    shadowOpacity: 0.3,
+                    shadowRadius: 4,
+                    elevation: 3,
+                    maxHeight: 300,
+                  }}>
+                    <ScrollView 
+                      style={{ paddingHorizontal: 16, paddingVertical: 12 }}
+                      showsVerticalScrollIndicator={true}
+                      nestedScrollEnabled={true}
+                    >
+                      {selectedLecture.lecture_key_notes.map((keynote, index) => (
+                        <Text key={index} className='text-base text-gray-300 leading-6 mb-2'>
+                          • {keynote}
+                        </Text>
+                      ))}
+                    </ScrollView>
+                  </View>
+                ) : (
+                  <View className='px-4 py-3 rounded-xl' style={{
+                    backgroundColor: '#1A2332',
+                    shadowColor: "#000",
+                    shadowOffset: { width: 0, height: 2 },
+                    shadowOpacity: 0.3,
+                    shadowRadius: 4,
+                    elevation: 3,
+                  }}>
+                    <Text className='text-base text-gray-400 leading-6 text-center'>
+                      No keynotes available for this lecture
+                    </Text>
+                  </View>
+                )
+              ) : (
                 selectedLecture.lecture_ai && selectedLecture.lecture_ai !== "N/A" ? (
                   <View className='px-4 py-3 rounded-xl' style={{
                     backgroundColor: '#1A2332',
@@ -1146,37 +1247,24 @@ async function getUserPlaylists(){
                     elevation: 3,
                   }}>
                     <Text className='text-base text-gray-400 leading-6 text-center'>
-                      No keynotes available for this lecture
+                      No summary available for this lecture
                     </Text>
                   </View>
                 )
-              ) : (
-                <View className='px-4 py-3 rounded-xl' style={{
-                  backgroundColor: '#1A2332',
-                  shadowColor: "#000",
-                  shadowOffset: { width: 0, height: 2 },
-                  shadowOpacity: 0.3,
-                  shadowRadius: 4,
-                  elevation: 3,
-                }}>
-                  <Text className='text-base text-gray-400 leading-6 text-center'>
-                    Summary coming soon
-                  </Text>
-                </View>
               )}
             </View>
           )}
        
           {/* Hide everything below when a YouTube video is selected */}
           {!(selectedLecture && selectedLecture.lecture_link && selectedLecture.lecture_link.trim() !== '' && selectedLecture.lecture_link !== 'N/A') && (
-          <View className='w-[100%]' style={{paddingBottom : Tab * 3}}>
-            <Text className='text-center mt-4 text-2xl text-black font-bold'>{program?.program_name}</Text>
-            <Pressable onPress={showModal}>
-              <Text className='text-center mt-2 text-[#60A5FA] w-[60%] self-center font-semibold' numberOfLines={1}>{speakerString}</Text>
+          <View className='w-[100%]' style={{paddingBottom : Tab * 3, backgroundColor: '#FFFFFF', marginTop: -50}}>
+            <Text className='text-center text-2xl text-black font-bold' style={{ marginTop: 0, marginBottom: 0, paddingTop: 0 }}>{program?.program_name}</Text>
+            <Pressable onPress={showModal} style={{ marginTop: 0 }}>
+              <Text className='text-center text-[#60A5FA] w-[60%] self-center font-semibold' numberOfLines={1} style={{ marginTop: 0, marginBottom: 0, paddingTop: 0 }}>{speakerString}</Text>
             </Pressable>
 
             {/* Tab Buttons - Description, Classes, and Keynotes */}
-            <View style={{ paddingHorizontal: 16, marginTop: 12, marginBottom: 8, width: '100%' }}>
+            <View style={{ paddingHorizontal: 16, marginTop: 8, marginBottom: 8, width: '100%' }}>
               <View style={{
                 flexDirection: 'row',
                 gap: 6,
@@ -1434,6 +1522,16 @@ async function getUserPlaylists(){
               onDismiss={() => {
                 hideModal();
                 setCurrentSpeakerIndex(0);
+                // Reset to first card when closing
+                setTimeout(() => {
+                  if (deckSwiperRef.current && speakerData && speakerData.length > 0) {
+                    try {
+                      deckSwiperRef.current.jumpToCardIndex(0);
+                    } catch (error) {
+                      console.log('Error jumping to card index:', error);
+                    }
+                  }
+                }, 100);
               }} 
               contentContainerStyle={{
                 backgroundColor: 'transparent', 
@@ -1480,6 +1578,16 @@ async function getUserPlaylists(){
                   onPress={() => {
                     hideModal();
                     setCurrentSpeakerIndex(0);
+                    // Reset to first card when closing
+                    setTimeout(() => {
+                      if (deckSwiperRef.current && speakerData && speakerData.length > 0) {
+                        try {
+                          deckSwiperRef.current.jumpToCardIndex(0);
+                        } catch (error) {
+                          console.log('Error jumping to card index:', error);
+                        }
+                      }
+                    }, 100);
                   }}
                   style={{
                     position: 'absolute',

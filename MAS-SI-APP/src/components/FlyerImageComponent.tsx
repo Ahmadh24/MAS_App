@@ -25,6 +25,7 @@ import { useNavigation } from '@react-navigation/native'
 import type { NavigationProp } from '@react-navigation/native'
 import Toast from 'react-native-toast-message'
 import * as Haptics from 'expo-haptics'
+import DeckSwiper from 'react-native-deck-swiper'
 
 // Toast configuration
 const toastConfig = {
@@ -154,6 +155,7 @@ const FlyerImageComponent = ({item} : {item : Program}) => {
     const [currentSpeakerIndex, setCurrentSpeakerIndex] = useState(0)
     const [isHorizontalScrolling, setIsHorizontalScrolling] = useState(false)
     const speakerFlatListRef = useRef<FlatList>(null)
+    const deckSwiperRef = useRef<any>(null)
     const [modalImageReady, setModalImageReady] = useState(false)
     const [hasError, setHasError] = useState(false)
     const [selectedLecture, setSelectedLecture] = useState<Lectures | null>(null)
@@ -541,18 +543,24 @@ const FlyerImageComponent = ({item} : {item : Program}) => {
     useEffect(() => {
         if (speakerModalVisible) {
             setCurrentSpeakerIndex(0);
-            // Scroll to first speaker when modal opens
+            // Jump to first card when modal opens
             setTimeout(() => {
-                if (speakerFlatListRef.current && speakerData.length > 0) {
+                if (deckSwiperRef.current && speakerData.length > 0) {
                     try {
-                        speakerFlatListRef.current.scrollToIndex({ index: 0, animated: false });
+                        deckSwiperRef.current.jumpToCardIndex(0);
                     } catch (error) {
-                        speakerFlatListRef.current.scrollToOffset({ offset: 0, animated: false });
+                        console.log('Error jumping to card index:', error);
                     }
                 }
             }, 100);
         }
     }, [speakerModalVisible]);
+
+    // Reset error state when item changes
+    useEffect(() => {
+        setHasError(false);
+        setImageReady(false);
+    }, [item.program_id]);
 
     // Fetch lectures on mount to check if they exist
     useEffect(() => {
@@ -766,7 +774,7 @@ const FlyerImageComponent = ({item} : {item : Program}) => {
     }, [slideAnim, item.has_lectures, item.program_id, lectures.length]);
 
     
-    const renderSpeakerCard = ({ item: speakerData, index }: { item: SheikDataType, index: number }) => {
+    const renderSpeakerCard = (speakerData: SheikDataType, index: number) => {
         const cardWidth = width * 0.85;
         const maxCardHeight = height * 0.55; // 55% of screen height
         
@@ -795,7 +803,7 @@ const FlyerImageComponent = ({item} : {item : Program}) => {
                 >
                     <ScrollView
                         showsVerticalScrollIndicator={true}
-                        scrollEnabled={!isHorizontalScrolling}
+                        scrollEnabled={true}
                         nestedScrollEnabled={true}
                         scrollEventThrottle={16}
                         directionalLockEnabled={true}
@@ -867,81 +875,108 @@ const FlyerImageComponent = ({item} : {item : Program}) => {
         const cardWidth = width * 0.85;
         const maxCardHeight = height * 0.55;
         
+        // If only one speaker, render the card directly without DeckSwiper
+        if (speakerData.length === 1) {
+            return (
+                <View style={{ flex: 1, width: '100%', justifyContent: 'center', alignItems: 'center' }}>
+                    <View style={{ height: maxCardHeight, width: '100%', justifyContent: 'center', alignItems: 'center' }}>
+                        {renderSpeakerCard(speakerData[0], 0)}
+                    </View>
+                </View>
+            );
+        }
+        
+        // Multiple speakers - use DeckSwiper
         return (
             <View style={{ flex: 1, width: '100%', justifyContent: 'center', alignItems: 'center' }}>
                 <View style={{ height: maxCardHeight, width: '100%' }}>
-                    <FlatList
-                        ref={speakerFlatListRef}
-                        data={speakerData}
-                        renderItem={renderSpeakerCard}
-                        keyExtractor={(item, index) => `speaker-${index}`}
-                        horizontal={true}
-                        pagingEnabled={true}
-                        showsHorizontalScrollIndicator={false}
-                        decelerationRate={0.98}
-                        bounces={false}
-                        scrollEventThrottle={16}
-                        removeClippedSubviews={false}
-                        onScrollBeginDrag={() => {
-                            setIsHorizontalScrolling(true);
-                        }}
-                        onScrollEndDrag={() => {
-                            setTimeout(() => setIsHorizontalScrolling(false), 100);
-                        }}
-                        onMomentumScrollEnd={(event) => {
-                            setIsHorizontalScrolling(false);
-                            const offset = event.nativeEvent.contentOffset.x;
-                            const index = Math.round(offset / width);
-                            const clampedIndex = Math.max(0, Math.min(index, speakerData.length - 1));
-                            setCurrentSpeakerIndex(clampedIndex);
-                        }}
-                        onScroll={(event) => {
-                            const offset = event.nativeEvent.contentOffset.x;
-                            const index = Math.round(offset / width);
-                            const clampedIndex = Math.max(0, Math.min(index, speakerData.length - 1));
-                            if (clampedIndex !== currentSpeakerIndex) {
-                                setCurrentSpeakerIndex(clampedIndex);
+                    <DeckSwiper
+                        ref={deckSwiperRef}
+                        cards={speakerData}
+                        renderCard={renderSpeakerCard}
+                        cardIndex={currentSpeakerIndex}
+                        onSwiped={(swipedIndex) => {
+                            // After swiping, the next card becomes visible
+                            const nextIndex = swipedIndex + 1;
+                            if (nextIndex < speakerData.length) {
+                                setCurrentSpeakerIndex(nextIndex);
+                            } else {
+                                // If we've swiped all cards, reset to 0
+                                setCurrentSpeakerIndex(0);
                             }
                         }}
-                        onScrollToIndexFailed={(info) => {
-                            const wait = new Promise(resolve => setTimeout(resolve, 500));
-                            wait.then(() => {
-                                speakerFlatListRef.current?.scrollToIndex({ index: info.index, animated: false });
-                            });
+                        onSwipedAll={() => {
+                            setCurrentSpeakerIndex(0);
                         }}
-                        getItemLayout={(data, index) => ({
-                            length: width,
-                            offset: width * index,
-                            index,
-                        })}
-                        contentContainerStyle={{
-                            alignItems: 'center',
+                        cardVerticalMargin={0}
+                        cardHorizontalMargin={0}
+                        stackSize={3}
+                        stackSeparation={0}
+                        animateCardOpacity
+                        animateOverlayLabels
+                        disableTopSwipe
+                        disableBottomSwipe
+                        swipeBackCard
+                        verticalSwipe={false}
+                        backgroundColor="transparent"
+                        overlayLabels={{
+                            left: {
+                                title: 'NOPE',
+                                style: {
+                                    label: {
+                                        backgroundColor: 'transparent',
+                                        borderColor: 'transparent',
+                                        color: 'transparent',
+                                    },
+                                    wrapper: {
+                                        flexDirection: 'column',
+                                        alignItems: 'flex-end',
+                                        justifyContent: 'flex-start',
+                                        marginTop: 20,
+                                        marginLeft: -20,
+                                    }
+                                }
+                            },
+                            right: {
+                                title: 'LIKE',
+                                style: {
+                                    label: {
+                                        backgroundColor: 'transparent',
+                                        borderColor: 'transparent',
+                                        color: 'transparent',
+                                    },
+                                    wrapper: {
+                                        flexDirection: 'column',
+                                        alignItems: 'flex-start',
+                                        justifyContent: 'flex-start',
+                                        marginTop: 20,
+                                        marginLeft: 20,
+                                    }
+                                }
+                            }
                         }}
-                        style={{ width: '100%', flex: 1 }}
                     />
                 </View>
                 {/* Pagination Indicators */}
-                {speakerData.length > 1 && (
-                    <View style={{
-                        flexDirection: 'row',
-                        justifyContent: 'center',
-                        alignItems: 'center',
-                        marginTop: 16,
-                        gap: 8,
-                    }}>
-                        {speakerData.map((_, index) => (
-                            <View
-                                key={index}
-                                style={{
-                                    width: currentSpeakerIndex === index ? 24 : 8,
-                                    height: 8,
-                                    borderRadius: 4,
-                                    backgroundColor: currentSpeakerIndex === index ? '#60A5FA' : 'rgba(255, 255, 255, 0.3)',
-                                }}
-                            />
-                        ))}
-                    </View>
-                )}
+                <View style={{
+                    flexDirection: 'row',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    marginTop: 16,
+                    gap: 8,
+                }}>
+                    {speakerData.map((_, index) => (
+                        <View
+                            key={index}
+                            style={{
+                                width: currentSpeakerIndex === index ? 24 : 8,
+                                height: 8,
+                                borderRadius: 4,
+                                backgroundColor: currentSpeakerIndex === index ? '#60A5FA' : 'rgba(255, 255, 255, 0.3)',
+                            }}
+                        />
+                    ))}
+                </View>
             </View>
         );
     };
@@ -1011,11 +1046,16 @@ const FlyerImageComponent = ({item} : {item : Program}) => {
                         <FlyerSkeleton width={150} height={150} style={{position : 'absolute', top : 0, zIndex : 2}}/>
                     }
                     <Image 
-                        source={{ uri : item.program_img || undefined }} 
+                        source={(hasError || !item.program_img || item.program_img.trim() === '') 
+                            ? require("@/assets/images/massicliquidglassicon.png") 
+                            : { uri : item.program_img }} 
                         style={{ width : 150, height : 150, borderRadius : 8, margin : 5 }}
                         resizeMode="cover"
                         onLoad={() => setImageReady(true)}
-                        onError={() => setImageReady(false)}
+                        onError={() => {
+                            setImageReady(true);
+                            setHasError(true);
+                        }}
                     />
                     <Text className='text-black font-medium pl-2 text-[10px] w-[150px] text-center' numberOfLines={1}>{item.program_name}</Text>
                 </Pressable>
@@ -1301,29 +1341,29 @@ const FlyerImageComponent = ({item} : {item : Program}) => {
                                         justifyContent: 'space-between', 
                                         alignItems: 'center' 
                                     }}>
-                                        <BlurView intensity={20} tint="dark" style={{ borderRadius: 16, overflow: 'hidden' }}>
+                                        <BlurView intensity={20} tint="dark" style={{ borderRadius: 16, overflow: 'hidden', width: 36, height: 36 }}>
                                             <Pressable onPress={() => closeModal()} style={{ width: 36, height: 36, alignItems: 'center', justifyContent: 'center' }}>
-                                                <Icon source="chevron-left" size={20} color="white" />
+                                                <Icon source="chevron-left" size={20} color="black" />
                                             </Pressable>
                                         </BlurView>
                                         <View style={{ flexDirection: 'row', gap: 10 }}>
                                             {program && isBefore(new Date().toISOString(), program.program_end_date || '') ? (
                                                 <>
-                                                    <BlurView intensity={20} tint="dark" style={{ borderRadius: 16, overflow: 'hidden' }}>
+                                                    <BlurView intensity={20} tint="dark" style={{ borderRadius: 16, overflow: 'hidden', width: 36, height: 36 }}>
                                                         <Pressable onPress={handleNotificationPress} style={{ width: 36, height: 36, alignItems: 'center', justifyContent: 'center' }}>
-                                                            {programInNotifications ? <Icon source={"bell-check"} color='white' size={20}/> : <Icon source={"bell-outline"} color='white' size={20}/>}
+                                                            {programInNotifications ? <Icon source={"bell-check"} color='black' size={20}/> : <Icon source={"bell-outline"} color='black' size={20}/>}
                                                         </Pressable>
                                                     </BlurView>
-                                                    <BlurView intensity={20} tint="dark" style={{ borderRadius: 16, overflow: 'hidden' }}>
+                                                    <BlurView intensity={20} tint="dark" style={{ borderRadius: 16, overflow: 'hidden', width: 36, height: 36 }}>
                                                         <Pressable onPress={handleAddToProgramsPress} style={{ width: 36, height: 36, alignItems: 'center', justifyContent: 'center' }}>
-                                                            {programInPrograms ? <Icon source={'minus-circle-outline'} color='white' size={20}/> : <Icon source={"plus-circle-outline"} color='white' size={20}/>}
+                                                            {programInPrograms ? <Icon source={'minus-circle-outline'} color='black' size={20}/> : <Icon source={"plus-circle-outline"} color='black' size={20}/>}
                                                         </Pressable>
                                                     </BlurView>
                                                 </>
                                             ) : (
-                                                <BlurView intensity={20} tint="dark" style={{ borderRadius: 16, overflow: 'hidden' }}>
+                                                <BlurView intensity={20} tint="dark" style={{ borderRadius: 16, overflow: 'hidden', width: 36, height: 36 }}>
                                                     <Pressable onPress={handleAddToProgramsPress} style={{ width: 36, height: 36, alignItems: 'center', justifyContent: 'center' }}>
-                                                        {programInPrograms ? <Icon source={'minus-circle'} color='white' size={20}/> : <Icon source={"plus-circle-outline"} color='white' size={20}/>}
+                                                        {programInPrograms ? <Icon source={'minus-circle'} color='black' size={20}/> : <Icon source={"plus-circle-outline"} color='black' size={20}/>}
                                                     </Pressable>
                                                 </BlurView>
                                             )}
@@ -1359,8 +1399,8 @@ const FlyerImageComponent = ({item} : {item : Program}) => {
                                                     />
                                                 )}
                                                 <Image
-                                                    source={hasError || !item.program_img 
-                                                        ? require("@/assets/images/MASHomeLogo.png")
+                                                    source={hasError || !item.program_img || item.program_img.trim() === ''
+                                                        ? require("@/assets/images/massicliquidglassicon.png")
                                                         : { uri: item.program_img }}
                                                     style={{
                                                         width: '100%',
@@ -1400,8 +1440,8 @@ const FlyerImageComponent = ({item} : {item : Program}) => {
                                                         }}
                                                         style={{ paddingHorizontal: 12, paddingVertical: 8, flexDirection: 'row', alignItems: 'center', gap: 6 }}
                                                     >
-                                                        <Icon source={"cart-variant"} color='white' size={16}/>
-                                                        <Text className='text-white font-semibold' style={{ fontSize: 12 }}>Sign Up Now</Text>
+                                                        <Icon source={"cart-variant"} color='black' size={16}/>
+                                                        <Text className='text-black font-semibold' style={{ fontSize: 12 }}>Sign Up Now</Text>
                                                     </Pressable>
                                                 </BlurView>
                                             </View>
@@ -1480,14 +1520,13 @@ const FlyerImageComponent = ({item} : {item : Program}) => {
                                 onDismiss={() => {
                                     setSpeakerModalVisible(false);
                                     setCurrentSpeakerIndex(0);
-                                    // Reset scroll position when closing
+                                    // Reset to first card when closing
                                     setTimeout(() => {
-                                        if (speakerFlatListRef.current && speakerData.length > 0) {
+                                        if (deckSwiperRef.current && speakerData.length > 0) {
                                             try {
-                                                speakerFlatListRef.current.scrollToIndex({ index: 0, animated: false });
+                                                deckSwiperRef.current.jumpToCardIndex(0);
                                             } catch (error) {
-                                                // Fallback to scrollToOffset if scrollToIndex fails
-                                                speakerFlatListRef.current.scrollToOffset({ offset: 0, animated: false });
+                                                console.log('Error jumping to card index:', error);
                                             }
                                         }
                                     }, 100);

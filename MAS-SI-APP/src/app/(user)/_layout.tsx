@@ -4,7 +4,7 @@ import { Pressable, TouchableOpacity, Modal, StyleSheet } from "react-native";
 import { useEffect, useRef, useState } from "react";
 import TabArray from './tabArray';
 import { TabArrayType } from '@/src/types';
-import { Icon, Portal } from "react-native-paper";
+import { Portal } from "react-native-paper";
 import { BottomTabBarButtonProps } from '@react-navigation/bottom-tabs';
 import { useAuth } from "@/src/providers/AuthProvider";
 import LottieView from 'lottie-react-native';
@@ -16,6 +16,7 @@ import * as Haptics from 'expo-haptics'
 import AccountModal from '../../components/AccountModal';
 import ClassicTabBar from '../../components/ClassicTabBar';
 // import TutorialOverlay from "@/src/components/TutorialOverlay";
+import { NativeTabs, Label, Icon } from 'expo-router/unstable-native-tabs';
 
 const toastConfig = {
   addProgramToNotificationsToast: ({ props }: any) => (
@@ -232,7 +233,7 @@ const UserLayout = () => {
           />
         </Animated.View>
       )}
-
+      {/* 
       <Tabs
         tabBar={(props) => <ClassicTabBar {...props} />}
         screenOptions={{
@@ -256,7 +257,23 @@ const UserLayout = () => {
             }}
           />
         ))}
-      </Tabs>
+      </Tabs> */}
+
+      <NativeTabs minimizeBehavior="onScrollDown">
+        {/* <NativeTabs.Trigger name="menu">
+          <Label>Home</Label>
+          <Icon sf="house.fill" drawable="custom_android_drawable" />
+        </NativeTabs.Trigger> */}
+        {
+          TabArray.map((tab, i) => (
+            <NativeTabs.Trigger key={i} name={tab.name}>
+              <Label>{tab.title}</Label>
+              <Icon sf={tab.icon } drawable="custom_android_drawable"/>
+            </NativeTabs.Trigger>
+          ))
+        }
+
+      </NativeTabs>
 
       {/* Floating Account Button */}
       {/* <Pressable

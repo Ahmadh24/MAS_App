@@ -2,7 +2,7 @@ import { View, Text, Dimensions, Pressable, ScrollView } from 'react-native'
 import React, { useEffect, useRef, useState } from 'react'
 import { Link, Stack, useLocalSearchParams } from 'expo-router';
 import Animated, { interpolate, useAnimatedRef, useAnimatedStyle, useScrollViewOffset } from 'react-native-reanimated';
-import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
+// import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
 import { supabase } from '@/src/lib/supabase';
 import { Program, ProgramFormType } from '@/src/types';
 import { Button, Icon, TextInput } from 'react-native-paper';
@@ -24,14 +24,12 @@ const ProgramInfo = () => {
     const handlePresentModalPress = () => bottomSheetRef.current?.present();
     const showModal = () => setVisible(true);
     const hideModal = () => setVisible(false);
-    const Tab = useBottomTabBarHeight() + 80
     const [ isReady, setIsReady ] = useState<number[]>([])
     const { width } = Dimensions.get("window")
     const scrollRef = useAnimatedRef<Animated.ScrollView>()
     const [ buttonOn, setButtonOn ] = useState(false)
     const scrollOffset = useScrollViewOffset(scrollRef)
-    const tabBarHeight = useBottomTabBarHeight() + 30
-    const height = Dimensions.get('screen').height - Tab
+    // const height = Dimensions.get('screen').height - Tab
     const imageAnimatedStyle = useAnimatedStyle(() => {
       return{
         transform: [
@@ -84,7 +82,7 @@ const ProgramInfo = () => {
     }, [isReady])
   return (
     <View className='flex-1 bg-white pt-[15%]' style={{flexGrow: 1}}>
-    <Stack.Screen options={ { title : "Details", headerTransparent: true, headerBackTitleVisible : false, headerRight: () => <View className='mt-1'><CartButton /></View>, headerTitleStyle: { color : 'black'} }}/>
+    <Stack.Screen options={ { title : "Details", headerTransparent: true,  headerRight: () => <View className='mt-1'><CartButton /></View>, headerTitleStyle: { color : 'black'} }}/>
      <Animated.ScrollView ref={scrollRef}  scrollEventThrottle={16} contentContainerStyle={{justifyContent: "center", alignItems: "center", marginTop: "15%" }} showsVerticalScrollIndicator={false} >
          <Animated.Image 
            source={ program?.program_img ? { uri: program.program_img } : require("@/assets/images/MASHomeLogo.png") }
@@ -112,7 +110,7 @@ const ProgramInfo = () => {
           <View className='bg-white pt-1'>
               <Text className='text-left text-2xl font-bold text-black ml-4'>Form: </Text>
             </View>
-            <ScrollView className='mt-5 w-[100%]  bg-white flex-col gap-y-2' contentContainerStyle={{ alignItems : 'center' , paddingBottom : Tab }} bounces={false}>
+            <ScrollView className='mt-5 w-[100%]  bg-white flex-col gap-y-2' contentContainerStyle={{ alignItems : 'center' }} bounces={false}>
                   { programForm ? programForm.map((item, index) => {
                     if( item.question_type == 'text_input' ) {
                       return <View className='w-[95%]' key={index}><TextInputForm item={item} setIsReady={setIsReady} isReady={isReady} index={index}/></View>

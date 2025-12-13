@@ -7,7 +7,6 @@ import { Canvas, SkFont, useFont } from '@shopify/react-native-skia'
 import AnimatedDonationAmount from '@/src/components/AnimatedDonationText'
 import { LinearGradient } from 'expo-linear-gradient'
 import YoutubePlayer from "react-native-youtube-iframe"
-import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs'
 import { Button, Divider, Icon, ProgressBar } from 'react-native-paper'
 import { Link, router, Stack } from 'expo-router'
 import { initializePaymentSheet, openPaymentSheet } from '@/src/lib/stripe'
@@ -75,7 +74,6 @@ const Donation = () => {
       setPlaying(false);
     }
   }, []);
-  const tabBarHeight = useBottomTabBarHeight() + 60
   const togglePlaying = useCallback(() => {
     setPlaying((prev) => !prev);
   }, []);
@@ -166,7 +164,7 @@ const Donation = () => {
   };
 
   return (
-    <ScrollView style={{ width : layout, height : layoutHeight, backgroundColor : "white" }} contentContainerStyle={{ paddingBottom : tabBarHeight, paddingTop : 100, paddingHorizontal : 10 }}> 
+    <ScrollView style={{ width : layout, height : layoutHeight, backgroundColor : "white" }} contentContainerStyle={{ paddingBottom : 60, paddingTop : 100, paddingHorizontal : 10 }}> 
         <Stack.Screen options={{ 
         headerTransparent : true,
         headerShown : true,

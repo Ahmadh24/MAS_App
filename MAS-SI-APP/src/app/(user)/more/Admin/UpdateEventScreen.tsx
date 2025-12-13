@@ -6,7 +6,6 @@ import * as ImagePicker from "expo-image-picker";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import moment from "moment";
 import Toast from "react-native-toast-message";
-import { useBottomTabBarHeight  } from "@react-navigation/bottom-tabs";
 import {
   Menu,
   MenuOptions,
@@ -76,7 +75,6 @@ const UpdateEventScreen = () => {
   const [ hasLectures, sethasLectures ]  = useState(false)
   const [ imgURL, setImgURL ] = useState('')
   const [ speakerBottomSheetOpen, setSpeakerBottomSheetOpen ] = useState(false)
-  const tabHeight = useBottomTabBarHeight() + 20
 
   const scrollViewRef = useRef<ScrollView>(null)
   const descriptionRef = useRef<View>(null)
@@ -330,7 +328,7 @@ const UpdateEventScreen = () => {
     />
     <ScrollView
       className="flex-1 px-4"
-      contentContainerStyle={{ paddingBottom: tabHeight + 10 }}
+      contentContainerStyle={{ paddingBottom: 10 }}
       showsVerticalScrollIndicator={false}
       ref={scrollViewRef}
       onScroll={(e) => {

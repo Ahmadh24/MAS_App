@@ -11,7 +11,6 @@ import moment from 'moment'
 import { BlurView } from 'expo-blur'
 import { LinearGradient } from 'expo-linear-gradient'
 import { supabase } from '@/src/lib/supabase'
-import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs'
 import { useAuth } from '@/src/providers/AuthProvider'
 import YoutubePlayer from "react-native-youtube-iframe"
 import AsyncStorage from '@react-native-async-storage/async-storage'
@@ -178,7 +177,6 @@ const FlyerImageComponent = ({item} : {item : Program}) => {
     const bottomSheetRef = useRef<BottomSheetModal>(null)
     const router = useRouter()
     const navigation = useNavigation<NavigationProp<any>>()
-    const Tab = useBottomTabBarHeight()
     const { width, height } = Dimensions.get("window")
     
     // Pan responder for slide-down gesture - only on drag handle

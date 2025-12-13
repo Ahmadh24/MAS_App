@@ -5,7 +5,7 @@ import { supabase } from '@/src/lib/supabase'
 import { useAuth } from '@/src/providers/AuthProvider'
 import { BusinessSubmissionsProp } from '@/src/types'
 import BusinessSubmissionsCard from '@/src/components/BusinessAdsComponets/BusinessSubmissionsCard'
-import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs'
+// import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs'
 import { ActivityIndicator } from 'react-native-paper'
 
 const BusinessSubmissions = () => {
@@ -23,7 +23,7 @@ const BusinessSubmissions = () => {
       console.log(error)
     }
   }
-  const tabBarHeight = useBottomTabBarHeight() + 30
+  // const tabBarHeight = useBottomTabBarHeight() + 30
 
   useEffect(() => {
     getSubmissions()
@@ -48,7 +48,7 @@ const BusinessSubmissions = () => {
   }, []);
   return (
     <View style={{ backgroundColor : 'gray', width, height }} >
-      <Stack.Screen options={{ headerTransparent : true, headerTitle : '', headerBackTitleVisible : false, }}/>
+      <Stack.Screen options={{ headerTransparent : true, headerTitle : '', }}/>
       <StatusBar barStyle={'light-content'}/>
       <SafeAreaView style={[{ width : width, height : height / 5 },
         Platform.OS == 'android' ? {
@@ -57,7 +57,7 @@ const BusinessSubmissions = () => {
       ]}>
         <Text className='text-3xl text-center font-bold'>Status</Text>
       </SafeAreaView>
-      <ScrollView style={{ backgroundColor : '#DADADA', borderTopRightRadius : 40, borderTopLeftRadius : 40, width : width }} contentContainerStyle={{  paddingTop : 15, width : width * .9, alignItems : 'center', alignSelf : 'center', flexGrow : 1, paddingBottom : tabBarHeight }} 
+      <ScrollView style={{ backgroundColor : '#DADADA', borderTopRightRadius : 40, borderTopLeftRadius : 40, width : width }} contentContainerStyle={{  paddingTop : 15, width : width * .9, alignItems : 'center', alignSelf : 'center', flexGrow : 1 }} 
       refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }>

@@ -7,7 +7,6 @@ import { router, Stack, useLocalSearchParams } from "expo-router";
 import moment from "moment";
 import { supabase } from "@/src/lib/supabase";
 import Svg, { Path } from "react-native-svg";
-import { useBottomTabBarHeight } from "@react-navigation/bottom-tabs";
 import {
   Menu,
   MenuOptions,
@@ -26,15 +25,14 @@ const UploadProgramLectures = () => {
   const [showDatePicker, setShowDatePicker] = useState<boolean>(false);
   const [showTimePicker, setShowTimePicker] = useState<boolean>(false);
   const [menuVisible, setMenuVisible] = useState<boolean>(false);
-  const [ keyNotes, setKeyNotes ] = useState<string[]>([]);
-  const [ keyNoteModal, setKeyNoteModal ] = useState<boolean>(false);
-  const [ keyNoteInput, setKeyNoteInput ] = useState<string>("");
-  const [ speakerSelected, setSpeakerSelected ] = useState<any[]>([])
-  const [ speakers, setSpeakers ] = useState<any[]>([])
-  const [ speakerBottomSheetOpen, setSpeakerBottomSheetOpen ] = useState(false)
+  const [keyNotes, setKeyNotes] = useState<string[]>([]);
+  const [keyNoteModal, setKeyNoteModal] = useState<boolean>(false);
+  const [keyNoteInput, setKeyNoteInput] = useState<string>("");
+  const [speakerSelected, setSpeakerSelected] = useState<any[]>([])
+  const [speakers, setSpeakers] = useState<any[]>([])
+  const [speakerBottomSheetOpen, setSpeakerBottomSheetOpen] = useState(false)
   const [showStartDatePicker, setShowStartDatePicker] =
-      useState<boolean>(false);
-  const tabBar = useBottomTabBarHeight()
+    useState<boolean>(false);
   const scrollViewRef = useRef<ScrollView>(null)
   const youtubeRef = useRef<View>(null)
   const titleRef = useRef<View>(null)
@@ -60,48 +58,48 @@ const UploadProgramLectures = () => {
     setKeyNoteInput("")
   };
 
-    const getSpeakers = async () => {
-      const { data, error } = await supabase.from('speaker_data').select('speaker_id, speaker_name, speaker_img, speaker_creds')
-      if( data ){
-        setSpeakers(data)
-      }
+  const getSpeakers = async () => {
+    const { data, error } = await supabase.from('speaker_data').select('speaker_id, speaker_name, speaker_img, speaker_creds')
+    if (data) {
+      setSpeakers(data)
     }
-  const handleSpeakerPress = (speaker_id : string) => {
-    if( speakerSelected.includes(speaker_id)){
+  }
+  const handleSpeakerPress = (speaker_id: string) => {
+    if (speakerSelected.includes(speaker_id)) {
       const removeSpeaker = speakerSelected.filter(id => id != speaker_id)
       setSpeakerSelected(removeSpeaker)
     }
-    else if( speakerSelected.length == 0 ){
+    else if (speakerSelected.length == 0) {
       setSpeakerSelected([speaker_id])
-    } else if( speakerSelected.length > 0 ){
+    } else if (speakerSelected.length > 0) {
       setSpeakerSelected([...speakerSelected, speaker_id])
     }
   }
-const SpeakersData = (speakers  : any ) => {
-  return(
-    <Pressable
-      onPress={() => setSpeakerBottomSheetOpen(true)}
-      className="bg-gray-50 border border-gray-200 rounded-xl px-4 py-4 flex-row items-center justify-between"
-    >
-      <View className="flex-1">
-        <Text className={`text-base ${speakerSelected.length > 0 ? 'text-blue-600 font-semibold' : 'text-gray-500'}`}>
-          {speakerSelected.length == 0 ? 'Select Speakers' : `${speakerSelected.length} Speaker(s) Selected`}
-        </Text>
-        {speakerSelected.length > 0 && (
-          <Text className="text-sm text-gray-500 mt-1">
-            {speakers.speakers.filter((s: any) => speakerSelected.includes(s.speaker_id)).map((s: any) => s.speaker_name).join(', ')}
+  const SpeakersData = (speakers: any) => {
+    return (
+      <Pressable
+        onPress={() => setSpeakerBottomSheetOpen(true)}
+        className="bg-gray-50 border border-gray-200 rounded-xl px-4 py-4 flex-row items-center justify-between"
+      >
+        <View className="flex-1">
+          <Text className={`text-base ${speakerSelected.length > 0 ? 'text-blue-600 font-semibold' : 'text-gray-500'}`}>
+            {speakerSelected.length == 0 ? 'Select Speakers' : `${speakerSelected.length} Speaker(s) Selected`}
           </Text>
-        )}
-      </View>
-      <Svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-        <Path d="M7.5 15L12.5 10L7.5 5" stroke="#6077F5" strokeWidth="2"/>
-      </Svg>
-    </Pressable>
-  )
-}
+          {speakerSelected.length > 0 && (
+            <Text className="text-sm text-gray-500 mt-1">
+              {speakers.speakers.filter((s: any) => speakerSelected.includes(s.speaker_id)).map((s: any) => s.speaker_name).join(', ')}
+            </Text>
+          )}
+        </View>
+        <Svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+          <Path d="M7.5 15L12.5 10L7.5 5" stroke="#6077F5" strokeWidth="2" />
+        </Svg>
+      </Pressable>
+    )
+  }
 
   const onUploadLecture = async () => {
-    if ( !lectureName || (!speakerSelected || speakerSelected.length < 1) || !lectureLink || !lectureDate ) {
+    if (!lectureName || (!speakerSelected || speakerSelected.length < 1) || !lectureLink || !lectureDate) {
       Toast.show({
         type: "error",
         text1: "All fields are required!",
@@ -109,9 +107,9 @@ const SpeakersData = (speakers  : any ) => {
         topOffset: 50,
       });
       return;
-    }else{
-      const { error } = await supabase.from('program_lectures').insert({ lecture_program : program_id, lecture_name : lectureName, lecture_speaker : speakerSelected, lecture_link : lectureLink, lecture_date : lectureDate, lecture_ai : lectureAI, lecture_key_notes : keyNotes})
-      if ( error ){
+    } else {
+      const { error } = await supabase.from('program_lectures').insert({ lecture_program: program_id, lecture_name: lectureName, lecture_speaker: speakerSelected, lecture_link: lectureLink, lecture_date: lectureDate, lecture_ai: lectureAI, lecture_key_notes: keyNotes })
+      if (error) {
         console.log(error)
       }
       handleSubmit()
@@ -125,11 +123,11 @@ const SpeakersData = (speakers  : any ) => {
   }, [])
   return (
     <>
-    <Stack.Screen
-       options={{
+      <Stack.Screen
+        options={{
           title: "Add New Lecture",
           headerStyle: { backgroundColor: "#F9FAFB" },
-          headerTitleStyle: { 
+          headerTitleStyle: {
             fontSize: 22,
             fontWeight: '600',
             color: '#1F2937'
@@ -137,178 +135,178 @@ const SpeakersData = (speakers  : any ) => {
           headerTintColor: '#4A5568',
           headerShadowVisible: false,
         }}
-    />
-    <View style={{ padding: 16, backgroundColor : '#F9FAFB', flex : 1, paddingBottom : tabBar + 30 }}>
-      <ScrollView
-        contentContainerStyle={{  }}
-        showsVerticalScrollIndicator={false}
-        ref={scrollViewRef}
-      >
-        
-        <Image 
-          src={Array.isArray(program_img) ? program_img[0] : program_img}
-          className="self-center w-[200px] h-[200px] rounded-[15px] my-4"
-        />
-        <Text className="self-center font-bold text-lg mb-4 text-gray-800">{program_name}</Text>
-
-       <View className='bg-white rounded-2xl p-4 mb-4 shadow-sm' ref={youtubeRef}>
-          <Text className="text-base font-bold mb-2 text-gray-800">Add A New YouTube Link</Text>
-          <Text className="text-xs text-gray-600 mb-3">Example: https://www.youtube.com/watch?v=<Text className="bg-[#FFD465] font-bold rounded-[2px]">qdbPaFQxSUI</Text></Text>
-          <TextInput
-            mode="outlined"
-            theme={{ roundness: 12 }}
-            style={{ width: "100%", height: 50, backgroundColor : 'white'}}
-            activeOutlineColor="#6077F5"
-            outlineColor="#E2E8F0"
-            value={lectureLink}
-            onChangeText={setLectureLink}
-            placeholder="Enter Link ID ONLY..."
-            textColor="black"
-            onFocus={() => {
-              youtubeRef.current?.measure(
-                (x, y, width, height, pageX, pageY) => {
-                scrollViewRef.current?.scrollTo(
-                  {
-                    y: y,
-                    animated : true
-                  }
-                )
-              })
-            }}
-          />
-       </View>
-
-        <View className='bg-white rounded-2xl p-4 mb-4 shadow-sm' ref={titleRef}>
-          <Text className="text-base font-bold mb-3 text-gray-800">Lecture Title</Text>
-          <TextInput
-            mode="outlined"
-            theme={{ roundness: 12 }}
-            style={{ width: "100%", height: 50, backgroundColor : 'white' }}
-            activeOutlineColor="#6077F5"
-            outlineColor="#E2E8F0"
-            value={lectureName}
-            onChangeText={setLectureName}
-            placeholder="Enter Lecture Title"
-            textColor="black"
-            onFocus={() => {
-              titleRef.current?.measure(
-                (x, y, width, height, pageX, pageY) => {
-                scrollViewRef.current?.scrollTo(
-                  {
-                    y: y,
-                    animated : true
-                  }
-                )
-              })
-            }}
-          />
-        </View>
-
-        <View className='bg-white rounded-2xl p-4 mb-4 shadow-sm'>
-          <Text className="text-base font-bold mb-3 text-gray-800">Lecture Speaker</Text>
-          { speakers ? <SpeakersData speakers={speakers} /> : <Text className="text-gray-500">Fetching Speakers...</Text>}
-        </View>
-
-        <View className='bg-white rounded-2xl p-4 mb-4 shadow-sm' ref={descriptionRef}>
-          <Text className="text-base font-bold mb-3 text-gray-800">Lecture Summary</Text>
-          <TextInput
-            mode="outlined"
-            theme={{ roundness: 12 }}
-            style={{ width: "100%", height: 120, backgroundColor : 'white' }}
-            activeOutlineColor="#6077F5"
-            outlineColor="#E2E8F0"
-            multiline
-            value={lectureAI}
-            onChangeText={setLectureAI}
-            placeholder="Enter Summary..."
-            textColor="black"
-            onFocus={() => {
-              descriptionRef.current?.measure(
-                (x, y, width, height, pageX, pageY) => {
-                const newY = y + 10
-                scrollViewRef.current?.scrollTo(
-                  {
-                    y: newY,
-                    animated : true
-                  }
-                )
-              })
-            }}
-          />
-        </View>
-
-        <View className='bg-white rounded-2xl p-4 mb-4 shadow-sm'>
-          <Text className="text-base font-bold mb-3 text-gray-800">Lecture KeyNotes</Text>
-          {
-            keyNotes && keyNotes.length > 0 ? keyNotes.map((note, index) => {
-              return(
-                <View className="flex-row items-center mb-2 bg-gray-50 rounded-lg p-2" key={index}>
-                  <Text className="flex-1 text-gray-700">• {note}</Text>
-                  <Pressable 
-                    onPress={() => {
-                      const filtered = keyNotes.filter(notes => notes != note)
-                      setKeyNotes(filtered)
-                    }}
-                    className='ml-2 bg-red-100 w-6 h-6 rounded-full items-center justify-center'
-                  >
-                    <Text className='text-red-600 font-bold text-sm'>×</Text>
-                  </Pressable>
-                </View>
-              )
-            }) : <Text className="text-gray-500 text-sm mb-2">No keynotes added yet</Text>
-          }
-          <Pressable 
-            onPress={() => setKeyNoteModal(true)}
-            className='bg-gray-100 rounded-lg py-2 px-4 items-center mt-2'
-          >
-            <Text className='text-[#6077F5] font-medium'>+ Add KeyNote</Text>
-          </Pressable>
-        </View>
-
-        <View className='bg-white rounded-2xl p-4 mb-4 shadow-sm'>
-          <Text className="text-base font-bold mb-3 text-gray-800">Lecture Date</Text>
-          <Pressable 
-            className="bg-gray-50 border border-gray-200 rounded-xl py-3 px-4 items-center" 
-            onPress={() => setShowStartDatePicker(true)}
-          >
-            <Text className="text-gray-700 font-medium">
-              { lectureDate ? lectureDate.toLocaleDateString('en-US', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' }) : 'Select Date'}
-            </Text>
-            {showStartDatePicker && (
-              <DateTimePicker
-                value={new Date()}
-                mode="date"
-                display="default"
-                onChange={(event, date) => {
-                  setShowStartDatePicker(false);
-                  if (date) setLectureDate(date);
-                }}
-              />
-            )}
-          </Pressable>
-        </View>
-
-        <Button
-          mode="contained"
-          buttonColor="#6077F5"
-          textColor="white"
-          theme={{ roundness: 12 }}
-          style={{ marginTop: 8, marginBottom: 24, height: 50, justifyContent: 'center' }}
-          labelStyle={{ fontSize: 16, fontWeight: '600' }}
-          onPress={() => onUploadLecture()}
+      />
+      <View style={{ padding: 16, backgroundColor: '#F9FAFB', flex: 1, paddingBottom: 30 }}>
+        <ScrollView
+          contentContainerStyle={{}}
+          showsVerticalScrollIndicator={false}
+          ref={scrollViewRef}
         >
-          Update Lecture
-        </Button>
-      </ScrollView>
 
-      <Modal visible={keyNoteModal} onDismiss={() => setKeyNoteModal(false)} contentContainerStyle={{backgroundColor : 'white' , borderRadius : 12, width : '90%', height : '50%', alignSelf : 'center' }}>
-            <View className="w-[100%] self-center p-5 flex-1">
-              <Text className="text-lg font-bold text-gray-800 mb-4">Add KeyNote</Text>
-              <TextInput
+          <Image
+            src={Array.isArray(program_img) ? program_img[0] : program_img}
+            className="self-center w-[200px] h-[200px] rounded-[15px] my-4"
+          />
+          <Text className="self-center font-bold text-lg mb-4 text-gray-800">{program_name}</Text>
+
+          <View className='bg-white rounded-2xl p-4 mb-4 shadow-sm' ref={youtubeRef}>
+            <Text className="text-base font-bold mb-2 text-gray-800">Add A New YouTube Link</Text>
+            <Text className="text-xs text-gray-600 mb-3">Example: https://www.youtube.com/watch?v=<Text className="bg-[#FFD465] font-bold rounded-[2px]">qdbPaFQxSUI</Text></Text>
+            <TextInput
+              mode="outlined"
+              theme={{ roundness: 12 }}
+              style={{ width: "100%", height: 50, backgroundColor: 'white' }}
+              activeOutlineColor="#6077F5"
+              outlineColor="#E2E8F0"
+              value={lectureLink}
+              onChangeText={setLectureLink}
+              placeholder="Enter Link ID ONLY..."
+              textColor="black"
+              onFocus={() => {
+                youtubeRef.current?.measure(
+                  (x, y, width, height, pageX, pageY) => {
+                    scrollViewRef.current?.scrollTo(
+                      {
+                        y: y,
+                        animated: true
+                      }
+                    )
+                  })
+              }}
+            />
+          </View>
+
+          <View className='bg-white rounded-2xl p-4 mb-4 shadow-sm' ref={titleRef}>
+            <Text className="text-base font-bold mb-3 text-gray-800">Lecture Title</Text>
+            <TextInput
+              mode="outlined"
+              theme={{ roundness: 12 }}
+              style={{ width: "100%", height: 50, backgroundColor: 'white' }}
+              activeOutlineColor="#6077F5"
+              outlineColor="#E2E8F0"
+              value={lectureName}
+              onChangeText={setLectureName}
+              placeholder="Enter Lecture Title"
+              textColor="black"
+              onFocus={() => {
+                titleRef.current?.measure(
+                  (x, y, width, height, pageX, pageY) => {
+                    scrollViewRef.current?.scrollTo(
+                      {
+                        y: y,
+                        animated: true
+                      }
+                    )
+                  })
+              }}
+            />
+          </View>
+
+          <View className='bg-white rounded-2xl p-4 mb-4 shadow-sm'>
+            <Text className="text-base font-bold mb-3 text-gray-800">Lecture Speaker</Text>
+            {speakers ? <SpeakersData speakers={speakers} /> : <Text className="text-gray-500">Fetching Speakers...</Text>}
+          </View>
+
+          <View className='bg-white rounded-2xl p-4 mb-4 shadow-sm' ref={descriptionRef}>
+            <Text className="text-base font-bold mb-3 text-gray-800">Lecture Summary</Text>
+            <TextInput
+              mode="outlined"
+              theme={{ roundness: 12 }}
+              style={{ width: "100%", height: 120, backgroundColor: 'white' }}
+              activeOutlineColor="#6077F5"
+              outlineColor="#E2E8F0"
+              multiline
+              value={lectureAI}
+              onChangeText={setLectureAI}
+              placeholder="Enter Summary..."
+              textColor="black"
+              onFocus={() => {
+                descriptionRef.current?.measure(
+                  (x, y, width, height, pageX, pageY) => {
+                    const newY = y + 10
+                    scrollViewRef.current?.scrollTo(
+                      {
+                        y: newY,
+                        animated: true
+                      }
+                    )
+                  })
+              }}
+            />
+          </View>
+
+          <View className='bg-white rounded-2xl p-4 mb-4 shadow-sm'>
+            <Text className="text-base font-bold mb-3 text-gray-800">Lecture KeyNotes</Text>
+            {
+              keyNotes && keyNotes.length > 0 ? keyNotes.map((note, index) => {
+                return (
+                  <View className="flex-row items-center mb-2 bg-gray-50 rounded-lg p-2" key={index}>
+                    <Text className="flex-1 text-gray-700">• {note}</Text>
+                    <Pressable
+                      onPress={() => {
+                        const filtered = keyNotes.filter(notes => notes != note)
+                        setKeyNotes(filtered)
+                      }}
+                      className='ml-2 bg-red-100 w-6 h-6 rounded-full items-center justify-center'
+                    >
+                      <Text className='text-red-600 font-bold text-sm'>×</Text>
+                    </Pressable>
+                  </View>
+                )
+              }) : <Text className="text-gray-500 text-sm mb-2">No keynotes added yet</Text>
+            }
+            <Pressable
+              onPress={() => setKeyNoteModal(true)}
+              className='bg-gray-100 rounded-lg py-2 px-4 items-center mt-2'
+            >
+              <Text className='text-[#6077F5] font-medium'>+ Add KeyNote</Text>
+            </Pressable>
+          </View>
+
+          <View className='bg-white rounded-2xl p-4 mb-4 shadow-sm'>
+            <Text className="text-base font-bold mb-3 text-gray-800">Lecture Date</Text>
+            <Pressable
+              className="bg-gray-50 border border-gray-200 rounded-xl py-3 px-4 items-center"
+              onPress={() => setShowStartDatePicker(true)}
+            >
+              <Text className="text-gray-700 font-medium">
+                {lectureDate ? lectureDate.toLocaleDateString('en-US', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' }) : 'Select Date'}
+              </Text>
+              {showStartDatePicker && (
+                <DateTimePicker
+                  value={new Date()}
+                  mode="date"
+                  display="default"
+                  onChange={(event, date) => {
+                    setShowStartDatePicker(false);
+                    if (date) setLectureDate(date);
+                  }}
+                />
+              )}
+            </Pressable>
+          </View>
+
+          <Button
+            mode="contained"
+            buttonColor="#6077F5"
+            textColor="white"
+            theme={{ roundness: 12 }}
+            style={{ marginTop: 8, marginBottom: 24, height: 50, justifyContent: 'center' }}
+            labelStyle={{ fontSize: 16, fontWeight: '600' }}
+            onPress={() => onUploadLecture()}
+          >
+            Update Lecture
+          </Button>
+        </ScrollView>
+
+        <Modal visible={keyNoteModal} onDismiss={() => setKeyNoteModal(false)} contentContainerStyle={{ backgroundColor: 'white', borderRadius: 12, width: '90%', height: '50%', alignSelf: 'center' }}>
+          <View className="w-[100%] self-center p-5 flex-1">
+            <Text className="text-lg font-bold text-gray-800 mb-4">Add KeyNote</Text>
+            <TextInput
               mode="outlined"
               ref={keynoteRef}
               theme={{ roundness: 12 }}
-              style={{ width: "100%", height: 200, marginBottom: 10, backgroundColor : 'white' }}
+              style={{ width: "100%", height: 200, marginBottom: 10, backgroundColor: 'white' }}
               activeOutlineColor="#6077F5"
               outlineColor="#E2E8F0"
               multiline
@@ -318,45 +316,45 @@ const SpeakersData = (speakers  : any ) => {
               textColor="black"
               returnKeyType="done"
               onKeyPress={(e) => {
-                if (e.nativeEvent.key == 'Enter' ){ e.preventDefault(); keynoteRef.current?.blur()  }
+                if (e.nativeEvent.key == 'Enter') { e.preventDefault(); keynoteRef.current?.blur() }
               }}
-              />
-            </View>
-            <View className="flex-1 justify-end pb-8">
-              <Button
-                    mode="contained"
-                    buttonColor="#6077F5"
-                    textColor="white"
-                    theme={{ roundness: 12 }}
-                    onPress={ () => {
-                      if( keyNotes.length < 1 && keyNoteInput){
-                        setKeyNotes([keyNoteInput.trim()])
-                      }else if(keyNoteInput ){
-                        setKeyNotes([...keyNotes, keyNoteInput.trim()])
-                      }
+            />
+          </View>
+          <View className="flex-1 justify-end pb-8">
+            <Button
+              mode="contained"
+              buttonColor="#6077F5"
+              textColor="white"
+              theme={{ roundness: 12 }}
+              onPress={() => {
+                if (keyNotes.length < 1 && keyNoteInput) {
+                  setKeyNotes([keyNoteInput.trim()])
+                } else if (keyNoteInput) {
+                  setKeyNotes([...keyNotes, keyNoteInput.trim()])
+                }
 
-                      setKeyNoteInput("")
-                      setKeyNoteModal(false)
-                    } }
-                    style={{ width: "60%", alignSelf : 'center', height: 50, justifyContent: 'center'}}
-                    labelStyle={{ fontSize: 16, fontWeight: '600' }}
-                >
-                  Confirm
-                </Button>
-            </View>
-          </Modal>
-          <SelectSpeakerBottomSheet
-            isOpen={speakerBottomSheetOpen}
-            setIsOpen={setSpeakerBottomSheetOpen}
-            speakers={speakers}
-            selectedSpeakers={speakerSelected}
-            onSelectSpeaker={handleSpeakerPress}
-            multiSelect={true}
-            title="Select Speakers"
-          />
-    </View>
-  </>
-);
+                setKeyNoteInput("")
+                setKeyNoteModal(false)
+              }}
+              style={{ width: "60%", alignSelf: 'center', height: 50, justifyContent: 'center' }}
+              labelStyle={{ fontSize: 16, fontWeight: '600' }}
+            >
+              Confirm
+            </Button>
+          </View>
+        </Modal>
+        <SelectSpeakerBottomSheet
+          isOpen={speakerBottomSheetOpen}
+          setIsOpen={setSpeakerBottomSheetOpen}
+          speakers={speakers}
+          selectedSpeakers={speakerSelected}
+          onSelectSpeaker={handleSpeakerPress}
+          multiSelect={true}
+          title="Select Speakers"
+        />
+      </View>
+    </>
+  );
 }
 
 export default UploadProgramLectures

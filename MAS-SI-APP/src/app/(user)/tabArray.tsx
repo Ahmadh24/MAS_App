@@ -2,9 +2,9 @@ import { View, Text } from 'react-native'
 import React from 'react'
 import { TabArrayType } from "../../types"
 const TabArray : TabArrayType[] = [
-    { name: "menu", title : "Home", icon : "home" },
+    { name: "menu", title : "Home", icon : "house.fill" },
     { name: "myPrograms", title : "My Library", icon : "book" },
-    { name: "prayersTable", title : "Prayer Times", icon : "clock-outline" },
+    { name: "prayersTable", title : "Prayer Times", icon : "clock" },
     { name: "more", title : "More", icon : "dots-horizontal" }
 ]
 

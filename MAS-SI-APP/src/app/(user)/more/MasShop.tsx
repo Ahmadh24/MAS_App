@@ -2,7 +2,6 @@ import { View, Text, ScrollView, useWindowDimensions, Pressable, Image, SafeArea
 import React, { useEffect, useState } from 'react'
 import  {LinearGradient } from "expo-linear-gradient"
 import { Link, Stack } from 'expo-router'
-import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs'
 import { Icon, Searchbar } from 'react-native-paper'
 import ShopCategories from './ShopCategories'
 import { useAuth } from '@/src/providers/AuthProvider'
@@ -14,7 +13,6 @@ const MasShop = () => {
   const { session } = useAuth()
   const width = useWindowDimensions().width
   const height = useWindowDimensions().height
-  const tabBarHeight = useBottomTabBarHeight() + 30
  
   console.log(cartAmount)
   return (

@@ -9,7 +9,6 @@ import { useAuth } from "@/src/providers/AuthProvider"
 import { supabase } from '@/src/lib/supabase';
 import { setDate } from 'date-fns';
 import LectureKeyNotesCard from '@/src/components/LectureKeyNotesCard';
-import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
 import Animated, { runOnJS, useAnimatedStyle, useSharedValue, withTiming, Easing } from 'react-native-reanimated';
 import LottieView from 'lottie-react-native';
 import { Modal, Portal,Icon } from 'react-native-paper';
@@ -28,7 +27,6 @@ const EventsLectureID = () => {
     const layoutHeight = useWindowDimensions().height
     const KEYNOTECARDHEIGHT = layoutHeight / 4
     const KEYNOTECARDWIDTH = layout * 0.85
-    const tabBarHeight = useBottomTabBarHeight() + 60
 
     async function getLecture(){
       const { data, error } = await supabase.from("events_lectures").select("*").eq("event_lecture_id", events_lecture_id).single()
@@ -109,7 +107,7 @@ const EventsLectureID = () => {
         <View className='mt-2'/>
           <ScrollView 
           onScroll={(event) => {handleScroll(event); setScrollY(event.nativeEvent.contentOffset.y)}} 
-          contentContainerStyle={{ alignItems : "center", paddingBottom : tabBarHeight }} 
+          contentContainerStyle={{ alignItems : "center", paddingBottom : 0 }} 
           decelerationRate={0.6}
           snapToInterval={KEYNOTECARDHEIGHT + (20 * 0.2)}
           showsVerticalScrollIndicator={false}

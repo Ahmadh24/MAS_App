@@ -2,7 +2,6 @@ import { View, Text, ScrollView, useWindowDimensions, Image, Pressable, StatusBa
 import { LinearGradient } from 'expo-linear-gradient'
 import React, { useEffect, useRef, useState } from 'react'
 import LottieView from 'lottie-react-native'
-import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs'
 import { Button, Icon, Portal, Modal,TextInput, Divider } from 'react-native-paper'
 import { Link, useRouter } from 'expo-router'
 import { Profile } from '@/src/types'
@@ -28,7 +27,6 @@ const Index = () => {
   const height = useWindowDimensions().height
   const [ visible, setVisible ] = useState(false)
   const [ anonStatus, setAnonStatus ] = useState(true)
-  const tabBarHeight = useBottomTabBarHeight() + 10
   const spin = useSharedValue(0)
   const [ profileFirstName , setProfileFirstName ] = useState('')
   const [ profileLastName , setProfileLastName ] = useState('')
@@ -234,7 +232,7 @@ const Index = () => {
     keyboardDismissMode='on-drag'
     automaticallyAdjustKeyboardInsets
           style={{ flex: 1, backgroundColor: 'transparent' }}
-          contentContainerStyle={{ paddingBottom: tabBarHeight }}
+          contentContainerStyle={{ paddingBottom: 0 }}
         >
           <StatusBar barStyle={'light-content'}/>
       
@@ -386,7 +384,7 @@ const Index = () => {
               </View>
               </View>
       {/* Main Content */}
-      <View className='px-4 py-5' style={{ backgroundColor: 'transparent', paddingBottom: tabBarHeight + 20 }}>
+      <View className='px-4 py-5' style={{ backgroundColor: 'transparent', paddingBottom: 20 }}>
         
         
         {/* MY ACTIVITY */}
@@ -954,7 +952,7 @@ const Index = () => {
       </View>
       </View>
       <SignInAnonModal visible={visible} setVisible={() => setVisible(false)}/>
-      <View style={[{paddingBottom : tabBarHeight}]}></View>
+      <View style={[{paddingBottom : 0}]}></View>
       <Portal>
       <Modal  visible={editProfileVisible} onDismiss={hideModal} contentContainerStyle={{
           height : '60%',

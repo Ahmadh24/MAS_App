@@ -5,7 +5,6 @@ import { supabase } from '@/src/lib/supabase'
 import { UserPlaylistLectureType, UserPlaylistType } from '@/src/types'
 import { Stack } from "expo-router"
 import Animated,{ interpolate, useAnimatedRef, useAnimatedStyle, useScrollViewOffset, useSharedValue, withSpring, withTiming, withRepeat, runOnJS } from 'react-native-reanimated';
-import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs'
 import { useAuth } from '@/src/providers/AuthProvider'
 import * as Haptics from "expo-haptics"
 import { Menu, MenuOptions, MenuOption, MenuTrigger } from 'react-native-popup-menu';
@@ -21,7 +20,6 @@ const AthkarPlaylist = () => {
           setReciters(Reciters)
       }
     } 
-    const Tab = useBottomTabBarHeight()
     const windowHeight = Dimensions.get("window").height 
     const { width } = Dimensions.get("window")
     const scrollRef = useAnimatedRef<Animated.ScrollView>()
@@ -59,7 +57,7 @@ const AthkarPlaylist = () => {
             resizeMode='stretch'
           />
 
-          <View className='bg-white w-[100%]' style={{paddingBottom : Tab * 3}}>
+          <View className='bg-white w-[100%]' style={{paddingBottom : 0}}>
 
             <Text className='text-center mt-2 text-xl text-black font-bold mb-4'>Athkar</Text>
               <View className=' px-2 w-[100%]'>

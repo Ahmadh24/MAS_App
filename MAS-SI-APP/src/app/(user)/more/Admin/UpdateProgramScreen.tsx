@@ -13,14 +13,13 @@ import {
   MenuOption,
   MenuTrigger,
 } from 'react-native-popup-menu';
-import { useBottomTabBarHeight  } from "@react-navigation/bottom-tabs";
 import { decode } from "base64-arraybuffer";
 import { format } from "date-fns";
 import * as FileSystem from 'expo-file-system'
 import Svg, { Path } from "react-native-svg";
 import { useNavigation } from "expo-router";
 import SelectSpeakerBottomSheet from "@/src/components/AdminComponents/SelectSpeakerBottomSheet";
-function setTimeToCurrentDate(timeString : string ) {
+function setTimeToCurrentDate(timeString: string) {
 
   // Split the time string into hours, minutes, and seconds
   const [hours, minutes, seconds] = timeString.split(':').map(Number);
@@ -40,7 +39,7 @@ const UpdateProgramScreen = () => {
   const { program_id, program_name } = useLocalSearchParams();
   const router = useRouter();
   const navigation = useNavigation();
-  const [ originalName, setOriginalName ] = useState('');
+  const [originalName, setOriginalName] = useState('');
   const [programName, setProgramName] = useState<string>("");
   const [programImage, setProgramImage] = useState<ImagePicker.ImagePickerAsset>();
   const [programDescription, setProgramDescription] = useState<string>("");
@@ -48,8 +47,8 @@ const UpdateProgramScreen = () => {
   const [programEndDate, setProgramEndDate] = useState<Date | null>(null);
   const [programStartTime, setProgramStartTime] = useState<Date | null>(null);
   const [programDays, setProgramDays] = useState<string[]>([]);
-  const [ speakers, setSpeakers ] = useState<any[]>([])
-  const [ keyboardOffset , setKeyboardOffset ] = useState(0)
+  const [speakers, setSpeakers] = useState<any[]>([])
+  const [keyboardOffset, setKeyboardOffset] = useState(0)
   const [showStartDatePicker, setShowStartDatePicker] =
     useState<boolean>(false);
   const [showEndDatePicker, setShowEndDatePicker] = useState<boolean>(false);
@@ -60,11 +59,10 @@ const UpdateProgramScreen = () => {
   const [isForKids, setIsForKids] = useState<boolean>(false);
   const [isFor14Plus, setIsFor14Plus] = useState<boolean>(false);
   const [isEducational, setIsEducational] = useState<boolean>(false);
-  const [ speakerSelected, setSpeakerSelected ] = useState<any[]>([])
-  const [ hasLectures, sethasLectures ] = useState(false)
-  const [ imgURL, setImgURL ] = useState('')
-  const [ speakerBottomSheetOpen, setSpeakerBottomSheetOpen ] = useState(false)
-  const tabHeight = useBottomTabBarHeight() + 20
+  const [speakerSelected, setSpeakerSelected] = useState<any[]>([])
+  const [hasLectures, sethasLectures] = useState(false)
+  const [imgURL, setImgURL] = useState('')
+  const [speakerBottomSheetOpen, setSpeakerBottomSheetOpen] = useState(false)
   const scrollViewRef = useRef<ScrollView>(null)
   const descriptionRef = useRef<View>(null)
   const titleRef = useRef<View>(null)
@@ -72,7 +70,7 @@ const UpdateProgramScreen = () => {
   const layoutHeight = Dimensions.get('screen').height
   const getSpeakers = async () => {
     const { data, error } = await supabase.from('speaker_data').select('speaker_id, speaker_name, speaker_img, speaker_creds')
-    if( data ){
+    if (data) {
       setSpeakers(data)
     }
   }
@@ -131,19 +129,19 @@ const UpdateProgramScreen = () => {
     });
   };
 
-  const handleSpeakerPress = (speaker_id : string) => {
-    if( speakerSelected.includes(speaker_id)){
+  const handleSpeakerPress = (speaker_id: string) => {
+    if (speakerSelected.includes(speaker_id)) {
       const removeSpeaker = speakerSelected.filter(id => id != speaker_id)
       setSpeakerSelected(removeSpeaker)
     }
-    else if( speakerSelected.length == 0 ){
+    else if (speakerSelected.length == 0) {
       setSpeakerSelected([speaker_id])
-    } else if( speakerSelected.length > 0 ){
+    } else if (speakerSelected.length > 0) {
       setSpeakerSelected([...speakerSelected, speaker_id])
     }
   }
-  const SpeakersData = (speakers  : any ) => {
-    return(
+  const SpeakersData = (speakers: any) => {
+    return (
       <Pressable
         onPress={() => setSpeakerBottomSheetOpen(true)}
         className="bg-gray-50 border border-gray-200 rounded-xl px-4 py-4 flex-row items-center justify-between"
@@ -159,15 +157,15 @@ const UpdateProgramScreen = () => {
           )}
         </View>
         <Svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-          <Path d="M7.5 15L12.5 10L7.5 5" stroke="#6077F5" strokeWidth="2"/>
+          <Path d="M7.5 15L12.5 10L7.5 5" stroke="#6077F5" strokeWidth="2" />
         </Svg>
       </Pressable>
     )
   }
 
   const currentSettings = async () => {
-    const { data , error } = await supabase.from('programs').select('*').eq('program_id', program_id).single()
-    if( data ){
+    const { data, error } = await supabase.from('programs').select('*').eq('program_id', program_id).single()
+    if (data) {
       setOriginalName(data.program_name)
       setProgramName(data.program_name);
       setImgURL(data.program_img);
@@ -186,56 +184,56 @@ const UpdateProgramScreen = () => {
     }
   }
 
-  const onUpdate =  async () => {
-    if ( programName && (imgURL || programImage) && programDescription && programStartDate && programEndDate && programDays  && programStartTime && speakerSelected){
-      if( programImage ){
+  const onUpdate = async () => {
+    if (programName && (imgURL || programImage) && programDescription && programStartDate && programEndDate && programDays && programStartTime && speakerSelected) {
+      if (programImage) {
         const base64 = await FileSystem.readAsStringAsync(programImage.uri, { encoding: 'base64' });
-        if( programName == originalName ){
+        if (programName == originalName) {
           const filePath = `${programName.trim().split(" ").join("")}.${programImage.type === 'image' ? 'png' : 'mp4'}`;
           const contentType = programImage.type === 'image' ? 'image/png' : 'video/mp4';
-          const { data : image, error :image_upload_error } = await supabase.storage.from('fliers').update(filePath, decode(base64));
-          const { error } = await supabase.from('programs').update({ program_name : programName, program_desc : programDescription, program_start_date : programStartDate, program_end_date : programEndDate, program_days : programDays, program_start_time : format(programStartTime,'pp'), paid_link : programPaidLink, program_speaker : speakerSelected, program_is_paid : isPaid, is_kids : isForKids, is_education : isEducational, is_fourteen_plus : isFor14Plus, has_lectures : hasLectures}).eq('program_id', program_id)
+          const { data: image, error: image_upload_error } = await supabase.storage.from('fliers').update(filePath, decode(base64));
+          const { error } = await supabase.from('programs').update({ program_name: programName, program_desc: programDescription, program_start_date: programStartDate, program_end_date: programEndDate, program_days: programDays, program_start_time: format(programStartTime, 'pp'), paid_link: programPaidLink, program_speaker: speakerSelected, program_is_paid: isPaid, is_kids: isForKids, is_education: isEducational, is_fourteen_plus: isFor14Plus, has_lectures: hasLectures }).eq('program_id', program_id)
           handleSubmit()
           router.back()
         }
-        else{
+        else {
           const filePath = `${programName.trim().split(" ").join("")}.${programImage.type === 'image' ? 'png' : 'mp4'}`;
           const contentType = programImage.type === 'image' ? 'image/png' : 'video/mp4';
-          const { error : remove} = await supabase.storage.from('fliers').remove([`${originalName.trim().split(" ").join("")}.png`]);
-          const { data : image, error :image_upload_error } = await supabase.storage.from('fliers').upload(filePath, decode(base64));
-          if( image ){
-            const { data : program_img_url} = await supabase.storage.from('fliers').getPublicUrl(image?.path)
-            const time =  format(programStartTime!, 'p').trim()
-            const { error } = await supabase.from('programs').update({ program_name : programName, program_img : program_img_url.publicUrl, program_desc : programDescription, program_start_date : programStartDate, program_end_date : programEndDate, program_days : programDays, program_start_time : format(programStartTime,'pp'), paid_link : programPaidLink, program_speaker : speakerSelected, program_is_paid : isPaid, is_kids : isForKids, is_education : isEducational, is_fourteen_plus : isFor14Plus, has_lectures : hasLectures}).eq('program_id', program_id)
+          const { error: remove } = await supabase.storage.from('fliers').remove([`${originalName.trim().split(" ").join("")}.png`]);
+          const { data: image, error: image_upload_error } = await supabase.storage.from('fliers').upload(filePath, decode(base64));
+          if (image) {
+            const { data: program_img_url } = await supabase.storage.from('fliers').getPublicUrl(image?.path)
+            const time = format(programStartTime!, 'p').trim()
+            const { error } = await supabase.from('programs').update({ program_name: programName, program_img: program_img_url.publicUrl, program_desc: programDescription, program_start_date: programStartDate, program_end_date: programEndDate, program_days: programDays, program_start_time: format(programStartTime, 'pp'), paid_link: programPaidLink, program_speaker: speakerSelected, program_is_paid: isPaid, is_kids: isForKids, is_education: isEducational, is_fourteen_plus: isFor14Plus, has_lectures: hasLectures }).eq('program_id', program_id)
             handleSubmit()
             router.back()
           }
+        }
+      } else {
+        const { error } = await supabase.from('programs').update({ program_name: programName, program_desc: programDescription, program_start_date: programStartDate, program_end_date: programEndDate, program_days: programDays, program_start_time: format(programStartTime, 'pp'), paid_link: programPaidLink, program_speaker: speakerSelected, program_is_paid: isPaid, is_kids: isForKids, is_education: isEducational, is_fourteen_plus: isFor14Plus, has_lectures: hasLectures }).eq('program_id', program_id)
+        if (error) {
+          console.log(error)
+        }
+        handleSubmit()
+        router.back()
       }
-    }else{
-      const { error } = await supabase.from('programs').update({ program_name : programName, program_desc : programDescription, program_start_date : programStartDate, program_end_date : programEndDate, program_days : programDays, program_start_time : format(programStartTime,'pp'), paid_link : programPaidLink, program_speaker : speakerSelected, program_is_paid : isPaid, is_kids : isForKids, is_education : isEducational, is_fourteen_plus : isFor14Plus, has_lectures : hasLectures }).eq('program_id', program_id)
-      if( error ){
-        console.log(error)
-      }
-      handleSubmit()
-      router.back()
+    }
+    else {
+      Alert.alert('Fill out all required fields')
     }
   }
-  else { 
-    Alert.alert('Fill out all required fields')
-  }
-}
   useEffect(() => {
     currentSettings()
     getSpeakers()
-    
+
   }, [])
   return (
     <View className='flex-1 bg-gray-50'>
-       <Stack.Screen
+      <Stack.Screen
         options={{
           title: "Edit Program Info",
           headerStyle: { backgroundColor: "#F9FAFB" },
-          headerTitleStyle: { 
+          headerTitleStyle: {
             fontSize: 22,
             fontWeight: '600',
             color: '#1F2937'
@@ -244,9 +242,9 @@ const UpdateProgramScreen = () => {
           headerShadowVisible: false,
         }}
       />
-      <ScrollView 
+      <ScrollView
         className="flex-1 px-4"
-        contentContainerStyle={{ paddingBottom: tabHeight + 10 }}
+        contentContainerStyle={{ paddingBottom: 10 }}
         showsVerticalScrollIndicator={false}
         ref={scrollViewRef}
         onScroll={(e) => {
@@ -256,19 +254,19 @@ const UpdateProgramScreen = () => {
         {/* Program Details Card */}
         <View className='bg-white rounded-2xl p-4 mb-4 shadow-sm'>
           <Text className="text-base font-bold mb-3 text-gray-800">Program Details</Text>
-          
+
           {/* Start Time */}
           <Text className="text-sm font-semibold text-gray-700 mb-2">Start Time</Text>
-          <Pressable 
-            className="flex-row items-center bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 mb-4" 
+          <Pressable
+            className="flex-row items-center bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 mb-4"
             onPress={() => setShowStartTimePicker(true)}
           >
             <Svg width="20" height="20" viewBox="0 0 20 20" fill="none" style={{ marginRight: 8 }}>
-              <Path d="M10 5V10L13 13" stroke="#6077F5" strokeWidth="2" strokeLinecap="round"/>
-              <Path d="M10 18C14.4183 18 18 14.4183 18 10C18 5.58172 14.4183 2 10 2C5.58172 2 2 5.58172 2 10C2 14.4183 5.58172 18 10 18Z" stroke="#6077F5" strokeWidth="2"/>
+              <Path d="M10 5V10L13 13" stroke="#6077F5" strokeWidth="2" strokeLinecap="round" />
+              <Path d="M10 18C14.4183 18 18 14.4183 18 10C18 5.58172 14.4183 2 10 2C5.58172 2 2 5.58172 2 10C2 14.4183 5.58172 18 10 18Z" stroke="#6077F5" strokeWidth="2" />
             </Svg>
             <Text className="text-gray-800">
-              {programStartTime ? format(programStartTime,'p') : 'Select Time'}
+              {programStartTime ? format(programStartTime, 'p') : 'Select Time'}
             </Text>
           </Pressable>
           {showStartTimePicker && (
@@ -286,8 +284,8 @@ const UpdateProgramScreen = () => {
           {/* Date Range */}
           <Text className="text-sm font-semibold text-gray-700 mb-2">Date</Text>
           <View className="flex-row gap-3 mb-4">
-            <Pressable 
-              className="flex-1 bg-gray-50 border border-gray-200 rounded-xl px-3 py-3" 
+            <Pressable
+              className="flex-1 bg-gray-50 border border-gray-200 rounded-xl px-3 py-3"
               onPress={() => setShowStartDatePicker(true)}
             >
               <Text className="text-xs text-gray-500 mb-1">Start Date</Text>
@@ -307,8 +305,8 @@ const UpdateProgramScreen = () => {
               />
             )}
 
-            <Pressable 
-              className="flex-1 bg-gray-50 border border-gray-200 rounded-xl px-3 py-3" 
+            <Pressable
+              className="flex-1 bg-gray-50 border border-gray-200 rounded-xl px-3 py-3"
               onPress={() => setShowEndDatePicker(true)}
             >
               <Text className="text-xs text-gray-500 mb-1">End Date</Text>
@@ -328,27 +326,25 @@ const UpdateProgramScreen = () => {
               />
             )}
           </View>
-          
+
           {/* Program Days */}
           <Text className="text-sm font-semibold text-gray-700 mb-3">
-            Select the day(s) this program is held:          
+            Select the day(s) this program is held:
           </Text>
           <View className="flex-row flex-wrap gap-2">
             {days.map((day, index) => (
               <Pressable
                 key={index}
                 onPress={() => toggleDaySelection(day)}
-                className={`flex-row items-center px-3 py-2 rounded-lg border ${
-                  programDays.includes(day) 
-                    ? 'bg-blue-50 border-blue-300' 
-                    : 'bg-gray-50 border-gray-200'
-                }`}
+                className={`flex-row items-center px-3 py-2 rounded-lg border ${programDays.includes(day)
+                  ? 'bg-blue-50 border-blue-300'
+                  : 'bg-gray-50 border-gray-200'
+                  }`}
               >
-                <View className={`h-5 w-5 rounded border-2 items-center justify-center mr-2 ${
-                  programDays.includes(day) ? 'border-blue-500 bg-blue-500' : 'border-gray-300'
-                }`}>
+                <View className={`h-5 w-5 rounded border-2 items-center justify-center mr-2 ${programDays.includes(day) ? 'border-blue-500 bg-blue-500' : 'border-gray-300'
+                  }`}>
                   {programDays.includes(day) && (
-                    <Icon source={'check'} size={12} color="white"/>
+                    <Icon source={'check'} size={12} color="white" />
                   )}
                 </View>
                 <Text className={programDays.includes(day) ? 'text-blue-700 font-medium' : 'text-gray-700'}>
@@ -361,7 +357,7 @@ const UpdateProgramScreen = () => {
         {/* Program Information Card */}
         <View className='bg-white rounded-2xl p-4 mb-4 shadow-sm'>
           <Text className="text-base font-bold mb-3 text-gray-800">Program Information</Text>
-          
+
           <View ref={titleRef}>
             <Text className="text-sm font-semibold text-gray-700 mb-2">Program Title</Text>
             <TextInput
@@ -423,7 +419,7 @@ const UpdateProgramScreen = () => {
         {/* Upload Program Flyer Card */}
         <View className='bg-white rounded-2xl p-4 mb-4 shadow-sm'>
           <Text className="text-base font-bold mb-3 text-gray-800">Upload Program Flyer</Text>
-          
+
           {imgURL || programImage ? (
             <Pressable onPress={pickImage} className="items-center">
               <Image
@@ -440,13 +436,13 @@ const UpdateProgramScreen = () => {
               </View>
             </Pressable>
           ) : (
-            <Pressable 
+            <Pressable
               className="border-2 border-dotted border-blue-300 bg-blue-50 rounded-xl py-8 items-center"
               onPress={pickImage}
             >
               <Svg width="60" height="60" viewBox="0 0 60 60" fill="none">
-                <Path d="M30 20L30 40" stroke="#6077F5" strokeWidth="2" strokeLinecap="round"/>
-                <Path d="M40 30L20 30" stroke="#6077F5" strokeWidth="2" strokeLinecap="round"/>
+                <Path d="M30 20L30 40" stroke="#6077F5" strokeWidth="2" strokeLinecap="round" />
+                <Path d="M40 30L20 30" stroke="#6077F5" strokeWidth="2" strokeLinecap="round" />
               </Svg>
               <Text className='text-blue-600 font-medium mt-2'>Tap to upload flyer</Text>
             </Pressable>
@@ -456,36 +452,32 @@ const UpdateProgramScreen = () => {
         {/* Additional Options Card */}
         <View className='bg-white rounded-2xl p-4 mb-4 shadow-sm'>
           <Text className="text-base font-bold mb-3 text-gray-800">Additional Options</Text>
-          
+
           {/* Has Lectures */}
           <Text className="text-sm font-semibold text-gray-700 mb-3">
             Does the Program have recorded Youtube Videos?
           </Text>
           <View className="flex-row gap-3 mb-4">
             <Pressable
-              className={`flex-1 flex-row items-center px-4 py-3 rounded-xl border ${
-                !hasLectures ? 'bg-blue-50 border-blue-300' : 'bg-gray-50 border-gray-200'
-              }`}
+              className={`flex-1 flex-row items-center px-4 py-3 rounded-xl border ${!hasLectures ? 'bg-blue-50 border-blue-300' : 'bg-gray-50 border-gray-200'
+                }`}
               onPress={() => sethasLectures(false)}
             >
-              <View className={`h-5 w-5 rounded-full border-2 items-center justify-center mr-2 ${
-                !hasLectures ? 'border-blue-500 bg-blue-500' : 'border-gray-300'
-              }`}>
-                {!hasLectures && <Icon source={'check'} size={12} color="white"/>}
+              <View className={`h-5 w-5 rounded-full border-2 items-center justify-center mr-2 ${!hasLectures ? 'border-blue-500 bg-blue-500' : 'border-gray-300'
+                }`}>
+                {!hasLectures && <Icon source={'check'} size={12} color="white" />}
               </View>
               <Text className={!hasLectures ? 'text-blue-700 font-medium' : 'text-gray-700'}>No</Text>
             </Pressable>
 
             <Pressable
-              className={`flex-1 flex-row items-center px-4 py-3 rounded-xl border ${
-                hasLectures ? 'bg-blue-50 border-blue-300' : 'bg-gray-50 border-gray-200'
-              }`}
+              className={`flex-1 flex-row items-center px-4 py-3 rounded-xl border ${hasLectures ? 'bg-blue-50 border-blue-300' : 'bg-gray-50 border-gray-200'
+                }`}
               onPress={() => sethasLectures(true)}
             >
-              <View className={`h-5 w-5 rounded-full border-2 items-center justify-center mr-2 ${
-                hasLectures ? 'border-blue-500 bg-blue-500' : 'border-gray-300'
-              }`}>
-                {hasLectures && <Icon source={'check'} size={12} color="white"/>}
+              <View className={`h-5 w-5 rounded-full border-2 items-center justify-center mr-2 ${hasLectures ? 'border-blue-500 bg-blue-500' : 'border-gray-300'
+                }`}>
+                {hasLectures && <Icon source={'check'} size={12} color="white" />}
               </View>
               <Text className={hasLectures ? 'text-blue-700 font-medium' : 'text-gray-700'}>Yes</Text>
             </Pressable>
@@ -495,29 +487,25 @@ const UpdateProgramScreen = () => {
           <Text className="text-sm font-semibold text-gray-700 mb-3">Program Type</Text>
           <View className="flex-row gap-3 mb-4">
             <Pressable
-              className={`flex-1 flex-row items-center px-4 py-3 rounded-xl border ${
-                isForKids ? 'bg-blue-50 border-blue-300' : 'bg-gray-50 border-gray-200'
-              }`}
+              className={`flex-1 flex-row items-center px-4 py-3 rounded-xl border ${isForKids ? 'bg-blue-50 border-blue-300' : 'bg-gray-50 border-gray-200'
+                }`}
               onPress={() => setIsForKids(!isForKids)}
             >
-              <View className={`h-5 w-5 rounded border-2 items-center justify-center mr-2 ${
-                isForKids ? 'border-blue-500 bg-blue-500' : 'border-gray-300'
-              }`}>
-                {isForKids && <Icon source={'check'} size={12} color="white"/>}
+              <View className={`h-5 w-5 rounded border-2 items-center justify-center mr-2 ${isForKids ? 'border-blue-500 bg-blue-500' : 'border-gray-300'
+                }`}>
+                {isForKids && <Icon source={'check'} size={12} color="white" />}
               </View>
               <Text className={isForKids ? 'text-blue-700 font-medium' : 'text-gray-700'}>Kids</Text>
             </Pressable>
 
             <Pressable
-              className={`flex-1 flex-row items-center px-4 py-3 rounded-xl border ${
-                !isForKids ? 'bg-blue-50 border-blue-300' : 'bg-gray-50 border-gray-200'
-              }`}
+              className={`flex-1 flex-row items-center px-4 py-3 rounded-xl border ${!isForKids ? 'bg-blue-50 border-blue-300' : 'bg-gray-50 border-gray-200'
+                }`}
               onPress={() => setIsForKids(!isForKids)}
             >
-              <View className={`h-5 w-5 rounded border-2 items-center justify-center mr-2 ${
-                !isForKids ? 'border-blue-500 bg-blue-500' : 'border-gray-300'
-              }`}>
-                {!isForKids && <Icon source={'check'} size={12} color="white"/>}
+              <View className={`h-5 w-5 rounded border-2 items-center justify-center mr-2 ${!isForKids ? 'border-blue-500 bg-blue-500' : 'border-gray-300'
+                }`}>
+                {!isForKids && <Icon source={'check'} size={12} color="white" />}
               </View>
               <Text className={!isForKids ? 'text-blue-700 font-medium' : 'text-gray-700'}>Program</Text>
             </Pressable>
@@ -528,16 +516,14 @@ const UpdateProgramScreen = () => {
             Is this {isForKids ? 'Kids Program' : 'Program'} Paid?
           </Text>
           <Pressable
-            className={`flex-row items-center px-4 py-3 rounded-xl border ${
-              isPaid ? 'bg-blue-50 border-blue-300' : 'bg-gray-50 border-gray-200'
-            }`}
+            className={`flex-row items-center px-4 py-3 rounded-xl border ${isPaid ? 'bg-blue-50 border-blue-300' : 'bg-gray-50 border-gray-200'
+              }`}
             onPress={() => setIsPaid(!isPaid)}
             style={{ alignSelf: 'flex-start' }}
           >
-            <View className={`h-5 w-5 rounded border-2 items-center justify-center mr-2 ${
-              isPaid ? 'border-blue-500 bg-blue-500' : 'border-gray-300'
-            }`}>
-              {isPaid && <Icon source={'check'} size={12} color="white"/>}
+            <View className={`h-5 w-5 rounded border-2 items-center justify-center mr-2 ${isPaid ? 'border-blue-500 bg-blue-500' : 'border-gray-300'
+              }`}>
+              {isPaid && <Icon source={'check'} size={12} color="white" />}
             </View>
             <Text className={isPaid ? 'text-blue-700 font-medium' : 'text-gray-700'}>Paid</Text>
           </Pressable>
@@ -572,7 +558,7 @@ const UpdateProgramScreen = () => {
           theme={{ roundness: 12 }}
           style={{ marginBottom: 24, height: 50, justifyContent: 'center' }}
           labelStyle={{ fontSize: 16, fontWeight: '600' }}
-          onPress={async() => await onUpdate()}
+          onPress={async () => await onUpdate()}
         >
           Submit Program
         </Button>

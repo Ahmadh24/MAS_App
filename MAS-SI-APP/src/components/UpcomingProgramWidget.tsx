@@ -7,7 +7,6 @@ import { Icon, Modal, Portal, Button } from 'react-native-paper';
 import { supabase } from '@/src/lib/supabase';
 import { parse, isBefore, format } from 'date-fns';
 import { useAuth } from '@/src/providers/AuthProvider';
-import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
 import * as Haptics from 'expo-haptics';
 import Toast from 'react-native-toast-message';
 import { FlyerSkeleton } from './FlyerSkeleton';
@@ -19,12 +18,12 @@ import { BlurView } from 'expo-blur';
 const toastConfig = {
   addProgramToNotificationsToast: ({ props }: any) => (
     <Pressable className='rounded-xl overflow-hidden ' onPress={props.onPress}>
-      <BlurView intensity={40} className='flex-row items-center justify-between px-4 rounded-xl p-1 max-h-[60]' 
+      <BlurView intensity={40} className='flex-row items-center justify-between px-4 rounded-xl p-1 max-h-[60]'
         experimentalBlurMethod={'dimezisBlurView'}
         style={{ width: '100%', maxWidth: '100%' }}
       >
         <View>
-          <Image source={props.props.program_img ? { uri: props.props.program_img } : require("@/assets/images/MASHomeLogo.png")} style={{ width: 50, height: 50, objectFit: 'fill', borderRadius: 10 }}/>
+          <Image source={props.props.program_img ? { uri: props.props.program_img } : require("@/assets/images/MASHomeLogo.png")} style={{ width: 50, height: 50, objectFit: 'fill', borderRadius: 10 }} />
         </View>
         <View className='flex-col pl-2'>
           <View>
@@ -44,7 +43,7 @@ const toastConfig = {
         experimentalBlurMethod={'dimezisBlurView'}
       >
         <View className=''>
-          <Image source={props.props?.playlist_img ? { uri: props.props.playlist_img } : require("@/assets/images/MASHomeLogo.png")} style={{ width: 50, height: 50, objectFit: 'fill', borderRadius: 10 }}/>
+          <Image source={props.props?.playlist_img ? { uri: props.props.playlist_img } : require("@/assets/images/MASHomeLogo.png")} style={{ width: 50, height: 50, objectFit: 'fill', borderRadius: 10 }} />
         </View>
         <View className='flex-col pl-2'>
           <View>
@@ -60,11 +59,11 @@ const toastConfig = {
   ),
   ProgramAddedToPrograms: ({ props }: any) => (
     <Pressable className='rounded-xl overflow-hidden ' onPress={props.onPress}>
-      <BlurView intensity={40} className='flex-row items-center justify-between px-4 rounded-xl p-1 max-w-[85%] max-h-[60]' 
+      <BlurView intensity={40} className='flex-row items-center justify-between px-4 rounded-xl p-1 max-w-[85%] max-h-[60]'
         experimentalBlurMethod={'dimezisBlurView'}
       >
         <View>
-          <Image source={props.props.program_img ? { uri: props.props.program_img } : require("@/assets/images/MASHomeLogo.png")} style={{ width: 50, height: 50, objectFit: 'fill', borderRadius: 10 }}/>
+          <Image source={props.props.program_img ? { uri: props.props.program_img } : require("@/assets/images/MASHomeLogo.png")} style={{ width: 50, height: 50, objectFit: 'fill', borderRadius: 10 }} />
         </View>
         <View className='flex-col pl-2'>
           <View>
@@ -80,12 +79,12 @@ const toastConfig = {
   ),
   addEventToNotificationsToast: ({ props }: any) => (
     <Pressable className='rounded-xl overflow-hidden ' onPress={props.onPress}>
-      <BlurView intensity={40} className='flex-row items-center justify-between px-4 rounded-xl p-1 max-h-[60]' 
+      <BlurView intensity={40} className='flex-row items-center justify-between px-4 rounded-xl p-1 max-h-[60]'
         experimentalBlurMethod={'dimezisBlurView'}
         style={{ width: '100%', maxWidth: '100%' }}
       >
         <View>
-          <Image source={props.props.event_img ? { uri: props.props.event_img } : require("@/assets/images/MASHomeLogo.png")} style={{ width: 50, height: 50, objectFit: 'fill', borderRadius: 10 }}/>
+          <Image source={props.props.event_img ? { uri: props.props.event_img } : require("@/assets/images/MASHomeLogo.png")} style={{ width: 50, height: 50, objectFit: 'fill', borderRadius: 10 }} />
         </View>
         <View className='flex-col pl-2'>
           <View>
@@ -101,7 +100,7 @@ const toastConfig = {
   ),
   ConfirmNotificationOption: ({ props }: any) => (
     <Pressable className='rounded-xl overflow-hidden ' onPress={props.onPress}>
-      <BlurView intensity={40} className='flex-row items-center justify-between px-4 rounded-xl p-2 max-w-[90%] max-h-[60]' 
+      <BlurView intensity={40} className='flex-row items-center justify-between px-4 rounded-xl p-2 max-w-[90%] max-h-[60]'
         experimentalBlurMethod={'dimezisBlurView'}
       >
         <View className='flex-col pl-2'>
@@ -112,9 +111,9 @@ const toastConfig = {
             <Text className='text-md font-bold text-white'>{props.prayer}</Text>
           </View>
         </View>
-        <View className="pl-5"/>
+        <View className="pl-5" />
         <View className="bg-white p-1 rounded-full">
-          <Icon source={'check'} size={20} color="green"/>
+          <Icon source={'check'} size={20} color="green" />
         </View>
       </BlurView>
     </Pressable>
@@ -200,7 +199,6 @@ export default function UpcomingProgramWidget() {
   const scrollOffset = useRef(0);
   const isClosing = useRef(false);
   const [modalToast, setModalToast] = useState<{ type: string; props: any } | null>(null);
-  const Tab = useBottomTabBarHeight();
   const { width, height } = Dimensions.get("window");
 
   // Get current day of the week
@@ -210,12 +208,12 @@ export default function UpcomingProgramWidget() {
   };
 
   const currentDay = getCurrentDay();
-  const currentTime = liveTime.toLocaleTimeString("en-US", {hour12: true, hour: "numeric", minute:"numeric"});
+  const currentTime = liveTime.toLocaleTimeString("en-US", { hour12: true, hour: "numeric", minute: "numeric" });
 
   // Helper function to convert time string to moment and format as 12-hour
   const parseTimeToMoment = (timeString: string) => {
     if (!timeString) return moment();
-    
+
     try {
       // Try parsing as 12-hour format first (e.g., "2:30 PM" or "2:30:00 PM")
       const parsed12 = parse(timeString, 'h:mm a', new Date());
@@ -225,7 +223,7 @@ export default function UpcomingProgramWidget() {
     } catch (error) {
       // Continue to try other formats
     }
-    
+
     try {
       // Try parsing as 24-hour format (e.g., "14:30" or "14:30:00")
       const parsed24 = parse(timeString, 'HH:mm', new Date());
@@ -235,7 +233,7 @@ export default function UpcomingProgramWidget() {
     } catch (error) {
       // Continue to try other formats
     }
-    
+
     try {
       // Try parsing as 24-hour format with seconds (e.g., "14:30:00")
       const parsed24Sec = parse(timeString, 'HH:mm:ss', new Date());
@@ -245,18 +243,18 @@ export default function UpcomingProgramWidget() {
     } catch (error) {
       // Continue to try moment directly
     }
-    
+
     // If all parsing fails, try moment directly with multiple formats
     const momentTime = moment(timeString, ['h:mm a', 'HH:mm', 'HH:mm:ss', 'h:mm:ss a'], true);
     if (momentTime.isValid()) {
       return momentTime;
     }
-    
+
     // Last resort: return current time
     console.warn('Could not parse time:', timeString);
     return moment();
   };
-  
+
   // Pan responder for slide-down gesture - only on drag handle
   const panResponder = useRef(
     PanResponder.create({
@@ -292,22 +290,22 @@ export default function UpcomingProgramWidget() {
       },
       onPanResponderRelease: (evt, gestureState) => {
         const threshold = height * 0.25; // Close if dragged down more than 25% of screen height
-        
+
         if (gestureState.dy > threshold || gestureState.vy > 0.5) {
           // Mark as closing to prevent re-renders
           isClosing.current = true;
-          
+
           // Stop any ongoing animations
           slideAnim.stopAnimation();
           panY.stopAnimation();
-          
+
           // Get current panY value from gesture
           const currentPanY = gestureState.dy;
           const remainingDistance = height - currentPanY;
-          
+
           // Ensure panY is at current position before animating
           panY.setValue(currentPanY);
-          
+
           // Animate panY from current position to height
           Animated.timing(panY, {
             toValue: height,
@@ -340,7 +338,7 @@ export default function UpcomingProgramWidget() {
   // Helper function to format time as 12-hour format
   const formatTime12Hour = (timeString: string): string => {
     if (!timeString) return 'TBD';
-    
+
     try {
       const time = parseTimeToMoment(timeString);
       if (time.isValid()) {
@@ -349,7 +347,7 @@ export default function UpcomingProgramWidget() {
     } catch (error) {
       console.error('Error formatting time:', error);
     }
-    
+
     return timeString; // Return original if formatting fails
   };
 
@@ -358,14 +356,14 @@ export default function UpcomingProgramWidget() {
       setLoading(true);
       const date = new Date();
       const isoString = date.toISOString();
-      
+
       // Fetch all upcoming programs and events
       const { data: programs, error: programsError } = await supabase
         .from('programs')
         .select('*')
         .gte('program_end_date', isoString)
         .eq('is_kids', false);
-      
+
       const { data: events, error: eventsError } = await supabase
         .from('events')
         .select('*')
@@ -384,8 +382,8 @@ export default function UpcomingProgramWidget() {
         if (!program.program_days) return false;
         // Handle array format
         if (Array.isArray(program.program_days)) {
-          return program.program_days.some((day: string) => 
-            day.toLowerCase().includes(currentDay.toLowerCase()) || 
+          return program.program_days.some((day: string) =>
+            day.toLowerCase().includes(currentDay.toLowerCase()) ||
             currentDay.toLowerCase().includes(day.toLowerCase())
           );
         }
@@ -400,8 +398,8 @@ export default function UpcomingProgramWidget() {
         if (!event.event_days) return false;
         // Handle array format
         if (Array.isArray(event.event_days)) {
-          return event.event_days.some((day: string) => 
-            day.toLowerCase().includes(currentDay.toLowerCase()) || 
+          return event.event_days.some((day: string) =>
+            day.toLowerCase().includes(currentDay.toLowerCase()) ||
             currentDay.toLowerCase().includes(day.toLowerCase())
           );
         }
@@ -474,26 +472,26 @@ export default function UpcomingProgramWidget() {
 
       allItems.forEach(item => {
         if (!item.time) return;
-        
+
         try {
           const itemTime = parseTimeToMoment(item.time);
           if (!itemTime.isValid()) {
             console.error('Invalid time format for item:', item.name, item.time);
             return;
           }
-          
+
           // Create a moment for today at the program time
           const today = moment().startOf('day');
           const programTimeToday = today.clone().hour(itemTime.hour()).minute(itemTime.minute()).second(0);
-          
+
           // If program time has passed today, assume it's for tomorrow
           let targetTime = programTimeToday;
           if (programTimeToday.isBefore(now)) {
             targetTime = programTimeToday.clone().add(1, 'day');
           }
-          
+
           const duration = targetTime.diff(now, 'minutes');
-          
+
           // Consider items in the future or within the last 2 hours (still ongoing)
           if (duration >= -120 && duration < smallestDuration) {
             smallestDuration = duration;
@@ -510,7 +508,7 @@ export default function UpcomingProgramWidget() {
       }
 
       setUpcomingItem(nextItem);
-      
+
       // Store full program/event data for notifications
       if (nextItem) {
         if (nextItem.type === 'program') {
@@ -538,7 +536,7 @@ export default function UpcomingProgramWidget() {
   // Check if item is already in notifications
   const checkNotificationStatus = async () => {
     if (!session?.user.id || !upcomingItem) return;
-    
+
     try {
       if (upcomingItem.type === 'program') {
         const { data } = await supabase
@@ -547,7 +545,7 @@ export default function UpcomingProgramWidget() {
           .eq('user_id', session.user.id)
           .eq('program_id', upcomingItem.id)
           .single();
-        
+
         setItemInNotifications(!!data);
       } else {
         const { data } = await supabase
@@ -556,7 +554,7 @@ export default function UpcomingProgramWidget() {
           .eq('user_id', session.user.id)
           .eq('event_id', upcomingItem.id)
           .single();
-        
+
         setItemInNotifications(!!data);
       }
     } catch (error) {
@@ -567,7 +565,7 @@ export default function UpcomingProgramWidget() {
   // Check if item is already in programs
   const checkProgramStatus = async () => {
     if (!session?.user.id || !upcomingItem || upcomingItem.type !== 'program') return;
-    
+
     try {
       const { data } = await supabase
         .from('added_programs')
@@ -575,7 +573,7 @@ export default function UpcomingProgramWidget() {
         .eq('user_id', session.user.id)
         .eq('program_id', upcomingItem.id)
         .single();
-      
+
       setItemInPrograms(!!data);
     } catch (error) {
       console.error('Error checking program status:', error);
@@ -585,9 +583,9 @@ export default function UpcomingProgramWidget() {
   // Handle notification button press
   const handleNotificationPress = async () => {
     if (!session?.user.id || !upcomingItem) return;
-    
+
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-    
+
     if (itemInNotifications) {
       // Remove from notifications
       if (upcomingItem.type === 'program') {
@@ -596,14 +594,14 @@ export default function UpcomingProgramWidget() {
           .delete()
           .eq('user_id', session.user.id)
           .eq('program_id', upcomingItem.id);
-        
+
         if (programData) {
           const { error: settingsError } = await supabase
             .from('program_notifications_settings')
             .delete()
             .eq('user_id', session.user.id)
             .eq('program_id', upcomingItem.id);
-          
+
           const { error: scheduleError } = await supabase
             .from('program_notification_schedule')
             .delete()
@@ -616,14 +614,14 @@ export default function UpcomingProgramWidget() {
           .delete()
           .eq('user_id', session.user.id)
           .eq('event_id', upcomingItem.id);
-        
+
         if (eventData) {
           const { error: settingsError } = await supabase
             .from('event_notification_settings')
             .delete()
             .eq('user_id', session.user.id)
             .eq('event_id', upcomingItem.id);
-          
+
           const { error: scheduleError } = await supabase
             .from('program_notification_schedule')
             .delete()
@@ -631,13 +629,13 @@ export default function UpcomingProgramWidget() {
             .eq('program_event_name', eventData.event_name);
         }
       }
-      
+
       setItemInNotifications(false);
     } else {
       // Add to notifications
       const TodaysDate = new Date();
       const DaysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-      
+
       if (upcomingItem.type === 'program' && programData) {
         const { error } = await supabase
           .from('added_notifications_programs')
@@ -646,11 +644,11 @@ export default function UpcomingProgramWidget() {
             program_id: upcomingItem.id,
             has_lectures: programData.has_lectures || false
           });
-        
+
         if (!error) {
           const programDays = programData.program_days;
           const ProgramStartTime = setTimeToCurrentDate(programData.program_start_time || '');
-          
+
           if (programDays && isBefore(TodaysDate, ProgramStartTime)) {
             await Promise.all(
               (Array.isArray(programDays) ? programDays : [programDays]).map(async (day: string) => {
@@ -659,7 +657,7 @@ export default function UpcomingProgramWidget() {
                   .select('push_notification_token')
                   .eq('id', session.user.id)
                   .single();
-                
+
                 if ((TodaysDate.getDay() === DaysOfWeek.indexOf(day)) && user_push_token?.push_notification_token) {
                   await schedule_notification(
                     session.user.id,
@@ -673,11 +671,11 @@ export default function UpcomingProgramWidget() {
               })
             );
           }
-          
+
           // Show toast in modal
           setModalToast({
             type: 'addProgramToNotificationsToast',
-            props: { props: programData, onPress: () => {} }
+            props: { props: programData, onPress: () => { } }
           });
           // Also show root toast for when modal is closed
           // Toast.show({
@@ -698,11 +696,11 @@ export default function UpcomingProgramWidget() {
             user_id: session.user.id,
             event_id: upcomingItem.id
           });
-        
+
         if (!error) {
           const eventDays = eventData.event_days;
           const EventStartTime = setTimeToCurrentDate(eventData.event_start_time || '');
-          
+
           if (eventDays && isBefore(TodaysDate, EventStartTime)) {
             await Promise.all(
               (Array.isArray(eventDays) ? eventDays : [eventDays]).map(async (day: string) => {
@@ -711,7 +709,7 @@ export default function UpcomingProgramWidget() {
                   .select('push_notification_token')
                   .eq('id', session.user.id)
                   .single();
-                
+
                 if ((TodaysDate.getDay() === DaysOfWeek.indexOf(day)) && user_push_token?.push_notification_token) {
                   await schedule_notification(
                     session.user.id,
@@ -725,11 +723,11 @@ export default function UpcomingProgramWidget() {
               })
             );
           }
-          
+
           // Show toast in modal
           setModalToast({
             type: 'addEventToNotificationsToast',
-            props: { props: eventData, onPress: () => {} }
+            props: { props: eventData, onPress: () => { } }
           });
           // Also show root toast for when modal is closed
           // Toast.show({
@@ -742,7 +740,7 @@ export default function UpcomingProgramWidget() {
           setTimeout(() => setModalToast(null), 3000);
         }
       }
-      
+
       setItemInNotifications(true);
     }
   };
@@ -750,9 +748,9 @@ export default function UpcomingProgramWidget() {
   // Handle add to programs button press
   const handleAddToProgramsPress = async () => {
     if (!session?.user.id || !upcomingItem) return;
-    
+
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-    
+
     if (itemInPrograms) {
       // Remove from programs
       if (upcomingItem.type === 'program') {
@@ -762,7 +760,7 @@ export default function UpcomingProgramWidget() {
           .eq('user_id', session.user.id)
           .eq('program_id', upcomingItem.id);
       }
-      
+
       setItemInPrograms(false);
     } else {
       // Add to programs
@@ -773,14 +771,14 @@ export default function UpcomingProgramWidget() {
             user_id: session.user.id,
             program_id: upcomingItem.id
           });
-        
+
         if (!error) {
           setItemInPrograms(true);
-          
+
           // Show toast in modal
           setModalToast({
             type: 'ProgramAddedToPrograms',
-            props: { props: programData, onPress: () => {} }
+            props: { props: programData, onPress: () => { } }
           });
           // Auto-hide modal toast after 3 seconds
           setTimeout(() => setModalToast(null), 3000);
@@ -797,20 +795,20 @@ export default function UpcomingProgramWidget() {
     try {
       // Get current time
       const now = moment();
-      
+
       // Parse program time
       const programTime = parseTimeToMoment(upcomingItem.time);
-      
+
       // Set both to today's date for accurate comparison
       const today = moment().startOf('day');
       const programTimeToday = today.clone().hour(programTime.hour()).minute(programTime.minute()).second(0);
-      
+
       // If program time has passed today, assume it's for tomorrow
       let targetTime = programTimeToday;
       if (programTimeToday.isBefore(now)) {
         targetTime = programTimeToday.clone().add(1, 'day');
       }
-      
+
       // Calculate duration
       const duration = moment.duration(targetTime.diff(now));
       const totalMinutes = Math.floor(duration.asMinutes());
@@ -868,7 +866,7 @@ export default function UpcomingProgramWidget() {
     const timerId = setInterval(() => {
       refreshLiveTime();
     }, 1000);
-    
+
     return () => {
       clearInterval(timerId);
     };
@@ -880,24 +878,24 @@ export default function UpcomingProgramWidget() {
       try {
         const now = moment();
         const programTime = parseTimeToMoment(upcomingItem.time);
-        
+
         if (!programTime.isValid()) {
           return;
         }
-        
+
         // Create a moment for today at the program time
         const today = moment().startOf('day');
         const programTimeToday = today.clone().hour(programTime.hour()).minute(programTime.minute()).second(0);
-        
+
         // If program time has passed today, assume it's for tomorrow
         let targetTime = programTimeToday;
         if (programTimeToday.isBefore(now)) {
           targetTime = programTimeToday.clone().add(1, 'day');
         }
-        
+
         const duration = moment.duration(targetTime.diff(now));
         const totalMinutes = Math.floor(duration.asMinutes());
-        
+
         // If current program has passed (more than 1 hour ago), refetch to find next one
         if (totalMinutes < -60) {
           fetchUpcomingPrograms();
@@ -925,11 +923,11 @@ export default function UpcomingProgramWidget() {
       isClosing.current = false;
       return;
     }
-    
+
     // Stop any ongoing animations
     slideAnim.stopAnimation();
     panY.stopAnimation();
-    
+
     // Animate closing
     Animated.parallel([
       Animated.timing(slideAnim, {
@@ -995,7 +993,7 @@ export default function UpcomingProgramWidget() {
 
   const fetchModalData = useCallback(async () => {
     if (!upcomingItem) return;
-    
+
     // Handle programs - Only fetch speaker data for modal (no lectures/videos)
     if (upcomingItem.type === 'program' && programData) {
       // Fetch speaker data
@@ -1003,7 +1001,7 @@ export default function UpcomingProgramWidget() {
         const speakers: SheikDataType[] = [];
         const speakerArray = programData.program_speaker;
         let speaker_string: string[] = speakerArray.map(() => '');
-        
+
         await Promise.all(
           speakerArray.map(async (speaker_id: string, index: number) => {
             const { data: speakerInfo } = await supabase
@@ -1011,7 +1009,7 @@ export default function UpcomingProgramWidget() {
               .select('*')
               .eq('speaker_id', speaker_id)
               .single();
-            
+
             if (speakerInfo) {
               if (index === speakerArray.length - 1) {
                 speaker_string[index] = speakerInfo.speaker_name;
@@ -1022,11 +1020,11 @@ export default function UpcomingProgramWidget() {
             }
           })
         );
-        
+
         setModalSpeakerData(speakers);
         setModalSpeakerString(speaker_string.join(''));
       }
-    } 
+    }
     // Handle events
     else if (upcomingItem.type === 'event') {
       // Events might have speakers too, but for now we'll leave it empty
@@ -1049,10 +1047,10 @@ export default function UpcomingProgramWidget() {
       tension: 40,
       friction: 8,
     }).start();
-    
+
     // Fetch modal data - will be handled by useEffect
   }, [slideAnim, panY]);
-  
+
   const GetSheikData = () => {
     return (
       <View className='flex-1'>
@@ -1084,9 +1082,9 @@ export default function UpcomingProgramWidget() {
                 borderColor: '#E5E7EB',
                 marginRight: 16,
               }}>
-                <Image 
-                  source={speakerData?.speaker_img ? { uri: speakerData.speaker_img } : require("@/assets/images/MASHomeLogo.png")} 
-                  style={{ width: '100%', height: '100%' }} 
+                <Image
+                  source={speakerData?.speaker_img ? { uri: speakerData.speaker_img } : require("@/assets/images/MASHomeLogo.png")}
+                  style={{ width: '100%', height: '100%' }}
                   resizeMode='cover'
                 />
               </View>
@@ -1107,7 +1105,7 @@ export default function UpcomingProgramWidget() {
                 {speakerData?.speaker_creds?.map((cred, i) => (
                   <View key={i} className='flex-row items-start mb-2'>
                     <View style={{ marginRight: 8, marginTop: 2 }}>
-                      <Icon source="cards-diamond-outline" size={16} color='#60A5FA'/>
+                      <Icon source="cards-diamond-outline" size={16} color='#60A5FA' />
                     </View>
                     <Text className='text-sm text-gray-100 flex-1'>{cred}</Text>
                   </View>
@@ -1188,14 +1186,14 @@ export default function UpcomingProgramWidget() {
         minHeight: 120,
         overflow: 'hidden',
       }}>
-        <ImageBackground 
+        <ImageBackground
           source={require("@/assets/images/CresentMoon.png")}
           style={{ height: "100%", width: "100%", position: "absolute", top: 0, right: -45, alignItems: 'flex-end', justifyContent: 'center' }}
           resizeMode="contain"
           imageStyle={{ opacity: 0.35, transform: [{ scale: 1.7 }, { translateX: 35 }, { translateY: 5 }] }}
         />
-        <Pressable 
-          className="pt-6" 
+        <Pressable
+          className="pt-6"
           style={{ position: 'relative', zIndex: 1 }}
           onPress={() => {
             // Always open modal like "read full description"
@@ -1259,8 +1257,8 @@ export default function UpcomingProgramWidget() {
             borderBottomLeftRadius: 15,
             borderBottomRightRadius: 15,
           }}>
-            <Pressable 
-              className="flex-1 bg-white p-2 items-center justify-center" 
+            <Pressable
+              className="flex-1 bg-white p-2 items-center justify-center"
               style={{
                 minHeight: 55,
                 borderTopLeftRadius: 15,
@@ -1268,14 +1266,14 @@ export default function UpcomingProgramWidget() {
               }}
               onPress={openModal}
             >
-              <Text 
+              <Text
                 className="text-[#0D509D] text-sm font-medium"
               >
                 Read full description
               </Text>
             </Pressable>
             {/* Vertical divider line in the middle - rendered before notification card */}
-            <View 
+            <View
               style={{
                 width: 1,
                 backgroundColor: '#9CA3AF',
@@ -1284,7 +1282,7 @@ export default function UpcomingProgramWidget() {
               }}
             />
             {/* Notification Bell Card */}
-            <Pressable 
+            <Pressable
               className="flex-1 bg-white p-2 items-center justify-center"
               style={{
                 minHeight: 55,
@@ -1293,15 +1291,15 @@ export default function UpcomingProgramWidget() {
               }}
               onPress={handleNotificationPress}
             >
-              <Icon 
-                source={itemInNotifications ? "bell-check" : "bell"} 
-                size={22} 
-                color={itemInNotifications ? "#57BA47" : "#0D509D"} 
+              <Icon
+                source={itemInNotifications ? "bell-check" : "bell"}
+                size={22}
+                color={itemInNotifications ? "#57BA47" : "#0D509D"}
               />
-              <Text 
-                className="text-xs text-center mt-1" 
+              <Text
+                className="text-xs text-center mt-1"
                 numberOfLines={2}
-                style={{ 
+                style={{
                   lineHeight: 14,
                   color: itemInNotifications ? '#000000' : '#0D509D'
                 }}
@@ -1318,7 +1316,7 @@ export default function UpcomingProgramWidget() {
         <Portal>
           <Modal
             visible={modalVisible || isClosing.current}
-            onDismiss={() => {}}
+            onDismiss={() => { }}
             dismissable={false}
             contentContainerStyle={{
               backgroundColor: 'transparent',
@@ -1337,7 +1335,7 @@ export default function UpcomingProgramWidget() {
                 backgroundColor: 'transparent',
               }}
             >
-              <Pressable 
+              <Pressable
                 style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.5)' }}
                 onPress={closeModal}
               />
@@ -1379,8 +1377,8 @@ export default function UpcomingProgramWidget() {
                     backgroundColor: 'rgba(255, 255, 255, 0.3)',
                   }} />
                 </Animated.View>
-                
-                <ScrollView 
+
+                <ScrollView
                   ref={modalScrollRef}
                   showsVerticalScrollIndicator={true}
                   scrollEnabled={true}
@@ -1431,10 +1429,10 @@ export default function UpcomingProgramWidget() {
                     backgroundColor: '#0A1628',
                   }}>
                     {!modalImageReady && (
-                      <FlyerSkeleton 
-                        width={width} 
-                        height={height * 0.5} 
-                        style={{ position: 'absolute', top: 0, zIndex: 2 }} 
+                      <FlyerSkeleton
+                        width={width}
+                        height={height * 0.5}
+                        style={{ position: 'absolute', top: 0, zIndex: 2 }}
                       />
                     )}
                     <Image
@@ -1448,17 +1446,17 @@ export default function UpcomingProgramWidget() {
                       onLoad={() => setModalImageReady(true)}
                     />
                     {/* Header Buttons - Close, Notification, Add to Programs */}
-                    <View style={{ 
-                        position: 'absolute', 
-                        top: 0, 
-                        left: 0, 
-                        right: 0, 
-                        zIndex: 100, 
-                        paddingTop: 50, 
-                        paddingHorizontal: 10, 
-                        flexDirection: 'row', 
-                        justifyContent: 'space-between', 
-                        alignItems: 'center' 
+                    <View style={{
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
+                      right: 0,
+                      zIndex: 100,
+                      paddingTop: 50,
+                      paddingHorizontal: 10,
+                      flexDirection: 'row',
+                      justifyContent: 'space-between',
+                      alignItems: 'center'
                     }}>
                       <BlurView intensity={20} tint="dark" style={{ borderRadius: 16, overflow: 'hidden' }}>
                         <Pressable onPress={closeModal} style={{ width: 36, height: 36, alignItems: 'center', justifyContent: 'center' }}>
@@ -1471,59 +1469,59 @@ export default function UpcomingProgramWidget() {
                           <>
                             <BlurView intensity={20} tint="dark" style={{ borderRadius: 16, overflow: 'hidden' }}>
                               <Pressable onPress={handleNotificationPress} style={{ width: 36, height: 36, alignItems: 'center', justifyContent: 'center' }}>
-                                {itemInNotifications ? <Icon source={"bell-check"} color='white' size={20}/> : <Icon source={"bell-outline"} color='white' size={20}/>}
+                                {itemInNotifications ? <Icon source={"bell-check"} color='white' size={20} /> : <Icon source={"bell-outline"} color='white' size={20} />}
                               </Pressable>
                             </BlurView>
                             <BlurView intensity={20} tint="dark" style={{ borderRadius: 16, overflow: 'hidden' }}>
                               <Pressable onPress={handleAddToProgramsPress} style={{ width: 36, height: 36, alignItems: 'center', justifyContent: 'center' }}>
-                                {itemInPrograms ? <Icon source={'minus-circle-outline'} color='white' size={20}/> : <Icon source={"plus-circle-outline"} color='white' size={20}/>}
+                                {itemInPrograms ? <Icon source={'minus-circle-outline'} color='white' size={20} /> : <Icon source={"plus-circle-outline"} color='white' size={20} />}
                               </Pressable>
                             </BlurView>
                           </>
                         ) : null}
                       </View>
                     </View>
-                    
+
 
                     {/* Sign Up Button - Bottom Right of Flyer */}
-                    {((upcomingItem.type === 'program' && programData && programData.program_is_paid) || 
+                    {((upcomingItem.type === 'program' && programData && programData.program_is_paid) ||
                       (upcomingItem.type === 'event' && eventData && eventData.is_paid)) && (
-                      <View
-                        style={{
-                          position: 'absolute',
-                          bottom: 16,
-                          right: 16,
-                          zIndex: 100,
-                          elevation: 10,
-                        }}
-                      >
-                        <BlurView intensity={20} tint="dark" style={{ borderRadius: 16, overflow: 'hidden' }}>
-                          <Pressable
-                            onPress={() => {
-                              const paidLink = (upcomingItem.type === 'program' && programData?.paid_link) || 
-                                              (upcomingItem.type === 'event' && eventData?.paid_link);
-                              if (paidLink) {
-                                Linking.canOpenURL(paidLink).then(() => {
-                                  Linking.openURL(paidLink);
-                                });
-                              }
-                            }}
-                            style={{ paddingHorizontal: 12, paddingVertical: 8, flexDirection: 'row', alignItems: 'center', gap: 6 }}
-                          >
-                            <Icon source={"cart-variant"} color='white' size={16}/>
-                            <Text className='text-white font-semibold' style={{ fontSize: 12 }}>Sign Up Now</Text>
-                          </Pressable>
-                        </BlurView>
-                      </View>
-                    )}
+                        <View
+                          style={{
+                            position: 'absolute',
+                            bottom: 16,
+                            right: 16,
+                            zIndex: 100,
+                            elevation: 10,
+                          }}
+                        >
+                          <BlurView intensity={20} tint="dark" style={{ borderRadius: 16, overflow: 'hidden' }}>
+                            <Pressable
+                              onPress={() => {
+                                const paidLink = (upcomingItem.type === 'program' && programData?.paid_link) ||
+                                  (upcomingItem.type === 'event' && eventData?.paid_link);
+                                if (paidLink) {
+                                  Linking.canOpenURL(paidLink).then(() => {
+                                    Linking.openURL(paidLink);
+                                  });
+                                }
+                              }}
+                              style={{ paddingHorizontal: 12, paddingVertical: 8, flexDirection: 'row', alignItems: 'center', gap: 6 }}
+                            >
+                              <Icon source={"cart-variant"} color='white' size={16} />
+                              <Text className='text-white font-semibold' style={{ fontSize: 12 }}>Sign Up Now</Text>
+                            </Pressable>
+                          </BlurView>
+                        </View>
+                      )}
                   </View>
-                  
+
                   {/* Content Section - Dark Background */}
                   <View style={{ width: '100%', paddingBottom: 0, backgroundColor: '#0A1628', paddingHorizontal: 16 }}>
                     <Text style={{ textAlign: 'center', marginTop: 16, fontSize: 24, color: 'white', fontWeight: 'bold' }}>
                       {upcomingItem.type === 'program' && programData ? programData.program_name : upcomingItem.name}
                     </Text>
-                    
+
                     {modalSpeakerString && (
                       <Pressable onPress={() => setModalVisibleState(true)}>
                         <Text style={{ textAlign: 'center', marginTop: 8, color: '#60A5FA', width: '60%', alignSelf: 'center', fontWeight: '600' }} numberOfLines={1}>
@@ -1534,9 +1532,9 @@ export default function UpcomingProgramWidget() {
 
                     {/* Description Content */}
                     <View style={{ marginTop: 20, marginBottom: 20 }}>
-                      <Text style={{ 
-                        color: 'white', 
-                        fontSize: 18, 
+                      <Text style={{
+                        color: 'white',
+                        fontSize: 18,
                         fontWeight: 'bold',
                         marginBottom: 12,
                         textAlign: 'left'
@@ -1544,18 +1542,18 @@ export default function UpcomingProgramWidget() {
                         Description
                       </Text>
                       {upcomingItem.description ? (
-                        <Text style={{ 
-                          color: '#D1D5DB', 
-                          fontSize: 16, 
+                        <Text style={{
+                          color: '#D1D5DB',
+                          fontSize: 16,
                           lineHeight: 24,
                           textAlign: 'left'
                         }}>
                           {upcomingItem.description}
                         </Text>
                       ) : (
-                        <Text style={{ 
-                          color: '#9CA3AF', 
-                          fontSize: 16, 
+                        <Text style={{
+                          color: '#9CA3AF',
+                          fontSize: 16,
                           lineHeight: 24,
                           textAlign: 'left',
                           fontStyle: 'italic'
@@ -1568,7 +1566,7 @@ export default function UpcomingProgramWidget() {
                 </ScrollView>
               </Animated.View>
             </Animated.View>
-            
+
             {/* Speaker Modal */}
             <Portal>
               <Modal
@@ -1590,7 +1588,7 @@ export default function UpcomingProgramWidget() {
               </Modal>
             </Portal>
           </Modal>
-          
+
           {/* Custom Toast Notification - Renders inside modal Portal to appear on top */}
           {modalToast && (
             <View
@@ -1608,7 +1606,7 @@ export default function UpcomingProgramWidget() {
               }}
             >
               <View style={{ width: '100%', maxWidth: '100%' }}>
-                <Pressable 
+                <Pressable
                   onPress={() => {
                     if (modalToast.props.onPress) {
                       modalToast.props.onPress();

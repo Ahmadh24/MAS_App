@@ -6,7 +6,6 @@ import * as ImagePicker from "expo-image-picker";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import moment from "moment";
 import Toast from "react-native-toast-message";
-import { useBottomTabBarHeight  } from "@react-navigation/bottom-tabs";
 import {
   Menu,
   MenuOptions,
@@ -46,28 +45,27 @@ const AddNewEventScreen = () => {
   const [menuVisible, setMenuVisible] = useState<boolean>(false);
   const [isPace, setIsPace] = useState<boolean>(false);
 
-  const [ isSocialService, setIsSocialService] = useState<boolean>(false);
-  const [ isFundraiser, setIsFundraiser] = useState<boolean>(false);
-  const [ isReverts, setIsReverts] = useState<boolean>(false);
-  const [ isOutreach, setIsOutreach ] = useState<boolean>(false);
-  const [ isBreakfast, setIsBreakfast ] = useState<boolean>(false);
-  const [ eventPaidLink, setEventPaidLink ] = useState('');
+  const [isSocialService, setIsSocialService] = useState<boolean>(false);
+  const [isFundraiser, setIsFundraiser] = useState<boolean>(false);
+  const [isReverts, setIsReverts] = useState<boolean>(false);
+  const [isOutreach, setIsOutreach] = useState<boolean>(false);
+  const [isBreakfast, setIsBreakfast] = useState<boolean>(false);
+  const [eventPaidLink, setEventPaidLink] = useState('');
 
-  const [ speakers, setSpeakers ] = useState<any[]>([])
-  const [ speakerSelected, setSpeakerSelected ] = useState<any[]>([])
-  const [ hasLectures, sethasLectures ]  = useState(false)
-  const [ openAddSpeaker, setOpenAddSpeaker ] = useState(false) 
-  const [ speakerBottomSheetOpen, setSpeakerBottomSheetOpen ] = useState(false) 
-  const tabHeight = useBottomTabBarHeight() + 20
+  const [speakers, setSpeakers] = useState<any[]>([])
+  const [speakerSelected, setSpeakerSelected] = useState<any[]>([])
+  const [hasLectures, sethasLectures] = useState(false)
+  const [openAddSpeaker, setOpenAddSpeaker] = useState(false)
+  const [speakerBottomSheetOpen, setSpeakerBottomSheetOpen] = useState(false)
   const scrollViewRef = useRef<ScrollView>(null)
   const descriptionRef = useRef<View>(null)
   const titleRef = useRef<View>(null)
   const layoutHeight = Dimensions.get('screen').height
-  const [ keyboardOffset, setKeyboardOffset ] = useState(0)
-  const [ submitDisabled, setSubmitDisabled ] = useState(true)
+  const [keyboardOffset, setKeyboardOffset] = useState(0)
+  const [submitDisabled, setSubmitDisabled] = useState(true)
   const getSpeakers = async () => {
     const { data, error } = await supabase.from('speaker_data').select('speaker_id, speaker_name, speaker_img, speaker_creds')
-    if( data ){
+    if (data) {
       console.log('Speakers loaded:', data)
       setSpeakers(data)
     } else {
@@ -164,14 +162,14 @@ const AddNewEventScreen = () => {
     });
   };
 
-  const handleSpeakerPress = (speaker_id : string) => {
-    if( speakerSelected.includes(speaker_id)){
+  const handleSpeakerPress = (speaker_id: string) => {
+    if (speakerSelected.includes(speaker_id)) {
       const removeSpeaker = speakerSelected.filter(id => id != speaker_id)
       setSpeakerSelected(removeSpeaker)
     }
-    else if( speakerSelected.length == 0 ){
+    else if (speakerSelected.length == 0) {
       setSpeakerSelected([speaker_id])
-    } else if( speakerSelected.length > 0 ){
+    } else if (speakerSelected.length > 0) {
       setSpeakerSelected([...speakerSelected, speaker_id])
     }
   }
@@ -195,20 +193,20 @@ const AddNewEventScreen = () => {
             )}
           </View>
           <Svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-            <Path d="M7.5 15L12.5 10L7.5 5" stroke="#6077F5" strokeWidth="2"/>
+            <Path d="M7.5 15L12.5 10L7.5 5" stroke="#6077F5" strokeWidth="2" />
           </Svg>
         </Pressable>
-        
+
         {speakerSelected.length == 0 && (
-          <Pressable 
+          <Pressable
             className="flex-row items-center justify-center px-4 py-3 bg-blue-50 border border-blue-200 rounded-xl"
             onPress={() => setOpenAddSpeaker(true)}
           >
             <Svg width="20" height="20" viewBox="0 0 20 20" fill="none" style={{ marginRight: 8 }}>
-              <Circle cx="10" cy="6" r="3" stroke="#6077F5" strokeLinecap="round"/>
-              <Path fillRule="evenodd" clipRule="evenodd" d="M12.5 12C11.5 11.7 10.4 11.6 9.3 11.7C8.1 11.8 7.0 12.2 6.1 12.8C5.2 13.4 4.5 14.2 4.1 15.1C4.0 15.3 4.1 15.5 4.3 15.6C4.5 15.7 4.7 15.6 4.8 15.4C5.1 14.7 5.7 14.1 6.5 13.7C7.3 13.3 8.2 13.1 9.1 13.1C9.5 13.1 9.9 13.1 10.3 13.2C10.6 12.9 10.9 12.8 11.2 12.8L12.5 12Z" fill="#6077F5"/>
-              <Path d="M15 10L15 16" stroke="#6077F5" strokeLinecap="round"/>
-              <Path d="M18 13L12 13" stroke="#6077F5" strokeLinecap="round"/>
+              <Circle cx="10" cy="6" r="3" stroke="#6077F5" strokeLinecap="round" />
+              <Path fillRule="evenodd" clipRule="evenodd" d="M12.5 12C11.5 11.7 10.4 11.6 9.3 11.7C8.1 11.8 7.0 12.2 6.1 12.8C5.2 13.4 4.5 14.2 4.1 15.1C4.0 15.3 4.1 15.5 4.3 15.6C4.5 15.7 4.7 15.6 4.8 15.4C5.1 14.7 5.7 14.1 6.5 13.7C7.3 13.3 8.2 13.1 9.1 13.1C9.5 13.1 9.9 13.1 10.3 13.2C10.6 12.9 10.9 12.8 11.2 12.8L12.5 12Z" fill="#6077F5" />
+              <Path d="M15 10L15 16" stroke="#6077F5" strokeLinecap="round" />
+              <Path d="M18 13L12 13" stroke="#6077F5" strokeLinecap="round" />
             </Svg>
             <Text className="text-blue-600 font-semibold">Add New Speaker</Text>
           </Pressable>
@@ -217,72 +215,72 @@ const AddNewEventScreen = () => {
     );
   };
   const onSumbit = async () => {
-    if ( eventName && eventDescription && eventDays.length > 0 && eventEndDate  &&  eventStartDate &&  speakerSelected.length>0 && eventImage && eventStartTime ) {
+    if (eventName && eventDescription && eventDays.length > 0 && eventEndDate && eventStartDate && speakerSelected.length > 0 && eventImage && eventStartTime) {
       setSubmitDisabled(false)
       const base64 = await FileSystem.readAsStringAsync(eventImage.uri, { encoding: 'base64' });
       const filePath = `${eventName.trim().split(" ").join("_")}.${eventImage.type === 'image' ? 'png' : 'mp4'}`;
       const contentType = eventImage.type === 'image' ? 'image/png' : 'video/mp4';
-      const { data : image, error :image_upload_error } = await supabase.storage.from('event_flyers').upload(filePath, decode(base64));
-      if( image ){
-        const { data : event_img_url} = await supabase.storage.from('event_flyers').getPublicUrl(image?.path)
-        const time =  format(eventStartTime!, 'p').trim()
-        const { error } = await supabase.from('events').insert({ 
-          event_name : eventName, 
-          event_img : event_img_url.publicUrl, 
-          event_desc : eventDescription, 
-          event_speaker : speakerSelected, 
-          has_lecture : hasLectures, 
-          event_start_date : eventStartDate, 
-          event_end_date : eventEndDate, 
-          is_paid : isPaid, 
-          event_price : Number(EventPrice),
-          event_start_time :time, 
-          event_days : eventDays,
-          is_outreach : isOutreach,
-          is_social : isSocialService,
-          is_reverts : isReverts,
-          is_fundraiser : isFundraiser,
-          is_breakfast : isBreakfast,
-          paid_link : eventPaidLink,
-          pace : isPace
+      const { data: image, error: image_upload_error } = await supabase.storage.from('event_flyers').upload(filePath, decode(base64));
+      if (image) {
+        const { data: event_img_url } = await supabase.storage.from('event_flyers').getPublicUrl(image?.path)
+        const time = format(eventStartTime!, 'p').trim()
+        const { error } = await supabase.from('events').insert({
+          event_name: eventName,
+          event_img: event_img_url.publicUrl,
+          event_desc: eventDescription,
+          event_speaker: speakerSelected,
+          has_lecture: hasLectures,
+          event_start_date: eventStartDate,
+          event_end_date: eventEndDate,
+          is_paid: isPaid,
+          event_price: Number(EventPrice),
+          event_start_time: time,
+          event_days: eventDays,
+          is_outreach: isOutreach,
+          is_social: isSocialService,
+          is_reverts: isReverts,
+          is_fundraiser: isFundraiser,
+          is_breakfast: isBreakfast,
+          paid_link: eventPaidLink,
+          pace: isPace
         })
-        if( error ){
+        if (error) {
           console.log(error)
         }
         handleSubmit()
         setSubmitDisabled(true)
-      }else{
+      } else {
         Alert.alert(image_upload_error.message)
         return
       }
-    }else{
+    } else {
       Alert.alert('Please Fill All Info Before Proceeding')
     }
   }
-  useEffect(() =>{
+  useEffect(() => {
     getSpeakers()
     const listenforspeakers = supabase
-    .channel('listen for speakers change')
-    .on(
-      'postgres_changes',
-    {
-      event: '*',
-      schema: 'public',
-      table: "speaker_data",
-    },
-    async (payload) => await getSpeakers()
-    )
-    .subscribe()
+      .channel('listen for speakers change')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: "speaker_data",
+        },
+        async (payload) => await getSpeakers()
+      )
+      .subscribe()
 
-    return () => { supabase.removeChannel( listenforspeakers )}
+    return () => { supabase.removeChannel(listenforspeakers) }
   }, [])
   return (
     <>
       <Stack.Screen
-          options={{
+        options={{
           title: "Create New Event",
           headerStyle: { backgroundColor: "#F9FAFB" },
-          headerTitleStyle: { 
+          headerTitleStyle: {
             fontSize: 22,
             fontWeight: '600',
             color: '#1F2937'
@@ -292,17 +290,17 @@ const AddNewEventScreen = () => {
         }}
       />
       <View className="flex-1 bg-gray-50">
-          <ScrollView
-          contentContainerStyle={{ paddingBottom: tabHeight + 20 }}
+        <ScrollView
+          contentContainerStyle={{ paddingBottom: 20 }}
           showsVerticalScrollIndicator={false}
-            automaticallyAdjustKeyboardInsets
-            ref={scrollViewRef}
-            onScroll={(e) => {
+          automaticallyAdjustKeyboardInsets
+          ref={scrollViewRef}
+          onScroll={(e) => {
             setKeyboardOffset(175 - e.nativeEvent.contentOffset.y)
-             }}
+          }}
           className="px-6"
-          >
-            {/* Event Details Section */}
+        >
+          {/* Event Details Section */}
           <View className="bg-white rounded-2xl p-6 mb-6 shadow-sm" style={{
             shadowColor: '#000',
             shadowOffset: { width: 0, height: 2 },
@@ -311,45 +309,45 @@ const AddNewEventScreen = () => {
             elevation: 3
           }}>
             <Text className="text-xl font-bold text-gray-900 mb-6">Event Details</Text>
-              
-              {/* Time Selection */}
+
+            {/* Time Selection */}
             <View className="mb-6">
               <Text className="text-sm font-semibold text-gray-700 mb-2">Start Time</Text>
-              <Pressable 
+              <Pressable
                 className="bg-gray-50 border border-gray-200 rounded-xl p-4 flex-row items-center justify-between"
                 onPress={() => setShowStartTimePicker(true)}
               >
                 <Text className="text-gray-900 font-medium">
                   {eventStartTime ? format(eventStartTime, 'p') : 'Select Time'}
-                  </Text>
+                </Text>
                 <Icon source="clock-outline" size={20} color="#6077F5" />
-                </Pressable>
-                {showStartTimePicker && (
-                  <DateTimePicker
-                    value={eventStartTime || new Date()}
-                    mode="time"
-                    display="default"
-                    onChange={(event, time) => {
-                      setShowStartTimePicker(false);
-                      if (time) setEventStartTime(time);
-                    }}
-                  />
-                )}
-              </View>
+              </Pressable>
+              {showStartTimePicker && (
+                <DateTimePicker
+                  value={eventStartTime || new Date()}
+                  mode="time"
+                  display="default"
+                  onChange={(event, time) => {
+                    setShowStartTimePicker(false);
+                    if (time) setEventStartTime(time);
+                  }}
+                />
+              )}
+            </View>
 
             {/* Date Row */}
             <View className="flex-row gap-4 mb-6">
               <View className="flex-1">
                 <Text className="text-sm font-semibold text-gray-700 mb-2">Start Date</Text>
-                <Pressable 
+                <Pressable
                   className="bg-gray-50 border border-gray-200 rounded-xl p-4 flex-row items-center justify-between"
                   onPress={() => setShowStartDatePicker(true)}
                 >
                   <Text className="text-gray-900 font-medium">
                     {eventStartDate ? eventStartDate.toLocaleDateString() : 'Select Date'}
-                    </Text>
+                  </Text>
                   <Icon source="calendar-outline" size={20} color="#6077F5" />
-                  </Pressable>
+                </Pressable>
                 {showStartDatePicker && (
                   <DateTimePicker
                     value={eventStartDate || new Date()}
@@ -364,7 +362,7 @@ const AddNewEventScreen = () => {
               </View>
               <View className="flex-1">
                 <Text className="text-sm font-semibold text-gray-700 mb-2">End Date</Text>
-                <Pressable 
+                <Pressable
                   className="bg-gray-50 border border-gray-200 rounded-xl p-4 flex-row items-center justify-between"
                   onPress={() => setShowEndDatePicker(true)}
                 >
@@ -385,41 +383,38 @@ const AddNewEventScreen = () => {
                   />
                 )}
               </View>
-              </View>
+            </View>
 
-              {/* Days Selection */}
+            {/* Days Selection */}
             <View>
               <Text className="text-sm font-semibold text-gray-700 mb-4">Event Days</Text>
               <View className="flex-row flex-wrap gap-3">
-                  {days.map((day, index) => (
-                     <Pressable
-                       key={index}
-                    className={`flex-row items-center px-4 py-3 rounded-xl border-2 ${
-                      eventDays.includes(day) 
-                        ? 'bg-blue-50 border-blue-500' 
-                        : 'bg-gray-50 border-gray-200'
-                    }`}
-                       onPress={() => toggleDaySelection(day)}
+                {days.map((day, index) => (
+                  <Pressable
+                    key={index}
+                    className={`flex-row items-center px-4 py-3 rounded-xl border-2 ${eventDays.includes(day)
+                      ? 'bg-blue-50 border-blue-500'
+                      : 'bg-gray-50 border-gray-200'
+                      }`}
+                    onPress={() => toggleDaySelection(day)}
                   >
-                    <View className={`w-5 h-5 rounded-full border-2 items-center justify-center mr-3 ${
-                      eventDays.includes(day) 
-                        ? 'border-blue-500 bg-blue-500' 
-                        : 'border-gray-300'
-                    }`}>
+                    <View className={`w-5 h-5 rounded-full border-2 items-center justify-center mr-3 ${eventDays.includes(day)
+                      ? 'border-blue-500 bg-blue-500'
+                      : 'border-gray-300'
+                      }`}>
                       {eventDays.includes(day) && (
                         <Icon source="check" size={12} color="white" />
                       )}
-                       </View>
-                    <Text className={`font-medium ${
-                      eventDays.includes(day) ? 'text-blue-700' : 'text-gray-600'
-                    }`}>
+                    </View>
+                    <Text className={`font-medium ${eventDays.includes(day) ? 'text-blue-700' : 'text-gray-600'
+                      }`}>
                       {day}
                     </Text>
-                     </Pressable>
-                  ))}
-                </View>
+                  </Pressable>
+                ))}
               </View>
             </View>
+          </View>
 
           {/* Event Information Section */}
           <View className="bg-white rounded-2xl p-6 mb-6 shadow-sm" style={{
@@ -430,42 +425,42 @@ const AddNewEventScreen = () => {
             elevation: 3
           }}>
             <Text className="text-xl font-bold text-gray-900 mb-6">Event Information</Text>
-              
-              {/* Title */}
+
+            {/* Title */}
             <View className="mb-6">
               <Text className="text-sm font-semibold text-gray-700 mb-2">Event Title</Text>
-                <TextInput
-                  mode="outlined"
+              <TextInput
+                mode="outlined"
                 theme={{ roundness: 12 }}
-                style={{ 
+                style={{
                   backgroundColor: 'white',
                   fontSize: 16
                 }}
                 activeOutlineColor="#6077F5"
-                  value={eventName}
-                  onChangeText={setEventName}
+                value={eventName}
+                onChangeText={setEventName}
                 placeholder="Enter event title..."
-                  textColor="black"
-                />
-              </View>
+                textColor="black"
+              />
+            </View>
 
-              {/* Description */}
+            {/* Description */}
             <View className="mb-6">
               <Text className="text-sm font-semibold text-gray-700 mb-2">Description</Text>
-                <TextInput
-                  mode="outlined"
+              <TextInput
+                mode="outlined"
                 theme={{ roundness: 12 }}
-                style={{ 
+                style={{
                   backgroundColor: 'white',
                   minHeight: 100,
                   fontSize: 16
                 }}
-                  multiline
+                multiline
                 activeOutlineColor="#6077F5"
-                  value={eventDescription}
-                  onChangeText={setEventDescription}
+                value={eventDescription}
+                onChangeText={setEventDescription}
                 placeholder="Enter event description..."
-                  textColor="black"
+                textColor="black"
               />
             </View>
 
@@ -482,32 +477,32 @@ const AddNewEventScreen = () => {
             {/* Image Upload */}
             <View>
               <Text className="text-sm font-semibold text-gray-700 mb-4">Event Image</Text>
-                {eventImage ? (
+              {eventImage ? (
                 <Pressable onPress={pickImage} className="items-center">
-                    <Image
-                      source={{ uri: eventImage.uri }}
-                      style={{
+                  <Image
+                    source={{ uri: eventImage.uri }}
+                    style={{
                       width: 200,
                       height: 200,
                       borderRadius: 16,
                       marginBottom: 12
-                      }}
-                      resizeMode="cover"
-                    /> 
+                    }}
+                    resizeMode="cover"
+                  />
                   <View className="bg-blue-50 px-4 py-2 rounded-lg">
                     <Text className="text-blue-600 font-medium">Tap to change image</Text>
                   </View>
-                  </Pressable>
-                ) : (
+                </Pressable>
+              ) : (
                 <Pressable
-                    onPress={pickImage}
+                  onPress={pickImage}
                   className="bg-gray-50 border-2 border-dashed border-gray-300 rounded-xl p-8 items-center"
-                  >
+                >
                   <Icon source="camera-plus" size={40} color="#9CA3AF" />
                   <Text className="text-gray-500 font-medium mt-2">Tap to upload image</Text>
                 </Pressable>
-                )}
-              </View>
+              )}
+            </View>
           </View>
 
           {/* Event Settings Section */}
@@ -519,207 +514,180 @@ const AddNewEventScreen = () => {
             elevation: 3
           }}>
             <Text className="text-xl font-bold text-gray-900 mb-6">Event Settings</Text>
-            
+
             {/* YouTube Videos */}
             <View className="mb-6">
               <Text className="text-sm font-semibold text-gray-700 mb-4">Recorded YouTube Videos?</Text>
               <View className="flex-row gap-4">
-                  <Pressable
-                  className={`flex-row items-center px-4 py-3 rounded-xl border-2 ${
-                    !hasLectures 
-                      ? 'bg-green-50 border-green-500' 
-                      : 'bg-gray-50 border-gray-200'
-                  }`}
-                    onPress={() => sethasLectures(false)}
-                  >
-                  <View className={`w-5 h-5 rounded-full border-2 items-center justify-center mr-3 ${
-                    !hasLectures 
-                      ? 'border-green-500 bg-green-500' 
-                      : 'border-gray-300'
-                  }`}>
+                <Pressable
+                  className={`flex-row items-center px-4 py-3 rounded-xl border-2 ${!hasLectures
+                    ? 'bg-green-50 border-green-500'
+                    : 'bg-gray-50 border-gray-200'
+                    }`}
+                  onPress={() => sethasLectures(false)}
+                >
+                  <View className={`w-5 h-5 rounded-full border-2 items-center justify-center mr-3 ${!hasLectures
+                    ? 'border-green-500 bg-green-500'
+                    : 'border-gray-300'
+                    }`}>
                     {!hasLectures && <Icon source="check" size={12} color="white" />}
-                    </View>
-                  <Text className={`font-medium ${
-                    !hasLectures ? 'text-green-700' : 'text-gray-600'
-                  }`}>No</Text>
-                  </Pressable>
-        
-                  <Pressable
-                  className={`flex-row items-center px-4 py-3 rounded-xl border-2 ${
-                    hasLectures 
-                      ? 'bg-blue-50 border-blue-500' 
-                      : 'bg-gray-50 border-gray-200'
-                  }`}
-                    onPress={() => sethasLectures(true)}
-                  >
-                  <View className={`w-5 h-5 rounded-full border-2 items-center justify-center mr-3 ${
-                    hasLectures 
-                      ? 'border-blue-500 bg-blue-500' 
-                      : 'border-gray-300'
-                  }`}>
+                  </View>
+                  <Text className={`font-medium ${!hasLectures ? 'text-green-700' : 'text-gray-600'
+                    }`}>No</Text>
+                </Pressable>
+
+                <Pressable
+                  className={`flex-row items-center px-4 py-3 rounded-xl border-2 ${hasLectures
+                    ? 'bg-blue-50 border-blue-500'
+                    : 'bg-gray-50 border-gray-200'
+                    }`}
+                  onPress={() => sethasLectures(true)}
+                >
+                  <View className={`w-5 h-5 rounded-full border-2 items-center justify-center mr-3 ${hasLectures
+                    ? 'border-blue-500 bg-blue-500'
+                    : 'border-gray-300'
+                    }`}>
                     {hasLectures && <Icon source="check" size={12} color="white" />}
-                    </View>
-                  <Text className={`font-medium ${
-                    hasLectures ? 'text-blue-700' : 'text-gray-600'
-                  }`}>Yes</Text>
-                  </Pressable>
+                  </View>
+                  <Text className={`font-medium ${hasLectures ? 'text-blue-700' : 'text-gray-600'
+                    }`}>Yes</Text>
+                </Pressable>
               </View>
             </View>
-              
-              {/* Event Type */}
+
+            {/* Event Type */}
             <View className="mb-6">
               <Text className="text-sm font-semibold text-gray-700 mb-2">Event Type</Text>
               <Text className="text-xs text-gray-500 mb-4">(it will go under the checked box section)</Text>
               <View className="flex-row gap-4">
-                  <Pressable
-                  className={`flex-1 flex-row items-center px-4 py-3 rounded-xl border-2 ${
-                    isPace 
-                      ? 'bg-blue-50 border-blue-500' 
-                      : 'bg-gray-50 border-gray-200'
-                  }`}
-                    onPress={() => setIsPace(true)}
+                <Pressable
+                  className={`flex-1 flex-row items-center px-4 py-3 rounded-xl border-2 ${isPace
+                    ? 'bg-blue-50 border-blue-500'
+                    : 'bg-gray-50 border-gray-200'
+                    }`}
+                  onPress={() => setIsPace(true)}
                 >
-                  <View className={`w-5 h-5 rounded border-2 items-center justify-center mr-3 ${
-                    isPace 
-                      ? 'border-blue-500 bg-blue-500' 
-                      : 'border-gray-300'
-                  }`}>
+                  <View className={`w-5 h-5 rounded border-2 items-center justify-center mr-3 ${isPace
+                    ? 'border-blue-500 bg-blue-500'
+                    : 'border-gray-300'
+                    }`}>
                     {isPace && <Icon source="check" size={12} color="white" />}
-                    </View>
-                  <Text className={`font-medium ${
-                    isPace ? 'text-blue-700' : 'text-gray-600'
-                  }`}>PACE</Text>
-                  </Pressable>
-          
-                  <Pressable
-                  className={`flex-1 flex-row items-center px-4 py-3 rounded-xl border-2 ${
-                    !isPace 
-                      ? 'bg-blue-50 border-blue-500' 
-                      : 'bg-gray-50 border-gray-200'
-                  }`}
-                    onPress={() => setIsPace(false)}
-                >
-                  <View className={`w-5 h-5 rounded border-2 items-center justify-center mr-3 ${
-                    !isPace 
-                      ? 'border-blue-500 bg-blue-500' 
-                      : 'border-gray-300'
-                  }`}>
-                    {!isPace && <Icon source="check" size={12} color="white" />}
-                    </View>
-                  <Text className={`font-medium ${
-                    !isPace ? 'text-blue-700' : 'text-gray-600'
-                  }`}>Event</Text>
-                  </Pressable>
-                </View>
-              </View>
+                  </View>
+                  <Text className={`font-medium ${isPace ? 'text-blue-700' : 'text-gray-600'
+                    }`}>PACE</Text>
+                </Pressable>
 
-              {/* Further Classification */}
+                <Pressable
+                  className={`flex-1 flex-row items-center px-4 py-3 rounded-xl border-2 ${!isPace
+                    ? 'bg-blue-50 border-blue-500'
+                    : 'bg-gray-50 border-gray-200'
+                    }`}
+                  onPress={() => setIsPace(false)}
+                >
+                  <View className={`w-5 h-5 rounded border-2 items-center justify-center mr-3 ${!isPace
+                    ? 'border-blue-500 bg-blue-500'
+                    : 'border-gray-300'
+                    }`}>
+                    {!isPace && <Icon source="check" size={12} color="white" />}
+                  </View>
+                  <Text className={`font-medium ${!isPace ? 'text-blue-700' : 'text-gray-600'
+                    }`}>Event</Text>
+                </Pressable>
+              </View>
+            </View>
+
+            {/* Further Classification */}
             <View className="mb-6">
               <Text className="text-sm font-semibold text-gray-700 mb-4">Further Classification:</Text>
               <View className="flex-row flex-wrap gap-3">
-                  {!isPace ? (
-                    <>
-                      <Pressable
-                      className={`flex-row items-center px-4 py-3 rounded-xl border-2 w-[48%] ${
-                        isFundraiser 
-                          ? 'bg-blue-50 border-blue-500' 
-                          : 'bg-gray-50 border-gray-200'
-                      }`}
-                        onPress={() => setIsFundraiser(!isFundraiser)}
-                    >
-                      <View className={`w-5 h-5 rounded border-2 items-center justify-center mr-2 ${
-                        isFundraiser 
-                          ? 'border-blue-500 bg-blue-500' 
-                          : 'border-gray-300'
-                      }`}>
-                        {isFundraiser && <Icon source="check" size={12} color="white" />}
-                        </View>
-                      <Text className={`font-medium text-sm ${
-                        isFundraiser ? 'text-blue-700' : 'text-gray-600'
-                      }`}>Fundraiser</Text>
-                      </Pressable>
-          
-                      <Pressable
-                      className={`flex-row items-center px-4 py-3 rounded-xl border-2 w-[48%] ${
-                        isReverts 
-                          ? 'bg-blue-50 border-blue-500' 
-                          : 'bg-gray-50 border-gray-200'
-                      }`}
-                        onPress={() => setIsReverts(!isReverts)}
-                    >
-                      <View className={`w-5 h-5 rounded border-2 items-center justify-center mr-2 ${
-                        isReverts 
-                          ? 'border-blue-500 bg-blue-500' 
-                          : 'border-gray-300'
-                      }`}>
-                        {isReverts && <Icon source="check" size={12} color="white" />}
-                        </View>
-                      <Text className={`font-medium text-sm ${
-                        isReverts ? 'text-blue-700' : 'text-gray-600'
-                      }`}>Reverts Event</Text>
-                      </Pressable>
-          
-                      <Pressable
-                      className={`flex-row items-center px-4 py-3 rounded-xl border-2 w-[48%] ${
-                        isBreakfast 
-                          ? 'bg-blue-50 border-blue-500' 
-                          : 'bg-gray-50 border-gray-200'
-                      }`}
-                        onPress={() => setIsBreakfast(!isBreakfast)}
-                    >
-                      <View className={`w-5 h-5 rounded border-2 items-center justify-center mr-2 ${
-                        isBreakfast 
-                          ? 'border-blue-500 bg-blue-500' 
-                          : 'border-gray-300'
-                      }`}>
-                        {isBreakfast && <Icon source="check" size={12} color="white" />}
-                        </View>
-                      <Text className={`font-medium text-sm ${
-                        isBreakfast ? 'text-blue-700' : 'text-gray-600'
-                      }`}>Brothers Breakfast</Text>
-                      </Pressable>
-          
-                      <Pressable
-                      className={`flex-row items-center px-4 py-3 rounded-xl border-2 w-[48%] ${
-                        isOutreach 
-                          ? 'bg-blue-50 border-blue-500' 
-                          : 'bg-gray-50 border-gray-200'
-                      }`}
-                        onPress={() => setIsOutreach(!isOutreach)}
-                    >
-                      <View className={`w-5 h-5 rounded border-2 items-center justify-center mr-2 ${
-                        isOutreach 
-                          ? 'border-blue-500 bg-blue-500' 
-                          : 'border-gray-300'
-                      }`}>
-                        {isOutreach && <Icon source="check" size={12} color="white" />}
-                        </View>
-                      <Text className={`font-medium text-sm ${
-                        isOutreach ? 'text-blue-700' : 'text-gray-600'
-                      }`}>Outreach Activities</Text>
-                      </Pressable>
-                    </>
-                  ) : (
+                {!isPace ? (
+                  <>
                     <Pressable
-                    className={`flex-row items-center px-4 py-3 rounded-xl border-2 ${
-                      isSocialService 
-                        ? 'bg-blue-50 border-blue-500' 
+                      className={`flex-row items-center px-4 py-3 rounded-xl border-2 w-[48%] ${isFundraiser
+                        ? 'bg-blue-50 border-blue-500'
                         : 'bg-gray-50 border-gray-200'
-                    }`}
-                      onPress={() => setIsSocialService(!isSocialService)}
-                  >
-                    <View className={`w-5 h-5 rounded border-2 items-center justify-center mr-2 ${
-                      isSocialService 
-                        ? 'border-blue-500 bg-blue-500' 
+                        }`}
+                      onPress={() => setIsFundraiser(!isFundraiser)}
+                    >
+                      <View className={`w-5 h-5 rounded border-2 items-center justify-center mr-2 ${isFundraiser
+                        ? 'border-blue-500 bg-blue-500'
                         : 'border-gray-300'
-                    }`}>
-                      {isSocialService && <Icon source="check" size={12} color="white" />}
+                        }`}>
+                        {isFundraiser && <Icon source="check" size={12} color="white" />}
                       </View>
-                    <Text className={`font-medium ${
-                      isSocialService ? 'text-blue-700' : 'text-gray-600'
-                    }`}>Social Services</Text>
+                      <Text className={`font-medium text-sm ${isFundraiser ? 'text-blue-700' : 'text-gray-600'
+                        }`}>Fundraiser</Text>
                     </Pressable>
-                  )}
+
+                    <Pressable
+                      className={`flex-row items-center px-4 py-3 rounded-xl border-2 w-[48%] ${isReverts
+                        ? 'bg-blue-50 border-blue-500'
+                        : 'bg-gray-50 border-gray-200'
+                        }`}
+                      onPress={() => setIsReverts(!isReverts)}
+                    >
+                      <View className={`w-5 h-5 rounded border-2 items-center justify-center mr-2 ${isReverts
+                        ? 'border-blue-500 bg-blue-500'
+                        : 'border-gray-300'
+                        }`}>
+                        {isReverts && <Icon source="check" size={12} color="white" />}
+                      </View>
+                      <Text className={`font-medium text-sm ${isReverts ? 'text-blue-700' : 'text-gray-600'
+                        }`}>Reverts Event</Text>
+                    </Pressable>
+
+                    <Pressable
+                      className={`flex-row items-center px-4 py-3 rounded-xl border-2 w-[48%] ${isBreakfast
+                        ? 'bg-blue-50 border-blue-500'
+                        : 'bg-gray-50 border-gray-200'
+                        }`}
+                      onPress={() => setIsBreakfast(!isBreakfast)}
+                    >
+                      <View className={`w-5 h-5 rounded border-2 items-center justify-center mr-2 ${isBreakfast
+                        ? 'border-blue-500 bg-blue-500'
+                        : 'border-gray-300'
+                        }`}>
+                        {isBreakfast && <Icon source="check" size={12} color="white" />}
+                      </View>
+                      <Text className={`font-medium text-sm ${isBreakfast ? 'text-blue-700' : 'text-gray-600'
+                        }`}>Brothers Breakfast</Text>
+                    </Pressable>
+
+                    <Pressable
+                      className={`flex-row items-center px-4 py-3 rounded-xl border-2 w-[48%] ${isOutreach
+                        ? 'bg-blue-50 border-blue-500'
+                        : 'bg-gray-50 border-gray-200'
+                        }`}
+                      onPress={() => setIsOutreach(!isOutreach)}
+                    >
+                      <View className={`w-5 h-5 rounded border-2 items-center justify-center mr-2 ${isOutreach
+                        ? 'border-blue-500 bg-blue-500'
+                        : 'border-gray-300'
+                        }`}>
+                        {isOutreach && <Icon source="check" size={12} color="white" />}
+                      </View>
+                      <Text className={`font-medium text-sm ${isOutreach ? 'text-blue-700' : 'text-gray-600'
+                        }`}>Outreach Activities</Text>
+                    </Pressable>
+                  </>
+                ) : (
+                  <Pressable
+                    className={`flex-row items-center px-4 py-3 rounded-xl border-2 ${isSocialService
+                      ? 'bg-blue-50 border-blue-500'
+                      : 'bg-gray-50 border-gray-200'
+                      }`}
+                    onPress={() => setIsSocialService(!isSocialService)}
+                  >
+                    <View className={`w-5 h-5 rounded border-2 items-center justify-center mr-2 ${isSocialService
+                      ? 'border-blue-500 bg-blue-500'
+                      : 'border-gray-300'
+                      }`}>
+                      {isSocialService && <Icon source="check" size={12} color="white" />}
+                    </View>
+                    <Text className={`font-medium ${isSocialService ? 'text-blue-700' : 'text-gray-600'
+                      }`}>Social Services</Text>
+                  </Pressable>
+                )}
               </View>
             </View>
 
@@ -727,32 +695,29 @@ const AddNewEventScreen = () => {
             <View>
               <Text className="text-sm font-semibold text-gray-700 mb-4">Is this Event Paid?</Text>
               <Pressable
-                className={`flex-row items-center px-4 py-3 rounded-xl border-2 ${
-                  isPaid 
-                    ? 'bg-blue-50 border-blue-500' 
-                    : 'bg-gray-50 border-gray-200'
-                }`}
+                className={`flex-row items-center px-4 py-3 rounded-xl border-2 ${isPaid
+                  ? 'bg-blue-50 border-blue-500'
+                  : 'bg-gray-50 border-gray-200'
+                  }`}
                 onPress={() => setIsPaid(!isPaid)}
               >
-                <View className={`w-5 h-5 rounded border-2 items-center justify-center mr-3 ${
-                  isPaid 
-                    ? 'border-blue-500 bg-blue-500' 
-                    : 'border-gray-300'
-                }`}>
+                <View className={`w-5 h-5 rounded border-2 items-center justify-center mr-3 ${isPaid
+                  ? 'border-blue-500 bg-blue-500'
+                  : 'border-gray-300'
+                  }`}>
                   {isPaid && <Icon source="check" size={12} color="white" />}
                 </View>
-                <Text className={`font-medium ${
-                  isPaid ? 'text-blue-700' : 'text-gray-600'
-                }`}>Paid</Text>
+                <Text className={`font-medium ${isPaid ? 'text-blue-700' : 'text-gray-600'
+                  }`}>Paid</Text>
               </Pressable>
-              
+
               {isPaid && (
                 <View className="mt-6">
                   <Text className="text-sm font-semibold text-gray-700 mb-2">Event Website Link</Text>
                   <TextInput
                     mode="outlined"
                     theme={{ roundness: 12 }}
-                    style={{ 
+                    style={{
                       backgroundColor: 'white',
                       fontSize: 16
                     }}
@@ -780,12 +745,12 @@ const AddNewEventScreen = () => {
           >
             Submit Event
           </Button>
-          
+
           {/* Bottom Spacer */}
           <View style={{ height: 20 }} />
-          </ScrollView>
-          
-          <AddSpeakerModal setIsOpen={setOpenAddSpeaker} isOpen={openAddSpeaker}/>
+        </ScrollView>
+
+        <AddSpeakerModal setIsOpen={setOpenAddSpeaker} isOpen={openAddSpeaker} />
         <SelectSpeakerBottomSheet
           isOpen={speakerBottomSheetOpen}
           setIsOpen={setSpeakerBottomSheetOpen}

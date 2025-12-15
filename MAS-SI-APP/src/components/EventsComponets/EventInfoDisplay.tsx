@@ -1,7 +1,6 @@
 import { View, Text, Dimensions, Image, ScrollView, Pressable, Linking, Platform } from 'react-native'
 import React, { useEffect, useState } from 'react'
 import { Stack, router } from "expo-router"
-import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
 import Animated,{ interpolate, useAnimatedRef, useAnimatedStyle, useScrollViewOffset } from 'react-native-reanimated';
 import { supabase } from '@/src/lib/supabase';
 import { useAuth } from '@/src/providers/AuthProvider';
@@ -24,7 +23,7 @@ const EventInfoDisplay = ({ event_img, event_speaker, event_name, event_desc, ev
     const hideModal = () => setVisible(false);
     const [ speakerData, setSpeakerData ] = useState<SheikDataType[]>([]);
     const [ speakerString, setSpeakerString ] = useState('')
-    const Tab = useBottomTabBarHeight()
+    const Tab = 20
   
     const { width, height } = Dimensions.get("window")
     const scrollRef = useAnimatedRef<Animated.ScrollView>()
@@ -116,7 +115,7 @@ const EventInfoDisplay = ({ event_img, event_speaker, event_name, event_desc, ev
            className='mt-[70]'
          />
 
-         <View className='bg-white' style={{paddingBottom : Tab * 3, width: width}}>
+         <View className='bg-white' style={{paddingBottom : 60, width: width}}>
            <Text className='text-center mt-2 text-xl text-black font-bold'>{event_name}</Text>
            <Text className='text-center mt-2  text-[#0D509D]' onPress={showModal}>{speakerString}</Text>
              <View className=''> 

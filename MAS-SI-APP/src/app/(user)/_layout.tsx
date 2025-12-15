@@ -1,4 +1,4 @@
-import { Tabs, Redirect, Slot } from "expo-router";
+import { Tabs, Redirect, useSegments } from "expo-router";
 import * as Animatable from 'react-native-animatable';
 import { Pressable, TouchableOpacity, Modal, StyleSheet } from "react-native";
 import { useEffect, useRef, useState } from "react";
@@ -177,6 +177,18 @@ const UserLayout = () => {
   // interface TextWithDefaultProps extends Text {
   //   defaultProps?: { allowFontScaling?: boolean };
   // }
+  const [loading, setLoading] = useState(true);
+  const [showTutorial, setShowTutorial] = useState(false);
+  const [accountModalVisible, setAccountModalVisible] = useState(false);
+  const segments = useSegments();
+  const opacity = useSharedValue(1);
+  
+  // Show account button only on home page (menu tab)
+  // segments will be ['(user)', 'menu'] when on home page
+  const isHomePage = segments.length >= 2 && segments[1] === 'menu' && segments[2] !== 'program';
+  interface TextWithDefaultProps extends Text {
+    defaultProps?: { allowFontScaling?: boolean };
+  }
 
   // ((Text as unknown) as TextWithDefaultProps).defaultProps =
   //   ((Text as unknown) as TextWithDefaultProps).defaultProps || {};

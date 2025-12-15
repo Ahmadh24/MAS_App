@@ -5,7 +5,6 @@ import { useLocalSearchParams, Stack, useRouter, Link, useNavigation } from 'exp
 import { Divider, Portal, Modal, IconButton, Icon, Button, Badge } from 'react-native-paper';
 import { EventLectureType, SheikDataType, EventsType } from '@/src/types';
 import { ScrollView } from 'react-native-gesture-handler';
-import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
 import Animated,{ FadeInLeft, interpolate, useAnimatedRef, useAnimatedStyle, useScrollViewOffset, useSharedValue, withSequence, withTiming } from 'react-native-reanimated';
 import { supabase } from '@/src/lib/supabase';
 import { useAuth } from '@/src/providers/AuthProvider';
@@ -66,7 +65,6 @@ const EventLectures = () => {
   const handlePresentModalPress = () => bottomSheetRef.current?.present();
   const hideAddToPlaylist = () => setAddToPlaylistVisible(false)
   const navigation = useNavigation<any>()
-  const Tab = useBottomTabBarHeight()
   const { width, height } = Dimensions.get("window")
   const scrollRef = useAnimatedRef<Animated.ScrollView>()
   const scrollOffset = useScrollViewOffset(scrollRef)
@@ -540,7 +538,7 @@ async function getUserPlaylists(){
                   type : 'LectureAddedToPlaylist',
                   props: { props : getPlaylistAddedTo[0], onPress : goToPlaylist},
                   position : 'bottom',
-                  bottomOffset : Tab * 2
+                  bottomOffset : 20 
                 })
               }
           }})
@@ -1102,7 +1100,7 @@ async function getUserPlaylists(){
        
           {/* Hide everything below when a YouTube video is selected */}
           {!(selectedLecture && selectedLecture.event_lecture_link && selectedLecture.event_lecture_link.trim() !== '' && selectedLecture.event_lecture_link !== 'N/A') && (
-          <View className='w-[100%]' style={{paddingBottom : Tab * 3, backgroundColor: '#FFFFFF', marginTop: -50}}>
+          <View className='w-[100%]' style={{paddingBottom : 20, backgroundColor: '#FFFFFF', marginTop: -50}}>
             <Text className='text-center text-2xl text-black font-bold' style={{ marginTop: 0, marginBottom: 0, paddingTop: 0 }}>{event?.event_name}</Text>
             <Pressable onPress={showModal} style={{ marginTop: 0 }}>
               <Text className='text-center text-[#60A5FA] w-[60%] self-center font-semibold' numberOfLines={1} style={{ marginTop: 0, marginBottom: 0, paddingTop: 0 }}>{speakerString}</Text>

@@ -5,7 +5,6 @@ import * as SplashScreen from 'expo-splash-screen';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useEffect, useState } from 'react';
 import 'react-native-reanimated';
-import PrayerTimesProvider from '../providers/prayerTimesProvider';
 import { useColorScheme } from '../../hooks/useColorScheme';
 import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
@@ -13,12 +12,33 @@ import { PaperProvider } from 'react-native-paper';
 import { MenuProvider } from "react-native-popup-menu";
 import AuthProvider from '../providers/AuthProvider';
 import { StripeProvider } from '@stripe/stripe-react-native';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 // import NotificationProvider from '../providers/NotificationProvider';
 import { Text } from 'react-native';
 import LottieView from 'lottie-react-native';
 import Animated, { useSharedValue, withTiming, runOnJS, useAnimatedStyle } from 'react-native-reanimated';
 import "@/global.css"
 
+// Create a QueryClient instance
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 5 * 60 * 1000, // 5 minutes
+      refetchOnWindowFocus: false,
+      retry: 1,
+    },
+  },
+});
+
+const RootLayoutNav = () => {
+  return (
+    <Stack key="main-app" >
+      <Stack.Screen name="(user)" options={{ headerShown: false, animation: 'none' }} />
+      <Stack.Screen name="(auth)" options={{ headerShown: false, animation: 'none' }} />
+      <Stack.Screen name="+not-found" options={{ animation: 'none' }} />
+    </Stack>
+  )
+}
 
 SplashScreen.preventAutoHideAsync()
 export default function RootLayout() {
@@ -79,16 +99,16 @@ export default function RootLayout() {
   }
   return (
     <GestureHandlerRootView>
-      <StripeProvider publishableKey={process.env.EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY!}>
-        <AuthProvider>
-          <PrayerTimesProvider>
-             {/* <NotificationProvider> */}
+      <QueryClientProvider client={queryClient}>
+        <StripeProvider publishableKey={process.env.EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY!}>
+          <AuthProvider>
+            {/* <NotificationProvider> */}
             <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
               <BottomSheetModalProvider>
                 <MenuProvider>
                   <PaperProvider>
                     {/* ✅ Show animated logo once */}
-                    {showLogo && (
+                    {/* {showLogo && (
                       <Animated.View style={[{ position: 'absolute', zIndex: 10, width: '100%', height: '100%' }, logoAnimation]}>
                         <LottieView
                           autoPlay
@@ -98,22 +118,17 @@ export default function RootLayout() {
                           speed={1.5}
                         />
                       </Animated.View>
-                    )}
+                    )} */}
+                    <RootLayoutNav />
 
-                    {/* ✅ Main App */}
-                    <Stack key="main-app">
-                      <Stack.Screen name="(user)" options={{ headerShown: false, animation: 'none' }} />
-                      <Stack.Screen name="(auth)" options={{ headerShown: false, animation: 'none' }} />
-                      <Stack.Screen name="+not-found" options={{ animation: 'none' }} />
-                    </Stack>
                   </PaperProvider>
                 </MenuProvider>
               </BottomSheetModalProvider>
             </ThemeProvider>
-             {/* </NotificationProvider>  */}
-          </PrayerTimesProvider>
-        </AuthProvider>
-      </StripeProvider>
+            {/* </NotificationProvider>  */}
+          </AuthProvider>
+        </StripeProvider>
+      </QueryClientProvider>
     </GestureHandlerRootView>
   );
 }

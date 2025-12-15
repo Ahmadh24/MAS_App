@@ -9,6 +9,7 @@ import { useAuth } from '@/src/providers/AuthProvider'
 import { isBefore } from 'date-fns'
 import { BlurView } from 'expo-blur'
 import { LinearGradient } from 'expo-linear-gradient'
+import DeckSwiper from 'react-native-deck-swiper'
 
 const EventImageComponent = ({item} : {item : EventsType}) => {
     const { session } = useAuth()
@@ -18,6 +19,8 @@ const EventImageComponent = ({item} : {item : EventsType}) => {
     const [speakerData, setSpeakerData] = useState<SheikDataType[]>([])
     const [speakerString, setSpeakerString] = useState('')
     const [speakerModalVisible, setSpeakerModalVisible] = useState(false)
+    const [currentSpeakerIndex, setCurrentSpeakerIndex] = useState(0)
+    const deckSwiperRef = useRef<any>(null)
     const [modalImageReady, setModalImageReady] = useState(false)
     const [hasError, setHasError] = useState(false)
     const [eventInNotifications, setEventInNotifications] = useState(false)
@@ -250,12 +253,35 @@ const EventImageComponent = ({item} : {item : EventsType}) => {
         fetchSpeakerData();
     }, [slideAnim, item.event_id]);
 
+    // Reset error state when item changes
+    useEffect(() => {
+        setHasError(false);
+        setImageReady(false);
+    }, [item.event_id]);
+
     useEffect(() => {
         if (modalVisible) {
             fetchEventData();
             fetchSpeakerData();
         }
     }, [modalVisible, item.event_id]);
+
+    // Reset speaker index when modal opens
+    useEffect(() => {
+        if (speakerModalVisible) {
+            setCurrentSpeakerIndex(0);
+            // Jump to first card when modal opens
+            setTimeout(() => {
+                if (deckSwiperRef.current && speakerData.length > 0) {
+                    try {
+                        deckSwiperRef.current.jumpToCardIndex(0);
+                    } catch (error) {
+                        console.log('Error jumping to card index:', error);
+                    }
+                }
+            }, 100);
+        }
+    }, [speakerModalVisible]);
 
     const handleNotificationPress = async () => {
         if (!session?.user?.id || !event) return;
@@ -319,26 +345,48 @@ const EventImageComponent = ({item} : {item : EventsType}) => {
         }
     };
 
-    const GetSheikData = () => {
+    const renderSpeakerCard = (speakerData: SheikDataType, index: number) => {
+        const cardWidth = width * 0.85;
+        const maxCardHeight = height * 0.55; // 55% of screen height
+        
         return (
-            <View className='flex-1'>
-                {speakerData?.map((speakerData, index) => (
-                    <BlurView
-                        key={index}
-                        intensity={80}
-                        tint="dark"
-                        style={{
-                            borderRadius: 50,
-                            padding: 16,
-                            marginVertical: 8,
-                            shadowColor: '#000',
-                            shadowOffset: { width: 0, height: 2 },
-                            shadowOpacity: 0.15,
-                            shadowRadius: 8,
-                            elevation: 4,
-                            backgroundColor: 'rgba(107, 114, 128, 0.6)',
-                            overflow: 'hidden',
+            <View style={{ 
+                width: width,
+                height: maxCardHeight,
+                justifyContent: 'center', 
+                alignItems: 'center',
+            }}>
+                <BlurView
+                    intensity={80}
+                    tint="dark"
+                    style={{
+                        borderRadius: 50,
+                        shadowColor: '#000',
+                        shadowOffset: { width: 0, height: 2 },
+                        shadowOpacity: 0.15,
+                        shadowRadius: 8,
+                        elevation: 4,
+                        backgroundColor: 'rgba(107, 114, 128, 0.6)',
+                        overflow: 'hidden',
+                        width: cardWidth,
+                        height: maxCardHeight,
+                    }}
+                >
+                    <ScrollView
+                        showsVerticalScrollIndicator={true}
+                        scrollEnabled={true}
+                        nestedScrollEnabled={true}
+                        scrollEventThrottle={16}
+                        directionalLockEnabled={true}
+                        alwaysBounceVertical={false}
+                        bounces={false}
+                        keyboardShouldPersistTaps="handled"
+                        contentContainerStyle={{
+                            paddingTop: 24,
+                            paddingBottom: 30,
+                            paddingHorizontal: 24,
                         }}
+                        style={{ flex: 1 }}
                     >
                         <View className='flex-row items-center mb-4'>
                             <View style={{
@@ -363,7 +411,7 @@ const EventImageComponent = ({item} : {item : EventsType}) => {
                                 </Text>
                             </View>
                         </View>
-                        <View className='border-t border-gray-400 pt-4'>
+                        <View style={{ borderTopWidth: 1, borderTopColor: 'rgba(156, 163, 175, 0.4)', paddingTop: 16, marginTop: 4 }}>
                             {speakerData?.speaker_name === "MAS" ? (
                                 <Text className='text-sm font-bold text-white mb-3'>Impact</Text>
                             ) : (
@@ -380,20 +428,156 @@ const EventImageComponent = ({item} : {item : EventsType}) => {
                                 ))}
                             </View>
                         </View>
-                    </BlurView>
-                ))}
+                    </ScrollView>
+                </BlurView>
             </View>
         );
     };
 
-    const handlePress = useCallback(() => {
-        // If event has lectures, navigate to full event page
-        if (item.has_lecture) {
-            router.push(`/menu/program/events/${item.event_id}` as any);
-        } else {
-            // Otherwise open the slide-up modal
-            openModal();
+    const GetSheikData = () => {
+        if (!speakerData || speakerData.length === 0) {
+            return (
+                <View className='flex-1 items-center justify-center'>
+                    <Text className='text-white'>No speaker data available</Text>
+                </View>
+            );
         }
+
+        const cardWidth = width * 0.85;
+        const maxCardHeight = height * 0.55;
+        
+        // If only one speaker, render the card directly without DeckSwiper
+        if (speakerData.length === 1) {
+            return (
+                <View style={{ flex: 1, width: '100%', justifyContent: 'center', alignItems: 'center' }}>
+                    <View style={{ height: maxCardHeight, width: '100%', justifyContent: 'center', alignItems: 'center' }}>
+                        {renderSpeakerCard(speakerData[0], 0)}
+                    </View>
+                </View>
+            );
+        }
+        
+        // Multiple speakers - use DeckSwiper
+        return (
+            <View style={{ flex: 1, width: '100%', justifyContent: 'center', alignItems: 'center' }}>
+                <View style={{ height: maxCardHeight, width: '100%' }}>
+                    <DeckSwiper
+                        ref={deckSwiperRef}
+                        cards={speakerData}
+                        renderCard={renderSpeakerCard}
+                        cardIndex={currentSpeakerIndex}
+                        onSwiped={(swipedIndex) => {
+                            // After swiping, the next card becomes visible
+                            const nextIndex = swipedIndex + 1;
+                            if (nextIndex < speakerData.length) {
+                                setCurrentSpeakerIndex(nextIndex);
+                            } else {
+                                // If we've swiped all cards, reset to 0
+                                setCurrentSpeakerIndex(0);
+                            }
+                        }}
+                        onSwipedAll={() => {
+                            setCurrentSpeakerIndex(0);
+                        }}
+                        cardVerticalMargin={0}
+                        cardHorizontalMargin={0}
+                        stackSize={3}
+                        stackSeparation={0}
+                        animateCardOpacity
+                        animateOverlayLabels
+                        disableTopSwipe
+                        disableBottomSwipe
+                        swipeBackCard
+                        verticalSwipe={false}
+                        backgroundColor="transparent"
+                        overlayLabels={{
+                            left: {
+                                title: 'NOPE',
+                                style: {
+                                    label: {
+                                        backgroundColor: 'transparent',
+                                        borderColor: 'transparent',
+                                        color: 'transparent',
+                                    },
+                                    wrapper: {
+                                        flexDirection: 'column',
+                                        alignItems: 'flex-end',
+                                        justifyContent: 'flex-start',
+                                        marginTop: 20,
+                                        marginLeft: -20,
+                                    }
+                                }
+                            },
+                            right: {
+                                title: 'LIKE',
+                                style: {
+                                    label: {
+                                        backgroundColor: 'transparent',
+                                        borderColor: 'transparent',
+                                        color: 'transparent',
+                                    },
+                                    wrapper: {
+                                        flexDirection: 'column',
+                                        alignItems: 'flex-start',
+                                        justifyContent: 'flex-start',
+                                        marginTop: 20,
+                                        marginLeft: 20,
+                                    }
+                                }
+                            }
+                        }}
+                    />
+                </View>
+                {/* Pagination Indicators */}
+                <View style={{
+                    flexDirection: 'row',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    marginTop: 16,
+                    gap: 8,
+                }}>
+                    {speakerData.map((_, index) => (
+                        <View
+                            key={index}
+                            style={{
+                                width: currentSpeakerIndex === index ? 24 : 8,
+                                height: 8,
+                                borderRadius: 4,
+                                backgroundColor: currentSpeakerIndex === index ? '#60A5FA' : 'rgba(255, 255, 255, 0.3)',
+                            }}
+                        />
+                    ))}
+                </View>
+            </View>
+        );
+    };
+
+    const handlePress = useCallback(async () => {
+        // If event has lectures, check if lectures exist and have YouTube links
+        if (item.has_lecture) {
+            // Fetch event lectures to check for YouTube links
+            const { data: eventLectures, error } = await supabase
+                .from('events_lectures')
+                .select('event_lecture_link')
+                .eq('event_id', item.event_id);
+            
+            if (eventLectures && eventLectures.length > 0) {
+                // Check if any lecture has a YouTube link
+                const hasYouTubeLink = eventLectures.some(lecture => 
+                    lecture.event_lecture_link && 
+                    lecture.event_lecture_link.trim() !== '' && 
+                    lecture.event_lecture_link !== 'N/A'
+                );
+                
+                if (hasYouTubeLink) {
+                    router.push(`/menu/program/events/${item.event_id}` as any);
+                    return;
+                }
+            }
+        }
+        
+        // If no YouTube lectures found, open the slide-up modal
+        openModal();
     }, [item.has_lecture, item.event_id, router, openModal]);
 
     return (
@@ -403,9 +587,17 @@ const EventImageComponent = ({item} : {item : EventsType}) => {
                     { !imageReady && 
                         <FlyerSkeleton width={150} height={150} style={{position : 'absolute', top : 0, zIndex : 2}}/>
                     }
-                    <Image source={{ uri : item.event_img || undefined }} style={{ width : 150, height : 150, borderRadius : 8, margin : 5 }}  
+                    <Image 
+                        source={(hasError || !item.event_img || item.event_img.trim() === '') 
+                            ? require("@/assets/images/massicliquidglassicon.png") 
+                            : { uri : item.event_img }} 
+                        style={{ width : 150, height : 150, borderRadius : 8, margin : 5 }}  
+                        resizeMode="cover"
                         onLoad={() => setImageReady(true)}
-                        onError={() => setImageReady(false)}
+                        onError={() => {
+                            setImageReady(true);
+                            setHasError(true);
+                        }}
                     />
                     <Text className='text-black font-medium pl-2 text-[10px] w-[150px] text-center' numberOfLines={1}>{item.event_name}</Text>
                 </Pressable>
@@ -747,8 +939,8 @@ const EventImageComponent = ({item} : {item : EventsType}) => {
                                             alignItems: 'center',
                                         }}>
                                             <Image
-                                                source={hasError || !item.event_img 
-                                                    ? require("@/assets/images/MASHomeLogo.png")
+                                                source={(hasError || !item.event_img || item.event_img.trim() === '')
+                                                    ? require("@/assets/images/massicliquidglassicon.png")
                                                     : { uri: item.event_img }}
                                                 style={{
                                                     width: '100%',
@@ -866,7 +1058,20 @@ const EventImageComponent = ({item} : {item : EventsType}) => {
                         <Portal>
                             <Modal
                                 visible={speakerModalVisible}
-                                onDismiss={() => setSpeakerModalVisible(false)}
+                                onDismiss={() => {
+                                    setSpeakerModalVisible(false);
+                                    setCurrentSpeakerIndex(0);
+                                    // Reset to first card when closing
+                                    setTimeout(() => {
+                                        if (deckSwiperRef.current && speakerData.length > 0) {
+                                            try {
+                                                deckSwiperRef.current.jumpToCardIndex(0);
+                                            } catch (error) {
+                                                console.log('Error jumping to card index:', error);
+                                            }
+                                        }
+                                    }, 100);
+                                }}
                                 contentContainerStyle={{
                                     backgroundColor: 'transparent',
                                     padding: 20,
@@ -877,7 +1082,7 @@ const EventImageComponent = ({item} : {item : EventsType}) => {
                                     alignSelf: "center"
                                 }}
                             >
-                                <View className='flex-1'>
+                                <View style={{ flex: 1, width: '100%', justifyContent: 'center', alignItems: 'center' }}>
                                     <GetSheikData />
                                 </View>
                             </Modal>

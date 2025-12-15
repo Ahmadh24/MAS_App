@@ -9,7 +9,7 @@ import ProgramsListProgram from '@/src/components/ProgramsListProgram'
 import RenderAddedPrograms from '@/src/components/UserProgramComponets/RenderAddedPrograms'
 // import { TabView, SceneMap, TabBar } from 'react-native-tab-view';
 import { Dialog, Icon, IconButton } from 'react-native-paper'
-import { usePrayer } from '@/src/providers/prayerTimesProvider'
+import { usePrayerTimes } from '@/src/hooks/usePrayerTimes'
 import NotificationPrayerTable from '@/src/components/notificationPrayerTimeTable'
 import { useRouter } from 'expo-router'
 import JummahMarquee from '@/src/components/JummahMarquee'
@@ -129,8 +129,8 @@ const LecturesScreen = ({ addedPrograms, layout }: ClassesScreenProp) => {
   )
 }
 const SalahTimesScreen = () => {
-  const { prayerTimesWeek } = usePrayer();
-  if (prayerTimesWeek.length == 0) {
+  const { data: prayerTimesWeek } = usePrayerTimes();
+  if (!prayerTimesWeek || prayerTimesWeek.length == 0) {
     return
   }
   const [tableIndex, setTableIndex] = useState(0)

@@ -3,8 +3,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import React, { useState, useEffect, useRef, useContext, useCallback } from 'react';
 import { gettingPrayerData, prayerTimesType, Profile } from '@/src/types';
 import { format, parse, setHours, setMinutes, subMinutes } from 'date-fns';
-import { ThePrayerData } from '@/src/components/getPrayerData';
-import { usePrayer } from '@/src/providers/prayerTimesProvider';
+import { usePrayerTimes } from '@/src/hooks/usePrayerTimes';
 import SalahDisplayWidget from '@/src/components/salahDisplayWidget';
 import { JummahTable } from '@/src/components/jummahTable';
 import ProgramsCircularCarousel from '@/src/components/programsCircularCarousel';
@@ -42,7 +41,7 @@ const COLORS = {
 };
 
 export default function homeScreen() {
-  const { onSetPrayerTimesWeek, prayerTimesWeek } = usePrayer()
+  const { data: prayerTimesWeek, isLoading: prayerTimesLoading, refetch: refetchPrayerTimes } = usePrayerTimes()
   const router = useRouter()
   const { session } = useAuth()
   const [isRendered, setIsRendered] = useState(false)
@@ -181,30 +180,10 @@ export default function homeScreen() {
   //   setVisible(false)
   //   }
   // }
-  const getPrayer = async () => {
-    try {
-      const { data: prayerTimes, error } = await supabase.from('prayers').select('*').eq('id', 1).single()
-      if (error) {
-        console.error('Error fetching prayers:', error)
-        return
-      }
-      if (prayerTimes) {
-        const weekInfo: gettingPrayerData[] = ThePrayerData({ prayerTimes })
-        onSetPrayerTimesWeek(weekInfo)
-      }
-    } catch (error) {
-      console.error('Error in getPrayer:', error)
-    } finally {
-      if (!refreshing) {
-        setLoading(false)
-      }
-    }
-  }
-
   const onRefresh = async () => {
     setRefreshing(true)
     try {
-      await Promise.all([getPrayer(), getProfile()])
+      await Promise.all([refetchPrayerTimes(), getProfile()])
     } catch (error) {
       console.error('Error refreshing:', error)
     } finally {
@@ -213,8 +192,13 @@ export default function homeScreen() {
   }
   useEffect(() => {
     getProfile();
-    getPrayer();
   }, [session])
+
+  useEffect(() => {
+    if (!prayerTimesLoading && !refreshing) {
+      setLoading(false)
+    }
+  }, [prayerTimesLoading, refreshing])
   useEffect(() => {
     if (profileFirstName && profileLastName && profileEmail) {
       setConfirmProfile(true)
@@ -223,14 +207,16 @@ export default function homeScreen() {
       setConfirmProfile(false)
     }
   }, [profileFirstName, profileLastName, profileEmail])
-  if (loading) {
+
+  const prayer = prayerTimesWeek || []
+
+  if (loading || !prayerTimesWeek || prayerTimesWeek.length === 0) {
     return (
       <View style={{ backgroundColor: COLORS.background }} className='justify-center items-center h-full'>
         <Text style={{ color: COLORS.primary }} className='text-lg font-semibold'>Loading...</Text>
       </View>
     )
   }
-  const prayer = prayerTimesWeek
   return (
     <Animated.ScrollView
       ref={scrollRef}

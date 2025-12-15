@@ -6,6 +6,7 @@ export default function MyProgramsStack(){
         >
             <Stack.Screen name="index" options={{headerShown: false}}/>
             <Stack.Screen name="notifications" options={{ headerShown : false}}/>
+            <Stack.Screen name="recordedLectures" options={{ headerShown: true }}/>
        </Stack>
     )
 }

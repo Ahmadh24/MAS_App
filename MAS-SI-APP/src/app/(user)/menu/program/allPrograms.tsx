@@ -4,6 +4,7 @@ import ProgramsListProgram from "../../../../components/ProgramsListProgram"
 import { Divider, Searchbar } from 'react-native-paper';
 import { useEffect, useState } from 'react';
 import { Program } from "@/src/types"
+import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
 import { supabase } from '@/src/lib/supabase';
 import { useAuth } from '@/src/providers/AuthProvider';
 
@@ -50,6 +51,7 @@ export default function ProgramsScreen() {
   useEffect(() => {
     getPrograms()
   }, [session])
+  const tabBarHeight = useBottomTabBarHeight() + 35;
   const filterTestFunc = (searchParam: string) => {
     setSearchBarInput(searchParam)
   }
@@ -66,7 +68,7 @@ export default function ProgramsScreen() {
   return (
     <View className=' bg-[#0D509D] flex-1'>
       <ScrollView style={{ borderTopLeftRadius: 40, borderTopRightRadius: 40, height: '100%', backgroundColor: 'white' }} contentContainerStyle={{
-        paddingTop: 2, backgroundColor: 'white', paddingBottom: 30
+        paddingTop: 2, backgroundColor: 'white', paddingBottom: tabBarHeight + 30
       }}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={async () => await getPrograms()} />}
       >
@@ -105,7 +107,7 @@ export default function ProgramsScreen() {
             {
               prevRecordedPrograms?.map((item) => {
                 return (
-                  <View style={{ width: "50%" }}>
+                  <View key={item.program_id} style={{ width: "50%" }}>
                     <Link href={`/menu/program/${item.program_id}`}
                       asChild >
                       <TouchableOpacity className='items-center'>

@@ -11,11 +11,10 @@ const MoreLayout = () => {
             headerShown: false,
             presentation: 'transparentModal',
             animation: 'fade',
-            cardStyle: { backgroundColor: 'transparent' },
-            cardOverlayEnabled: true,
+            // cardStyle: { backgroundColor: 'transparent' },
+            // cardOverlayEnabled: true,
           }} 
         />
-        <Stack.Screen name='MasShop' />
     </Stack>
   )
 }

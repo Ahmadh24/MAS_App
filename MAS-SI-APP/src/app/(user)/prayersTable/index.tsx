@@ -2,7 +2,7 @@ import { View, Text, Animated, FlatList, Image, FlatListProps, Pressable, Status
 import Paginator from '@/src/components/paginator';
 import Table from "@/src/components/prayerTimeTable";
 import React, { useEffect, useRef, useState } from 'react';
-import { usePrayer } from '@/src/providers/prayerTimesProvider';
+import { usePrayerTimes, useCurrentPrayer, useUpcomingPrayer, useTimeToNextPrayer } from '@/src/hooks/usePrayerTimes';
 import { gettingPrayerData } from '@/src/types';
 import { Divider, Icon } from 'react-native-paper';
 import { Link } from 'expo-router';
@@ -17,67 +17,65 @@ import moment from 'moment';
 
 
 export default function Index() {
-  const { prayerTimesWeek } = usePrayer();
-  const { currentPrayer, upcomingPrayer } = usePrayer();
-  if (prayerTimesWeek.length == 0) {
-    return
-  }
-  const { timeToNextPrayer } = usePrayer()
-  const todaysDate = new Date()
-  const { session } = useAuth()
-  const [isRendered, setIsRendered] = useState(false)
-  const [currentSurah, setCurrentSurah] = useState({ surah: 1, ayah_num: 1, ayah: 'بِسْمِ ٱللَّهِ ٱلرَّحْمَـٰنِ ٱلرَّحِيمِ', surah_name: 'Surah Al-Fatiha' })
-  const [showRamadanTrackerInfo, setShowRamadanTrackerInfo] = useState(false)
-  const { height } = Dimensions.get('window')
-  const tableWidth = Dimensions.get('screen').width * .95
-  const [tableIndex, setTableIndex] = useState(0)
-  const [UserSettings, setUserSettings] = useState<{ prayer: string, notification_settings: string[] }[]>()
+  // ALL hooks must be called unconditionally at the top
+  const { data: prayerTimesWeek, isLoading } = usePrayerTimes();
+  const currentPrayer = useCurrentPrayer();
+  const upcomingPrayer = useUpcomingPrayer();
+  const timeToNextPrayer = useTimeToNextPrayer();
+  const { session } = useAuth();
+  const [isRendered, setIsRendered] = useState(false);
+  const [currentSurah, setCurrentSurah] = useState({ surah: 1, ayah_num: 1, ayah: 'بِسْمِ ٱللَّهِ ٱلرَّحْمَـٰنِ ٱلرَّحِيمِ', surah_name: 'Surah Al-Fatiha' });
+  const [showRamadanTrackerInfo, setShowRamadanTrackerInfo] = useState(false);
+  const [tableIndex, setTableIndex] = useState(0);
+  const [UserSettings, setUserSettings] = useState<{ prayer: string, notification_settings: string[] }[]>();
+  const { height } = Dimensions.get('window');
+  const tableWidth = Dimensions.get('screen').width * .95;
   const viewConfig = useRef({ viewAreaCoveragePercentThreshold: 50 }).current;
-  const handleScroll = (event: any) => {
-    const scrollPositon = event.nativeEvent.contentOffset.x;
-    const index = Math.floor(scrollPositon / tableWidth);
-    setTableIndex(index)
-  }
-  const flatlistRef = useRef<FlatList>(null)
+  const flatlistRef = useRef<FlatList>(null);
+
+  // Helper functions for useEffect (defined before useEffect hooks)
+  const getUserSetting = async () => {
+    if (!session?.user.id) return;
+    const { data, error } = await supabase.from('prayer_notification_settings').select('*').eq('user_id', session.user.id);
+    if (data) {
+      setUserSettings(data);
+    }
+    if (error) {
+      console.log(error);
+    }
+  };
+
+  const GetRamadanTracker = async () => {
+    const { data, error } = await supabase.from('ramadan_quran_tracker').select('*').eq('id', 1).single();
+    if (data) {
+      setCurrentSurah(data);
+    }
+  };
+
+  // ALL useEffect hooks must be called before early returns
   useEffect(() => {
     flatlistRef.current?.scrollToIndex({
       index: tableIndex,
       animated: true
-    })
-  }, [tableIndex])
+    });
+  }, [tableIndex]);
 
-  {/* Get Time to Suhoor or Iftar */ }
-
-
-  const getUserSetting = async () => {
-    const { data, error } = await supabase.from('prayer_notification_settings').select('*').eq('user_id', session?.user.id)
-    if (data) {
-      setUserSettings(data)
-    }
-    if (error) {
-      console.log(error)
-    }
-  }
-
-  const GetRamadanTracker = async () => {
-    const { data, error } = await supabase.from('ramadan_quran_tracker').select('*').eq('id', 1).single()
-    if (data) {
-      setCurrentSurah(data)
-    }
-  }
   useEffect(() => {
-    getUserSetting()
-    GetRamadanTracker()
+    if (!session?.user.id) return;
+
+    getUserSetting();
+    GetRamadanTracker();
+
     const listenForSettings = supabase.channel('Listen for user settings change').on(
       'postgres_changes',
       {
         event: '*',
         schema: 'public',
         table: 'prayer_notification_settings',
-        filter: `user_id=eq.${session?.user.id}`
+        filter: `user_id=eq.${session.user.id}`
       },
       async (payload) => await getUserSetting()
-    ).subscribe()
+    ).subscribe();
 
     const listenForQuranTrackerChanges = supabase.channel('Listen for Quran Tracker Changes').on(
       'postgres_changes',
@@ -88,10 +86,38 @@ export default function Index() {
         filter: `id=eq.${1}`
       },
       async (payload) => await GetRamadanTracker()
-    ).subscribe()
+    ).subscribe();
 
-    return () => { supabase.removeChannel(listenForSettings); supabase.removeChannel(listenForQuranTrackerChanges) }
-  }, [])
+    return () => {
+      supabase.removeChannel(listenForSettings);
+      supabase.removeChannel(listenForQuranTrackerChanges);
+    };
+  }, [session?.user.id]);
+
+  // Early returns AFTER all hooks
+  if (isLoading) {
+    return (
+      <View className='flex flex-1 h-screen justify-center items-center bg-white'>
+        <Text className='text-lg font-semibold text-gray-600'>Loading prayer times...</Text>
+      </View>
+    );
+  }
+
+  if (!prayerTimesWeek || prayerTimesWeek.length === 0) {
+    return (
+      <View className='flex flex-1 h-screen justify-center items-center bg-white'>
+        <Text className='text-lg font-semibold text-gray-600'>No prayer times available</Text>
+      </View>
+    );
+  }
+
+  // Component logic and handlers
+  const todaysDate = new Date();
+  const handleScroll = (event: any) => {
+    const scrollPositon = event.nativeEvent.contentOffset.x;
+    const index = Math.floor(scrollPositon / tableWidth);
+    setTableIndex(index);
+  };
 
 
 

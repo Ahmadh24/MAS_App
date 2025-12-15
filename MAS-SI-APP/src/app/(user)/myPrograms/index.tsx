@@ -7,7 +7,6 @@ import { Program, UserPlaylistType } from '@/src/types';
 import { Button, Divider, Icon, TextInput } from 'react-native-paper';
 import { Link } from 'expo-router';
 import RenderLikedLectures from '@/src/components/UserProgramComponets/RenderLikedLectures';
-import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
 import { UserPlaylistFliers } from '@/src/components/UpcomingFliers';
 import LottieView from 'lottie-react-native';
 import { EventsType } from '@/src/types';
@@ -140,7 +139,7 @@ export default function userPrograms() {
     await getUserProgramLibrary()
     checkIfAnon()
   }  
-  const tabBarHeight = 35
+  const tabBarHeight = 20
   const onRefresh = async () => {
     await getUserProgramLibrary()
   }

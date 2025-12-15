@@ -1,7 +1,20 @@
 import React from 'react';
-import { View, Text, ScrollView, TouchableOpacity, StyleSheet, Modal } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, StyleSheet, Modal, Platform } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { ExpoLiquidGlassView, CornerStyle, LiquidGlassType } from 'expo-liquid-glass-view';
+import { useRouter } from 'expo-router';
+import { 
+  X, 
+  UserPlus, 
+  LogOut, 
+  Bookmark, 
+  ListVideo, 
+  Bell, 
+  Calendar, 
+  PartyPopper, 
+  Settings, 
+  Heart, 
+  Eye 
+} from 'lucide-react-native';
 
 interface AccountModalProps {
   visible: boolean;
@@ -9,6 +22,7 @@ interface AccountModalProps {
 }
 
 export default function AccountModal({ visible, onClose }: AccountModalProps) {
+  const router = useRouter();
   return (
     <Modal
       visible={visible}
@@ -17,7 +31,7 @@ export default function AccountModal({ visible, onClose }: AccountModalProps) {
       onRequestClose={onClose}
     >
       <LinearGradient
-        colors={['#5B9FED', '#4A8FDD', '#3B7FCD']}
+        colors={['#87CEEB', '#214E91', '#2A2A2A']}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
         style={styles.container}
@@ -26,16 +40,11 @@ export default function AccountModal({ visible, onClose }: AccountModalProps) {
           {/* Header */}
           <View style={styles.header}>
             <Text style={styles.headerTitle}>Account</Text>
-            <ExpoLiquidGlassView 
-              type={LiquidGlassType.Interactive}
-              cornerStyle={CornerStyle.Continuous}
-              cornerRadius={18}
-              style={styles.closeButton}
-            >
+            <View style={styles.closeButton}>
               <TouchableOpacity style={styles.closeButtonInner} onPress={onClose}>
-                <Text style={styles.closeButtonText}>×</Text>
+                <X color="white" size={20} strokeWidth={2.5} />
               </TouchableOpacity>
-            </ExpoLiquidGlassView>
+            </View>
           </View>
 
         {/* Profile Section */}
@@ -47,16 +56,12 @@ export default function AccountModal({ visible, onClose }: AccountModalProps) {
           <Text style={styles.memberSince}>Member Since 2025</Text>
           
           {/* Invite Friends Button */}
-          <ExpoLiquidGlassView 
-            type={LiquidGlassType.Interactive}
-            cornerStyle={CornerStyle.Continuous}
-            cornerRadius={999}
-            style={styles.inviteButtonBlur}
-          >
+          <View style={styles.inviteButtonContainer}>
             <TouchableOpacity style={styles.inviteButton}>
-              <Text style={styles.inviteButtonText}>👥 Invite Friends</Text>
+              <UserPlus color="white" size={20} strokeWidth={2.5} style={{ marginRight: 8 }} />
+              <Text style={styles.inviteButtonText}>Invite Friends</Text>
             </TouchableOpacity>
-          </ExpoLiquidGlassView>
+          </View>
         </View>
 
         {/* Content Sections */}
@@ -64,124 +69,68 @@ export default function AccountModal({ visible, onClose }: AccountModalProps) {
           
           {/* MY ACTIVITY */}
           <Text style={styles.sectionLabel}>MY ACTIVITY</Text>
-
-          <ExpoLiquidGlassView 
-            type={LiquidGlassType.Interactive}
-            cornerStyle={CornerStyle.Continuous}
-            cornerRadius={20}
-            style={styles.menuButtonBlur}
-          >
+          <View style={styles.menuCard}>
             <TouchableOpacity style={styles.menuButton}>
+              <Bookmark color="white" size={20} strokeWidth={2.5} style={{ marginRight: 12 }} />
               <Text style={styles.menuButtonText}>Saved Programs/Events</Text>
             </TouchableOpacity>
-          </ExpoLiquidGlassView>
-
-          <ExpoLiquidGlassView 
-            type={LiquidGlassType.Interactive}
-            cornerStyle={CornerStyle.Continuous}
-            cornerRadius={20}
-            style={styles.menuButtonBlur}
-          >
             <TouchableOpacity style={styles.menuButton}>
+              <ListVideo color="white" size={20} strokeWidth={2.5} style={{ marginRight: 12 }} />
               <Text style={styles.menuButtonText}>Playlist</Text>
             </TouchableOpacity>
-          </ExpoLiquidGlassView>
+          </View>
 
           {/* NOTIFICATIONS */}
           <Text style={styles.sectionLabel}>NOTIFICATIONS</Text>
-          
-          <ExpoLiquidGlassView 
-            type={LiquidGlassType.Interactive}
-            cornerStyle={CornerStyle.Continuous}
-            cornerRadius={20}
-            style={styles.menuButtonBlur}
-          >
+          <View style={styles.menuCard}>
             <TouchableOpacity style={styles.menuButton}>
+              <Bell color="white" size={20} strokeWidth={2.5} style={{ marginRight: 12 }} />
               <Text style={styles.menuButtonText}>Prayer</Text>
             </TouchableOpacity>
-          </ExpoLiquidGlassView>
-
-          <ExpoLiquidGlassView 
-            type={LiquidGlassType.Interactive}
-            cornerStyle={CornerStyle.Continuous}
-            cornerRadius={20}
-            style={styles.menuButtonBlur}
-          >
-            <TouchableOpacity style={styles.menuButton}>
+            <TouchableOpacity 
+              style={styles.menuButton}
+              onPress={() => {
+                onClose();
+                router.push('/myPrograms/notifications');
+              }}
+            >
+              <Calendar color="white" size={20} strokeWidth={2.5} style={{ marginRight: 12 }} />
               <Text style={styles.menuButtonText}>Program</Text>
             </TouchableOpacity>
-          </ExpoLiquidGlassView>
-
-          <ExpoLiquidGlassView 
-            type={LiquidGlassType.Interactive}
-            cornerStyle={CornerStyle.Continuous}
-            cornerRadius={20}
-            style={styles.menuButtonBlur}
-          >
             <TouchableOpacity style={styles.menuButton}>
+              <PartyPopper color="white" size={20} strokeWidth={2.5} style={{ marginRight: 12 }} />
               <Text style={styles.menuButtonText}>Event</Text>
             </TouchableOpacity>
-          </ExpoLiquidGlassView>
-
-          <ExpoLiquidGlassView 
-            type={LiquidGlassType.Interactive}
-            cornerStyle={CornerStyle.Continuous}
-            cornerRadius={20}
-            style={styles.menuButtonBlur}
-          >
             <TouchableOpacity style={styles.menuButton}>
-              <Text style={styles.menuButtonText}>Setting (Pref)</Text>
+              <Settings color="white" size={20} strokeWidth={2.5} style={{ marginRight: 12 }} />
+              <Text style={styles.menuButtonText}>Setting</Text>
             </TouchableOpacity>
-          </ExpoLiquidGlassView>
+          </View>
 
           {/* DONATION */}
           <Text style={styles.sectionLabel}>DONATION</Text>
-          
-          <ExpoLiquidGlassView 
-            type={LiquidGlassType.Interactive}
-            cornerStyle={CornerStyle.Continuous}
-            cornerRadius={20}
-            style={styles.menuButtonBlur}
-          >
+          <View style={styles.menuCard}>
             <TouchableOpacity style={styles.menuButton}>
+              <Heart color="white" size={20} strokeWidth={2.5} style={{ marginRight: 12 }} />
               <Text style={styles.menuButtonText}>Phase 1</Text>
             </TouchableOpacity>
-          </ExpoLiquidGlassView>
-
-          <ExpoLiquidGlassView 
-            type={LiquidGlassType.Interactive}
-            cornerStyle={CornerStyle.Continuous}
-            cornerRadius={20}
-            style={styles.menuButtonBlur}
-          >
             <TouchableOpacity style={styles.menuButton}>
+              <Heart color="white" size={20} strokeWidth={2.5} style={{ marginRight: 12 }} />
               <Text style={styles.menuButtonText}>Phase 2</Text>
             </TouchableOpacity>
-          </ExpoLiquidGlassView>
-
-          <ExpoLiquidGlassView 
-            type={LiquidGlassType.Interactive}
-            cornerStyle={CornerStyle.Continuous}
-            cornerRadius={20}
-            style={styles.menuButtonBlur}
-          >
             <TouchableOpacity style={styles.menuButton}>
+              <Eye color="white" size={20} strokeWidth={2.5} style={{ marginRight: 12 }} />
               <Text style={styles.menuButtonText}>View Full Project</Text>
             </TouchableOpacity>
-          </ExpoLiquidGlassView>
+          </View>
 
           {/* Logout Button */}
-          <ExpoLiquidGlassView 
-            type={LiquidGlassType.Tint}
-            tint="rgba(255, 80, 70, 0.3)"
-            cornerStyle={CornerStyle.Continuous}
-            cornerRadius={20}
-            style={styles.logoutButtonBlur}
-          >
+          <View style={styles.logoutButtonContainer}>
             <TouchableOpacity style={styles.logoutButton}>
-              <Text style={styles.logoutButtonText}>🚪 Logout</Text>
+              <LogOut color="white" size={20} strokeWidth={2.5} style={{ marginRight: 8 }} />
+              <Text style={styles.logoutButtonText}>Logout</Text>
             </TouchableOpacity>
-          </ExpoLiquidGlassView>
+          </View>
         </View>
       </ScrollView>
     </LinearGradient>
@@ -203,8 +152,8 @@ const styles = StyleSheet.create({
   },
   header: {
           paddingTop: 60,
-    paddingBottom: 20,
-          paddingHorizontal: 20,
+          paddingBottom: 20,
+          paddingHorizontal: 12,
           flexDirection: 'row',
           justifyContent: 'space-between',
           alignItems: 'center',
@@ -213,41 +162,34 @@ const styles = StyleSheet.create({
             fontSize: 28, 
             fontWeight: 'bold', 
             color: 'white',
-            textShadowColor: 'rgba(0, 0, 0, 0.3)',
-            textShadowOffset: { width: 0, height: 2 },
-    textShadowRadius: 4,
   },
   closeButton: {
     width: 36,
     height: 36,
     borderRadius: 18,
     overflow: 'hidden',
-    borderWidth: 0.8,
-    borderColor: 'rgba(255, 255, 255, 0.4)',
+    backgroundColor: 'rgba(160, 170, 190, 0.55)',
   },
   closeButtonInner: {
     flex: 1,
             alignItems: 'center',
                 justifyContent: 'center',
-  },
-  closeButtonText: {
-    color: 'white',
-    fontSize: 24,
-    fontWeight: '300',
+    backgroundColor: 'transparent',
   },
   profileSection: {
                 alignItems: 'center',
-    paddingHorizontal: 20,
+    paddingHorizontal: 12,
     paddingBottom: 30,
   },
   avatarContainer: {
     width: 80,
     height: 80,
     borderRadius: 40,
-    backgroundColor: 'rgba(255, 255, 255, 0.25)',
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 12,
+    overflow: 'hidden',
+    backgroundColor: 'rgba(160, 170, 190, 0.5)',
   },
   avatarIcon: {
     fontSize: 40,
@@ -257,9 +199,6 @@ const styles = StyleSheet.create({
               fontWeight: 'bold', 
               color: 'white', 
               marginBottom: 4,
-              textShadowColor: 'rgba(0, 0, 0, 0.3)',
-              textShadowOffset: { width: 0, height: 1 },
-    textShadowRadius: 3,
   },
   memberSince: {
                 fontSize: 14, 
@@ -267,26 +206,28 @@ const styles = StyleSheet.create({
     opacity: 0.9,
                 marginBottom: 12,
   },
-  inviteButtonBlur: {
+  inviteButtonContainer: {
     width: '100%',
     borderRadius: 999,
     overflow: 'hidden',
-    borderWidth: 0.8,
-    borderColor: 'rgba(255, 255, 255, 0.4)',
+    backgroundColor: 'rgba(160, 170, 190, 0.55)',
   },
   inviteButton: {
-    paddingVertical: 16,
-    paddingHorizontal: 20,
-    alignItems: 'center',
-    justifyContent: 'center',
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    flexDirection: 'row',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+    backgroundColor: 'transparent',
   },
   inviteButtonText: {
     color: 'white',
-    fontWeight: '600',
-    fontSize: 16,
+    fontWeight: '700',
+    fontSize: 17,
   },
   contentSections: {
-                  paddingHorizontal: 20,
+    paddingHorizontal: 12,
+    paddingTop: 10,
   },
   sectionLabel: {
     fontSize: 12,
@@ -294,50 +235,52 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
     letterSpacing: 1,
     color: 'white',
-    marginBottom: 8,
-    marginTop: 4,
-    textShadowColor: 'rgba(0, 0, 0, 0.3)',
-    textShadowOffset: { width: 0, height: 1 },
-    textShadowRadius: 3,
+    opacity: 0.9,
+    marginBottom: 10,
+    marginTop: 8,
   },
-  menuButtonBlur: {
+  menuCard: {
     width: '100%',
     borderRadius: 20,
     overflow: 'hidden',
-    marginBottom: 12,
-    borderWidth: 0.8,
-    borderColor: 'rgba(255, 255, 255, 0.4)',
+    marginBottom: 16,
+    backgroundColor: 'rgba(160, 170, 190, 0.55)',
   },
   menuButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 18,
-    paddingHorizontal: 20,
+                  flexDirection: 'row', 
+                  alignItems: 'center', 
+    justifyContent: 'flex-start',
+    paddingLeft: 16,
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    backgroundColor: 'transparent',
   },
   menuButtonText: {
-    fontSize: 16,
-    fontWeight: '600',
+    fontSize: 17,
+    fontWeight: '700',
     color: 'white',
   },
-  logoutButtonBlur: {
+  logoutButtonContainer: {
     width: '100%',
     borderRadius: 20,
     overflow: 'hidden',
     marginTop: 8,
-    borderWidth: 0.8,
-    borderColor: 'rgba(255, 255, 255, 0.4)',
+    backgroundColor: 'rgba(160, 170, 190, 0.55)',
   },
   logoutButton: {
-    paddingVertical: 18,
-    paddingHorizontal: 20,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    flexDirection: 'row',
                   alignItems: 'center',
+                  justifyContent: 'center',
+    backgroundColor: 'transparent',
   },
   logoutButtonText: {
     color: 'white',
-    fontWeight: '600',
-    fontSize: 16,
+    fontWeight: '700',
+    fontSize: 17,
   },
 });
+
 
 

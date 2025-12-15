@@ -1,20 +1,25 @@
-import { View, Text, ScrollView, useWindowDimensions, Button, FlatList, Pressable } from 'react-native'
+import { View, Text, ScrollView, useWindowDimensions, Button, FlatList, Pressable, ImageBackground, StyleSheet } from 'react-native'
 import React, { useEffect, useRef, useState } from 'react'
-import { Redirect, Stack, useNavigation } from 'expo-router'
+import { Redirect, Stack } from 'expo-router'
 import { supabase } from '@/src/lib/supabase'
 import { useAuth } from "@/src/providers/AuthProvider"
 import { EventsType, Program } from '@/src/types'
 import RenderAddedEvents from "@/src/components/UserProgramComponets/RenderAddedEvents"
 import ProgramsListProgram from '@/src/components/ProgramsListProgram'
 import RenderAddedPrograms from '@/src/components/UserProgramComponets/RenderAddedPrograms'
-// import { TabView, SceneMap, TabBar } from 'react-native-tab-view';
+import { TabView, TabBarProps } from 'react-native-tab-view';
 import { Dialog, Icon, IconButton } from 'react-native-paper'
 import { usePrayerTimes } from '@/src/hooks/usePrayerTimes'
 import NotificationPrayerTable from '@/src/components/notificationPrayerTimeTable'
-import { useRouter } from 'expo-router'
+import { useRouter, Link } from 'expo-router'
 import JummahMarquee from '@/src/components/JummahMarquee'
 import { add } from 'date-fns'
-{/*
+import { LinearGradient } from 'expo-linear-gradient'
+import { LiquidGlassView, isLiquidGlassSupported } from '@callstack/liquid-glass'
+import HeroTransitionModal, { LayoutInfo } from '@/src/components/HeroTransitionModal'
+
+// Commented out - NotificationPaidScreen component (unused)
+/*
   const NotificationPaidScreen = () => {
     return(
       <ScrollView>
@@ -35,8 +40,8 @@ import { add } from 'date-fns'
       </ScrollView>
     )
   }
+*/
 
-  */}
 type NotificationEventsScreenProp = {
   addedEvents: EventsType[] | null
   layout: number
@@ -128,36 +133,136 @@ const LecturesScreen = ({ addedPrograms, layout }: ClassesScreenProp) => {
     </ScrollView>
   )
 }
+
+type ProgramsScreenProp = {
+  addedPrograms: Program[]
+  addedLecturePrograms: Program[]
+  addedEvents: EventsType[]
+  layout: number
+  onProgramHeroPress?: (program: Program, layout: LayoutInfo) => void
+  onEventHeroPress?: (event: EventsType, layout: LayoutInfo) => void
+}
+
+const ProgramsScreen = ({ addedPrograms, addedLecturePrograms, addedEvents, layout, onProgramHeroPress, onEventHeroPress }: ProgramsScreenProp) => {
+  const tabBarHeight = 20
+
+  const hasClasses = addedPrograms && addedPrograms.length > 0
+  const hasLectures = addedLecturePrograms && addedLecturePrograms.length > 0
+  const hasEvents = addedEvents && addedEvents.length > 0
+  const hasAnyContent = hasClasses || hasLectures || hasEvents
+
+  const SectionTitle = ({ title }: { title: string }) => (
+    <Text style={{ fontSize: 18, fontWeight: '700', color: '#1a1a1a', marginBottom: 12, marginTop: 20, paddingHorizontal: 20 }}>
+      {title}
+    </Text>
+  )
+
+  const EmptyState = () => (
+    <View style={{ paddingHorizontal: 28, paddingTop: 40 }}>
+      <View style={{ alignItems: 'center' }}>
+        <Text style={{ fontWeight: 'bold', fontSize: 24, textAlign: 'center', marginBottom: 16 }}>
+          Start adding programs to your notifications
+        </Text>
+        <Icon source={"bell"} color="#007AFF" size={40} />
+      </View>
+      <View style={{ height: 40 }} />
+      <View>
+        <Text style={{ fontWeight: 'bold', fontSize: 18, textAlign: 'center', color: '#666' }}>
+          Add programs and events by tapping the bell icon or sliding right on the flyer name
+        </Text>
+      </View>
+    </View>
+  )
+
+  if (!hasAnyContent) {
+    return <EmptyState />
+  }
+
+  return (
+    <ScrollView
+      style={{ flex: 1, backgroundColor: 'transparent' }}
+      contentContainerStyle={{ paddingBottom: tabBarHeight }}
+      showsVerticalScrollIndicator={false}
+    >
+      {/* Classes Section */}
+      {hasClasses && (
+        <>
+          <SectionTitle title="Classes" />
+          <FlatList
+            horizontal
+            data={addedPrograms}
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={{ paddingHorizontal: 20, gap: 20 }}
+            renderItem={({ item }) => (
+              <View style={{ width: 160 }}>
+                <RenderAddedPrograms programInfo={item} onHeroPress={onProgramHeroPress} />
+              </View>
+            )}
+            keyExtractor={(item, index) => `class-${index}`}
+          />
+        </>
+      )}
+
+      {/* Lectures Section */}
+      {hasLectures && (
+        <>
+          <SectionTitle title="Lectures" />
+          <FlatList
+            horizontal
+            data={addedLecturePrograms}
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={{ paddingHorizontal: 20, gap: 20 }}
+            renderItem={({ item }) => (
+              <View style={{ width: 160 }}>
+                <RenderAddedPrograms programInfo={item} onHeroPress={onProgramHeroPress} />
+              </View>
+            )}
+            keyExtractor={(item, index) => `lecture-${index}`}
+          />
+        </>
+      )}
+
+      {/* Events Section */}
+      {hasEvents && (
+        <>
+          <SectionTitle title="Events" />
+          <FlatList
+            horizontal
+            data={addedEvents}
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={{ paddingHorizontal: 20, gap: 20 }}
+            renderItem={({ item }) => (
+              <View style={{ width: 160 }}>
+                <RenderAddedEvents eventsInfo={item} onHeroPress={onEventHeroPress} />
+              </View>
+            )}
+            keyExtractor={(item, index) => `event-${index}`}
+          />
+        </>
+      )}
+    </ScrollView>
+  )
+}
 const SalahTimesScreen = () => {
   const { data: prayerTimesWeek } = usePrayerTimes();
   if (!prayerTimesWeek || prayerTimesWeek.length == 0) {
-    return
+    return <View style={{ flex: 1, backgroundColor: 'transparent' }} />
   }
   const [tableIndex, setTableIndex] = useState(0)
-  const viewConfig = useRef({ viewAreaCoveragePercentThreshold: 50 }).current;
-  const flatlistRef = useRef<FlatList>(null)
-  useEffect(() => {
-    flatlistRef.current?.scrollToIndex({
-      index: tableIndex,
-      animated: true
-    })
-  }, [tableIndex])
+
+  // Use the first day's prayer times for now (today)
+  const todayPrayerData = prayerTimesWeek[0] || prayerTimesWeek[tableIndex];
 
   return (
-    <View className='items-center justify-center bg-white'>
-      <FlatList
-        data={prayerTimesWeek}
-        renderItem={({ item, index }) => <NotificationPrayerTable prayerData={item} setTableIndex={setTableIndex} tableIndex={tableIndex} index={index} />}
-        horizontal
-        bounces={false}
-        showsHorizontalScrollIndicator={false}
-        pagingEnabled
-        scrollEventThrottle={32}
-        viewabilityConfig={viewConfig}
-        contentContainerStyle={{ flex: 1 }}
-        ref={flatlistRef}
-        nestedScrollEnabled
-      />
+    <View style={{ flex: 1, backgroundColor: 'transparent' }}>
+      {todayPrayerData && (
+        <NotificationPrayerTable
+          prayerData={todayPrayerData}
+          setTableIndex={setTableIndex}
+          tableIndex={tableIndex}
+          index={0}
+        />
+      )}
     </View>
   )
 }
@@ -170,6 +275,51 @@ const NotificationEvents = () => {
   const [addedLecturePrograms, setAddedProgramLectures] = useState<Program[]>([])
   const [index, setIndex] = useState(0)
   const layout = useWindowDimensions().width
+
+  // Hero transition modal state
+  const [heroModalVisible, setHeroModalVisible] = useState(false)
+  const [selectedProgram, setSelectedProgram] = useState<Program | null>(null)
+  const [selectedEvent, setSelectedEvent] = useState<EventsType | null>(null)
+  const [heroLayoutInfo, setHeroLayoutInfo] = useState<LayoutInfo | null>(null)
+
+  // Hero transition handlers
+  const handleProgramHeroPress = (program: Program, layoutInfo: LayoutInfo) => {
+    setSelectedProgram(program)
+    setSelectedEvent(null)
+    setHeroLayoutInfo(layoutInfo)
+    setHeroModalVisible(true)
+  }
+
+  const handleEventHeroPress = (event: EventsType, layoutInfo: LayoutInfo) => {
+    setSelectedEvent(event)
+    setSelectedProgram(null)
+    setHeroLayoutInfo(layoutInfo)
+    setHeroModalVisible(true)
+  }
+
+  const handleHeroModalClose = () => {
+    setHeroModalVisible(false)
+    // Small delay to let animation complete before clearing data
+    setTimeout(() => {
+      setSelectedProgram(null)
+      setSelectedEvent(null)
+      setHeroLayoutInfo(null)
+    }, 300)
+  }
+
+  const handleHeroNavigate = () => {
+    setHeroModalVisible(false)
+    setTimeout(() => {
+      if (selectedProgram) {
+        router.push(`/myPrograms/notifications/ClassesAndLectures/${selectedProgram.program_id}`)
+      } else if (selectedEvent) {
+        router.push(`/myPrograms/notifications/${selectedEvent.event_id}`)
+      }
+      setSelectedProgram(null)
+      setSelectedEvent(null)
+      setHeroLayoutInfo(null)
+    }, 100)
+  }
   const getAddedEvents = async () => {
     const { data: AddedEvents, error } = await supabase.from("added_notifications_events").select("*").eq("user_id", session?.user.id).order("created_at", { ascending: false })
     if (error) {
@@ -253,80 +403,294 @@ const NotificationEvents = () => {
     return () => { supabase.removeChannel(listenForAddedEvents); supabase.removeChannel(listenForAddedPrograms) }
   }, [])
 
-  const renderScene = ({ route }: any) => {
-    switch (route.key) {
-      case "second":
-        return <SalahTimesScreen />
-      case "third":
-        return <ClassesScreen addedPrograms={addedPrograms} layout={layout} />
-      case "fourth":
-        return <LecturesScreen addedPrograms={addedLecturePrograms} layout={layout} />
-      case "fifth":
-        return <NotificationEventsScreen addedEvents={addedEvents} layout={layout} />
-    }
+  const JummahScreen = () => {
+    const tabBarHeight = 20
+    const jummahTimes = ['12:15 PM', '1:00 PM', '1:45 PM', '3:45 PM']
+
+    const JummahCard = ({ time, index }: { time: string, index: number }) => (
+      <View
+        style={{
+          flexDirection: 'row',
+          alignItems: 'center',
+          padding: 16,
+          backgroundColor: isLiquidGlassSupported ? 'transparent' : 'white',
+        }}
+      >
+        <LinearGradient
+          colors={['#007AFF', '#0EA5E9', '#38BDF8']}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={{
+            width: 50,
+            height: 50,
+            borderRadius: 12,
+            alignItems: 'center',
+            justifyContent: 'center',
+            marginRight: 16,
+          }}
+        >
+          <Text style={{ color: 'white', fontSize: 18, fontWeight: '700' }}>
+            {index + 1}
+          </Text>
+        </LinearGradient>
+        <View style={{ flex: 1 }}>
+          <Text style={{ fontSize: 16, fontWeight: '600', color: '#1a1a1a', marginBottom: 4 }}>
+            Jummah Prayer {index + 1}
+          </Text>
+          <Text style={{ fontSize: 14, fontWeight: '500', color: '#666666' }}>
+            {time}
+          </Text>
+        </View>
+        {isLiquidGlassSupported ? (
+          <LiquidGlassView
+            style={{
+              width: 28,
+              height: 28,
+              borderRadius: 14,
+              alignItems: 'center',
+              justifyContent: 'center',
+              overflow: 'hidden',
+            }}
+            effect="regular"
+          >
+            <Text style={{ color: '#1a1a1a', fontSize: 14, fontWeight: '600' }}>›</Text>
+          </LiquidGlassView>
+        ) : (
+          <View
+            style={{
+              width: 24,
+              height: 24,
+              borderRadius: 12,
+              backgroundColor: '#E5E7EB',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
+            <Text style={{ color: '#666666', fontSize: 12 }}>›</Text>
+          </View>
+        )}
+      </View>
+    );
+
+    return (
+      <ScrollView
+        style={{ flex: 1, backgroundColor: 'transparent' }}
+        contentContainerStyle={{ paddingHorizontal: 20, paddingTop: 20, paddingBottom: tabBarHeight }}
+      >
+        <Text style={{ fontSize: 18, fontWeight: '700', color: '#1a1a1a', marginBottom: 20 }}>Jummah Notifications</Text>
+        <View style={{ gap: 12 }}>
+          {
+            jummahTimes.map((time, idx) => (
+              <Link
+                href={{
+                  pathname: `/(user)/myPrograms/notifications/Prayer/Jummah/[jummahDetails]`,
+                  params: { jummahDetails: time, jummahName: time, index: idx + 1 }
+                }}
+                key={idx}
+                asChild
+              >
+                <Pressable>
+                  {isLiquidGlassSupported ? (
+                    <LiquidGlassView
+                      style={{
+                        borderRadius: 16,
+                        overflow: 'hidden',
+                      }}
+                      interactive
+                      effect="clear"
+                    >
+                      <JummahCard time={time} index={idx} />
+                    </LiquidGlassView>
+                  ) : (
+                    <View
+                      style={{
+                        backgroundColor: 'white',
+                        borderRadius: 12,
+                        shadowColor: '#000',
+                        shadowOffset: { width: 0, height: 2 },
+                        shadowOpacity: 0.1,
+                        shadowRadius: 8,
+                        elevation: 3,
+                      }}
+                    >
+                      <JummahCard time={time} index={idx} />
+                    </View>
+                  )}
+                </Pressable>
+              </Link>
+            ))
+          }
+        </View>
+      </ScrollView>
+    )
   }
+
   const routes = [
-    //{ key: 'first', title: 'Paid' },
-    { key: 'second', title: 'Prayer' },
-    { key: 'third', title: 'Classes' },
-    { key: 'fourth', title: 'Lectures' },
-    { key: 'fifth', title: 'Events' },
+    { key: 'prayer', title: 'Prayer' },
+    { key: 'programs', title: 'Programs' },
+    { key: 'jummah', title: 'Jummah' },
   ]
 
-  // const renderTabBar = (props : any) => (
-  //   <TabBar
-  //     {...props}
-  //     indicatorStyle={{ backgroundColor : "#57BA47", position: "absolute", zIndex : -1, bottom : "8%", left : "1%", height: "85%", width : "23%", borderRadius : 20  }}
-  //     style={{ backgroundColor: '#0D509D', alignSelf : "center",  height: '9%'}}
-  //     labelStyle={{ color : "white", fontWeight : "bold" }}
-  //     tabStyle={{ width : layout / 3.5 }}
-  //     scrollEnabled={true}
-  //   />
-  // );
-  //#0D509D
+  const renderScene = ({ route }: any) => {
+    switch (route.key) {
+      case "prayer":
+        return <SalahTimesScreen />
+      case "programs":
+        return <ProgramsScreen
+          addedPrograms={addedPrograms}
+          addedLecturePrograms={addedLecturePrograms}
+          addedEvents={addedEvents}
+          layout={layout}
+          onProgramHeroPress={handleProgramHeroPress}
+          onEventHeroPress={handleEventHeroPress}
+        />
+      case "jummah":
+        return <JummahScreen />
+    }
+  }
+
+  const renderTabBar = (props: TabBarProps<any>) => (
+    <View style={{ backgroundColor: 'transparent', paddingTop: 16, paddingBottom: 12 }}>
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={{ paddingHorizontal: 20, gap: 12 }}
+        style={{ flexGrow: 0 }}
+      >
+        {props.navigationState.routes.map((route, i) => {
+          const isActive = props.navigationState.index === i;
+
+          if (isActive) {
+            // Active tab with liquid glass
+            return isLiquidGlassSupported ? (
+              <LiquidGlassView
+                key={route.key}
+                style={tabStyles.activeTabGlass}
+                interactive
+                effect="regular"
+              >
+                <Pressable
+                  onPress={() => props.jumpTo(route.key)}
+                  style={tabStyles.activeTabPressable}
+                >
+                  <Text style={tabStyles.activeTabTextGlass}>
+                    {route.title}
+                  </Text>
+                </Pressable>
+              </LiquidGlassView>
+            ) : (
+              <Pressable
+                key={route.key}
+                onPress={() => props.jumpTo(route.key)}
+                style={{
+                  borderRadius: 999,
+                  paddingVertical: 10,
+                  paddingHorizontal: 20,
+                  backgroundColor: '#0EA5E9',
+                }}
+              >
+                <Text style={{
+                  color: 'white',
+                  fontWeight: '600',
+                  fontSize: 15,
+                }}>
+                  {route.title}
+                </Text>
+              </Pressable>
+            );
+          }
+
+          // Inactive tab with liquid glass
+          return isLiquidGlassSupported ? (
+            <LiquidGlassView
+              key={route.key}
+              style={tabStyles.inactiveTabGlass}
+              interactive
+              effect="clear"
+            >
+              <Pressable
+                onPress={() => props.jumpTo(route.key)}
+                style={tabStyles.tabPressable}
+              >
+                <Text style={tabStyles.inactiveTabTextGlass}>
+                  {route.title}
+                </Text>
+              </Pressable>
+            </LiquidGlassView>
+          ) : (
+            <Pressable
+              key={route.key}
+              onPress={() => props.jumpTo(route.key)}
+              style={{
+                paddingVertical: 10,
+                paddingHorizontal: 20,
+                borderRadius: 999,
+                backgroundColor: '#E5E7EB',
+              }}
+            >
+              <Text style={{
+                color: '#6B7280',
+                fontWeight: '600',
+                fontSize: 15,
+              }}>
+                {route.title}
+              </Text>
+            </Pressable>
+          );
+        })}
+      </ScrollView>
+    </View>
+  );
   const router = useRouter()
-  const navigation = useNavigation()
   return (
     <>
       <Stack.Screen options={{
         title: "Notification Center",
-        headerBackTitleVisible: false, headerTintColor: '#007AFF', headerTitleStyle: { color: 'black' }, headerStyle: { backgroundColor: 'white' },
+        headerBackTitle: '',
+        headerTintColor: '#007AFF',
+        headerTitleStyle: { color: 'black', fontWeight: '600' },
+        headerShadowVisible: false,
         headerLeft: () => (
-          <Pressable className='items-start mr-2' onPress={() => {
-            navigation.getParent()?.getState().index == 0 ? router.replace('/myPrograms') : router.back()
-          }}>
-            <Icon source={'chevron-left'} color='black' size={30} />
+          <Pressable
+            onPress={() => router.back()}
+            style={{
+              marginLeft: 0,
+              width: 40,
+              height: 40,
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}
+          >
+            <Icon source="chevron-left" color="#007AFF" size={28} />
           </Pressable>
         ),
-
       }} />
-      <View className='bg-[#ededed]' />
-      {/* Custom Tab Bar */}
-      <View style={{ backgroundColor: '#0D509D', paddingVertical: 8 }}>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 8 }}>
-          {routes.map((route, routeIndex) => (
-            <Pressable
-              key={route.key}
-              onPress={() => setIndex(routeIndex)}
-              style={{
-                paddingHorizontal: 16,
-                paddingVertical: 8,
-                marginHorizontal: 4,
-                borderRadius: 8,
-                backgroundColor: index === routeIndex ? '#57BA47' : 'transparent',
-              }}
-            >
-              <Text style={{ color: 'white', fontWeight: 'bold', fontSize: 14 }}>
-                {route.title}
-              </Text>
-            </Pressable>
-          ))}
-        </ScrollView>
-      </View>
-      {/* Tab Content */}
-      <View style={{ flex: 1, backgroundColor: '#ededed' }}>
-        {renderScene({ route: routes[index] })}
-      </View>
+      <LinearGradient
+        colors={['#FFFFFF', '#6BA8D1']}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 0, y: 1 }}
+        style={{ flex: 1 }}
+      >
+        <TabView
+          navigationState={{ index, routes }}
+          renderScene={renderScene}
+          onIndexChange={setIndex}
+          initialLayout={{ width: layout }}
+          renderTabBar={renderTabBar}
+          style={{ backgroundColor: 'transparent' }}
+        />
+      </LinearGradient>
+
+      {/* Hero Transition Modal */}
+      <HeroTransitionModal
+        visible={heroModalVisible}
+        onClose={handleHeroModalClose}
+        imageUri={selectedProgram?.program_img || selectedEvent?.event_img || null}
+        title={selectedProgram?.program_name || selectedEvent?.event_name || ''}
+        subtitle={selectedProgram ? 'Program' : selectedEvent ? 'Event' : ''}
+        layoutInfo={heroLayoutInfo}
+        onNavigate={handleHeroNavigate}
+      />
     </>
   )
 }
@@ -372,3 +736,33 @@ const NotificationEvents = () => {
 }
 
 export default NotificationEvents
+
+const tabStyles = StyleSheet.create({
+  activeTabGlass: {
+    borderRadius: 999,
+    overflow: 'hidden',
+  },
+  inactiveTabGlass: {
+    borderRadius: 999,
+    overflow: 'hidden',
+  },
+  tabPressable: {
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+  },
+  activeTabPressable: {
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    backgroundColor: '#38A3D1',
+  },
+  activeTabTextGlass: {
+    color: '#FFFFFF',
+    fontWeight: '600',
+    fontSize: 15,
+  },
+  inactiveTabTextGlass: {
+    color: '#4a4a4a',
+    fontWeight: '600',
+    fontSize: 15,
+  },
+})

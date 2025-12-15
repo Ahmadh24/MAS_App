@@ -1,4 +1,4 @@
-import { Button, DataTable, Dialog, Icon, IconButton } from "react-native-paper";
+import { Button, DataTable, Dialog, Icon, IconButton, Switch } from "react-native-paper";
 import { gettingPrayerData, prayerTimeData } from "@/src/types";
 import ProgramWidgetSlider from "@/src/components/programWidgetSlider";
 import {
@@ -15,14 +15,29 @@ import {
   ImageSourcePropType,
   FlatList,
   Platform,
+  Modal,
+  Animated,
 } from "react-native";
 import AlertBell from "../app/(user)/prayersTable/alertBell";
 import { useCurrentPrayer } from "../hooks/usePrayerTimes";
 import { Link, useNavigation } from "expo-router";
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import Marquee from "./Marquee";
 import JummahMarquee from "./JummahMarquee";
 import { format } from "date-fns";
+import { LinearGradient } from 'expo-linear-gradient';
+import { BlurView } from 'expo-blur';
+import { LiquidGlassView, isLiquidGlassSupported } from '@callstack/liquid-glass';
+import { Pencil, X, Check } from 'lucide-react-native';
+
+type NotificationOption = 'prayer_time' | 'iqamah_time' | '30_min_before' | 'mute';
+
+type PrayerNotificationSettings = {
+  [key: string]: {
+    enabled: boolean;
+    option: NotificationOption;
+  };
+};
 
 type prayerDataProp = {
   prayerData: gettingPrayerData;
@@ -39,6 +54,84 @@ const NotificationPrayerTable = ({
   const currentPrayer = useCurrentPrayer();
   const { width, height } = Dimensions.get("window");
   const navigation = useNavigation<any>();
+  
+  // Modal visibility state
+  const [modalVisible, setModalVisible] = useState(false);
+  
+  // Blur fade animation
+  const blurOpacity = useRef(new Animated.Value(0)).current;
+  
+  // Animate blur AFTER modal finishes sliding up
+  useEffect(() => {
+    if (modalVisible) {
+      // Wait for slide animation to complete (~300ms), then fade in blur
+      const timeout = setTimeout(() => {
+        Animated.timing(blurOpacity, {
+          toValue: 1,
+          duration: 400,
+          useNativeDriver: true,
+        }).start();
+      }, 300);
+      return () => clearTimeout(timeout);
+    } else {
+      blurOpacity.setValue(0);
+    }
+  }, [modalVisible]);
+  
+  // Selected prayer for the modal
+  const [selectedPrayer, setSelectedPrayer] = useState<string | null>(null);
+  
+  // Prayer notification settings state
+  const [prayerSettings, setPrayerSettings] = useState<PrayerNotificationSettings>({
+    'Fajr': { enabled: false, option: 'prayer_time' },
+    'Dhuhr': { enabled: false, option: 'prayer_time' },
+    'Asr': { enabled: false, option: 'prayer_time' },
+    'Maghrib': { enabled: false, option: 'prayer_time' },
+    'Isha': { enabled: false, option: 'prayer_time' },
+  });
+
+  const handleToggle = (prayerName: string) => {
+    const currentEnabled = prayerSettings[prayerName]?.enabled;
+    
+    if (!currentEnabled) {
+      // Opening - show modal
+      setSelectedPrayer(prayerName);
+      setModalVisible(true);
+    }
+    
+    // Update the toggle state
+    setPrayerSettings(prev => ({
+      ...prev,
+      [prayerName]: {
+        ...prev[prayerName],
+        enabled: !currentEnabled,
+      }
+    }));
+  };
+
+  const handleOptionSelect = (option: NotificationOption) => {
+    if (selectedPrayer) {
+      setPrayerSettings(prev => ({
+        ...prev,
+        [selectedPrayer]: {
+          ...prev[selectedPrayer],
+          option: option,
+        }
+      }));
+    }
+  };
+
+  const handleCloseModal = () => {
+    setModalVisible(false);
+    setSelectedPrayer(null);
+  };
+
+  const handleSave = () => {
+    // Here you would save to your backend/storage
+    console.log('Saving settings for:', selectedPrayer, prayerSettings[selectedPrayer!]);
+    handleCloseModal();
+  };
+
   const nextPress = () => {
     const nextPressNum = Math.ceil(index + 1);
     setTableIndex(Math.min(6, nextPressNum));
@@ -47,117 +140,107 @@ const NotificationPrayerTable = ({
     setTableIndex(Math.max(0, index - 1));
   };
 
-
-
-  const goToPrayer = (prayerName: string, prayerImage: ImageSourcePropType) => {
-    navigation.navigate("myPrograms", {
-      screen: "notifications/Prayer/[prayerDetails]",
-      params: { prayerName: prayerName, prayerImage: prayerImage },
-    });
-  };
-
   const [jummahDialog, setJummahDialog] = useState(false)
   const FirstTaraweehTime = setTimeToCurrentDate(convertTo24Hour(prayerData.iqa_isha))
   const FirstTaraweehEndTime = new Date(FirstTaraweehTime).setHours(FirstTaraweehTime.getHours() + 1)
   const SecondTaraweehTime = new Date(FirstTaraweehTime).setHours(FirstTaraweehTime.getHours() + 1, FirstTaraweehTime.getMinutes() + 20)
   const SecondTaraweehEndTime = new Date(FirstTaraweehTime).setHours(FirstTaraweehTime.getHours() + 2, FirstTaraweehTime.getMinutes() + 20)
-  return (
-    <View style={{ width: width }} className="items-center">
-      <View className="items-center  justify-center w-[100%]">
-        <View className="w-[100%]">
-          <ScrollView
-            style={{ width: "100%", height: "95%", paddingLeft: '4%' }}
-            showsVerticalScrollIndicator={false}
-          >
-            {
-              Prayers.map((prayer) => (
-                <Link
-                  href={{
-                    pathname: '/myPrograms/notifications/Prayer/[prayerDetails]',
-                    params: { prayerName: prayer.PrayerCap, prayerImage: prayer.img }
-                  }}
-                  className=""
-                  asChild
-                >
-                  <Pressable className="flex-row mt-4 flex w-[100%]">
-                    <View style={[{
-                      shadowColor: 'gray',
-                      shadowOffset: { width: 0, height: 8 },
-                      shadowOpacity: 1,
-                      shadowRadius: 8,
-                      elevation: 8
-                    },
-                    Platform.OS == 'android' ? {
-                      borderWidth: 1,
-                      borderColor: '#D3D3D3',
-                      borderRadius: 8
-                    } : {}
-                    ]}
-                      className="mr-3"
-                    >
-                      <Image
-                        source={
-                          prayer.img
-                        }
-                        style={{
-                          width: 116,
-                          height: 110,
-                          borderRadius: 8,
-                          resizeMode: "stretch",
+  // Color mapping for each prayer
+  const prayerColors: { [key: string]: string } = {
+    'Fajr': '#3B82F6',      // Blue
+    'Dhuhr': '#57BA47',     // Green
+    'Asr': '#9CAF50',       // Yellow-green/Olive
+    'Maghrib': '#A0522D',   // Brown
+    'Isha': '#7C3AED',      // Purple
+  };
 
-                        }}
-                        className=" rounded-xl "
+  // Arabic names for prayers
+  const arabicNames: { [key: string]: string } = {
+    'Fajr': 'الفجر',
+    'Dhuhr': 'الظهر',
+    'Asr': 'العصر',
+    'Maghrib': 'المغرب',
+    'Isha': 'العشاء',
+  };
+
+  // Emoji mapping for each prayer
+  const prayerEmojis: { [key: string]: string } = {
+    'Fajr': '🌅',      // Sunrise for dawn
+    'Dhuhr': '☀️',     // Sun for noon
+    'Asr': '⛅',       // Sun behind cloud for afternoon
+    'Maghrib': '🌇',   // Sunset for evening
+    'Isha': '🌙',      // Crescent moon for night
+  };
+
+  // Progressive blue gradient colors - getting darker from Fajr to Isha (exaggerated)
+  const prayerGradients: { [key: string]: string[] } = {
+    'Fajr': ['#D0E6F0', '#7AB8D4', '#3B7FCD'],       // Light blue (slightly darker)
+    'Dhuhr': ['#B0E0E6', '#5A9FD4', '#3B7FCD'],      // Light blue
+    'Asr': ['#9FD0DC', '#4A8FC7', '#2E5C8A'],        // Slightly darker than Dhuhr
+    'Maghrib': ['#4A8FC7', '#2E5C8A', '#1A4A6B'],    // Medium-dark blue
+    'Isha': ['#214E91', '#0F2D4A', '#000000'],      // Very dark blue (almost black)
+  };
+
+  // All prayer cards are white
+  const prayerCardColors: { [key: string]: string } = {
+    'Fajr': '#FFFFFF',
+    'Dhuhr': '#FFFFFF',
+    'Asr': '#FFFFFF',
+    'Maghrib': '#FFFFFF',
+    'Isha': '#FFFFFF',
+  };
+
+  return (
+    <>
+    <View style={{ width: width, backgroundColor: 'transparent', flex: 1 }}>
+      <View style={{ width: "100%", paddingHorizontal: 20, paddingTop: 10 }}>
+        <ScrollView
+          style={{ width: "100%" }}
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={{ paddingBottom: 25, paddingTop: 10 }}
+        >
+          {
+            Prayers.map((prayer) => {
+              const isEnabled = prayerSettings[prayer.PrayerCap]?.enabled || false;
+              
+              return (
+                <View key={prayer.PrayerCap} style={styles.prayerCardOffWhite}>
+                  <View style={styles.prayerCard}>
+                    {/* Icon Container */}
+                    <Image 
+                      source={require('@/assets/images/glowingTree.png')} 
+                      style={styles.prayerIcon}
+                      resizeMode="contain"
+                    />
+
+                    {/* Content */}
+                    <View style={styles.contentContainer}>
+                      <Text style={styles.prayerName}>{prayer.PrayerCap}</Text>
+                      <View style={styles.timeRow}>
+                        <Text style={styles.timeLabel}>Athan</Text>
+                        <Text style={styles.timeValue}>{prayerData[prayer.athan]}</Text>
+                      </View>
+                      <View style={styles.timeRow}>
+                        <Text style={styles.timeLabel}>Iqamah</Text>
+                        <Text style={styles.timeValue}>{prayerData[prayer.iqamah]}</Text>
+                      </View>
+                    </View>
+
+                    {/* Toggle Switch */}
+                    <View style={{ justifyContent: 'center', alignItems: 'center' }}>
+                      <Switch
+                        value={isEnabled}
+                        onValueChange={() => handleToggle(prayer.PrayerCap)}
+                        color="#007AFF"
                       />
                     </View>
-
-                    <View className="mb-5 w-[40%]">
-                      <Text className="font-bold text-xl  text-gray-800 ">{prayer.PrayerCap}</Text>
-                      <View className="flex-row mt-2">
-                        <Text className="text-left  text-[#6077F5] font-bold ">
-                          Athan :{" "}
-                        </Text>
-                        <Text
-                          className="text-left  text-gray-600 font-bold "
-                          adjustsFontSizeToFit
-                          numberOfLines={1}
-                        >
-                          {prayerData[prayer.athan]}
-                        </Text>
-                      </View>
-                      <View className="flex-row">
-                        <Text className="text-left  text-[#6077F5] font-bold ">
-                          Iqamah :{" "}
-                        </Text>
-                        <Text
-                          className="text-left  text-gray-600 font-bold "
-                          adjustsFontSizeToFit
-                          numberOfLines={1}
-                        >
-                          {prayerData[prayer.iqamah]}
-                        </Text>
-                      </View>
-                    </View>
-
-                    <View
-                      style={[{
-                        shadowColor: 'gray',
-                        shadowOffset: { width: 0, height: 8 },
-                        shadowOpacity: 1,
-                        shadowRadius: 8
-                      }
-                      ]}
-                      className="items-end justify-center"
-                    >
-                      <View className="bg-[#0D509E] h-[21] w-[65] self-center ml-[10%] text-white text-[10px] rounded-xl items-center justify-center mb-7">
-                        <Text className=" text-white font-[300]">Edit</Text>
-                      </View>
-                    </View>
-
-                  </Pressable>
-                </Link>
-              ))
-            }
-
+                  </View>
+                </View>
+              );
+            })
+          }
+          </ScrollView>
+            {/* Jummah section moved to its own tab */}
             {/* <Text className="font-bold text-lg mt-[15%] mb-1">Taraweeh Notifications</Text>
             <Link 
                 href={{
@@ -327,46 +410,132 @@ const NotificationPrayerTable = ({
   
                </Pressable>
             </Link> */}
+        </View>
+      </View>
 
-
-            <Text className="font-bold text-lg mt-[15%] mb-1">Jummah Notifications</Text>
-            <View className="flex items-center justify-center flex-1">
-              {/* <JummahMarquee /> */}
-              <View className="flex flex-row w-[100%]">
-                <ScrollView
-                  horizontal
-                  showsHorizontalScrollIndicator={false}
-                  contentContainerStyle={{ gap: 8 }}
-                >
-                  {
-                    ['12:15 PM', '1:00 PM', '1:45 PM', '3:45 PM'].map((item, index) => (
-                      <Link href={{
-                        pathname: `/(user)/myPrograms/notifications/Prayer/Jummah/[jummahDetails]`,
-                        params: { jummahName: item, index: index + 1 }
-                      }}
-
-                      >
-                        <ImageBackground className="w-[150] h-[170] items-start justify-end"
-                          source={index == 0 || index == 1 ? require('@/assets/images/Jummah12.png') : require('@/assets/images/Jummah34.png')}
-                          imageStyle={{ height: '100%', width: '100%', borderRadius: 15, objectFit: 'fill' }}
-
-                        >
-                          <Text className='text-white ml-3 text-md font-semibold'>Prayer {index + 1}</Text>
-                          <Text className='text-white ml-3 font-bold text-lg'>{item}</Text>
-                        </ImageBackground>
-                      </Link>
-                    ))
-                  }
-                </ScrollView>
-              </View>
+      {/* Modal for Notification Settings */}
+      <Modal
+        visible={modalVisible}
+        animationType="slide"
+        transparent={true}
+        onRequestClose={handleCloseModal}
+      >
+        <View style={styles.modalOverlay}>
+          {/* Animated blur background */}
+          <Animated.View style={[styles.blurContainer, { opacity: blurOpacity }]}>
+            <BlurView intensity={60} tint="dark" style={StyleSheet.absoluteFill} />
+          </Animated.View>
+          
+          <View style={styles.modalContent}>
+            {/* Handle Indicator */}
+            <View style={styles.modalIndicator} />
+            
+            {/* Header */}
+            <View style={styles.sheetHeader}>
+              <Text style={styles.sheetTitle}>
+                {selectedPrayer} notification settings
+              </Text>
+              <Pressable onPress={handleCloseModal} style={styles.closeButton}>
+                <X color="#666" size={24} />
+              </Pressable>
             </View>
 
-          </ScrollView>
+            {/* Options */}
+            <View style={styles.optionsContainer}>
+              {/* Notify at Prayer Time */}
+              <Pressable 
+                style={styles.optionRow}
+                onPress={() => handleOptionSelect('prayer_time')}
+              >
+                <View style={[
+                  styles.radioOuter,
+                  prayerSettings[selectedPrayer || '']?.option === 'prayer_time' && styles.radioOuterSelected
+                ]}>
+                  {prayerSettings[selectedPrayer || '']?.option === 'prayer_time' && (
+                    <View style={styles.radioInner} />
+                  )}
+                </View>
+                <View style={styles.optionTextContainer}>
+                  <Text style={styles.optionTitle}>Notify at Prayer Time:</Text>
+                  <Text style={styles.optionDescription}>Get notified exactly when it's time to pray</Text>
+                </View>
+              </Pressable>
 
+              {/* Notify at Iqamah Time */}
+              <Pressable 
+                style={styles.optionRow}
+                onPress={() => handleOptionSelect('iqamah_time')}
+              >
+                <View style={[
+                  styles.radioOuter,
+                  prayerSettings[selectedPrayer || '']?.option === 'iqamah_time' && styles.radioOuterSelected
+                ]}>
+                  {prayerSettings[selectedPrayer || '']?.option === 'iqamah_time' && (
+                    <View style={styles.radioInner} />
+                  )}
+                </View>
+                <View style={styles.optionTextContainer}>
+                  <Text style={styles.optionTitle}>Notify at Iqamah Time:</Text>
+                  <Text style={styles.optionDescription}>Get notified when it's time to gather at the masjid</Text>
+                </View>
+              </Pressable>
+
+              {/* 30-Minute Reminder */}
+              <Pressable 
+                style={styles.optionRow}
+                onPress={() => handleOptionSelect('30_min_before')}
+              >
+                <View style={[
+                  styles.radioOuter,
+                  prayerSettings[selectedPrayer || '']?.option === '30_min_before' && styles.radioOuterSelected
+                ]}>
+                  {prayerSettings[selectedPrayer || '']?.option === '30_min_before' && (
+                    <View style={styles.radioInner} />
+                  )}
+                </View>
+                <View style={styles.optionTextContainer}>
+                  <Text style={styles.optionTitle}>30-Minute Reminder Before Next Prayer:</Text>
+                  <Text style={styles.optionDescription}>Get reminded 30 minutes before the next prayer time</Text>
+                </View>
+              </Pressable>
+
+              {/* Mute */}
+              <Pressable 
+                style={styles.optionRow}
+                onPress={() => handleOptionSelect('mute')}
+              >
+                <View style={[
+                  styles.radioOuter,
+                  prayerSettings[selectedPrayer || '']?.option === 'mute' && styles.radioOuterSelected
+                ]}>
+                  {prayerSettings[selectedPrayer || '']?.option === 'mute' && (
+                    <View style={styles.radioInner} />
+                  )}
+                </View>
+                <View style={styles.optionTextContainer}>
+                  <Text style={styles.optionTitle}>Mute</Text>
+                </View>
+              </Pressable>
+            </View>
+
+            {/* Save Button */}
+            {isLiquidGlassSupported ? (
+              <LiquidGlassView style={styles.saveButtonGlass} interactive effect="regular">
+                <Pressable style={styles.saveButtonInner} onPress={handleSave}>
+                  <Check color="white" size={20} strokeWidth={2.5} style={{ marginRight: 8 }} />
+                  <Text style={styles.saveButtonTextGlass}>Save</Text>
+                </Pressable>
+              </LiquidGlassView>
+            ) : (
+              <Pressable style={styles.saveButton} onPress={handleSave}>
+                <Check color="white" size={20} strokeWidth={2.5} style={{ marginRight: 8 }} />
+                <Text style={styles.saveButtonText}>Save</Text>
+              </Pressable>
+            )}
+          </View>
         </View>
-
-      </View>
-    </View>
+      </Modal>
+    </>
   );
 };
 
@@ -478,3 +647,273 @@ function convertTo24Hour(timeStr: string) {
   const mm = minuteStr.padStart(2, '0');
   return `${hh}:${mm}:00`;
 }
+
+const styles = StyleSheet.create({
+  prayerCardBlur: {
+    marginBottom: 30,
+    borderRadius: 16,
+    overflow: 'hidden',
+  },
+  prayerCardOffWhite: {
+    marginBottom: 24,
+    borderRadius: 16,
+    backgroundColor: '#F8F9FA',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
+    elevation: 2,
+  },
+  prayerCardGlass: {
+    marginBottom: 30,
+    borderRadius: 20,
+    overflow: 'hidden',
+  },
+  prayerCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 16,
+    paddingHorizontal: 16,
+    backgroundColor: 'transparent',
+  },
+  iconContainer: {
+    width: 50,
+    height: 50,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 10,
+    position: 'relative',
+  },
+  masjidIcon: {
+    width: '100%',
+    height: '100%',
+    position: 'absolute',
+    top: 0,
+    left: 0,
+  },
+  prayerIcon: {
+    width: 80,
+    height: 80,
+    marginRight: 12,
+  },
+  arabicText: {
+    fontSize: 8,
+    color: 'white',
+    fontWeight: '600',
+    marginTop: 2,
+    position: 'relative',
+    zIndex: 1,
+  },
+  contentContainer: {
+    flex: 1,
+  },
+  prayerName: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#1a1a1a',
+    marginBottom: 4,
+  },
+  timeRow: {
+    flexDirection: 'row',
+    marginBottom: 2,
+  },
+  timeLabel: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: '#666666',
+    marginRight: 6,
+    minWidth: 45,
+  },
+  timeValue: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: '#1a1a1a',
+  },
+  editButton: {
+    paddingVertical: 6,
+    paddingHorizontal: 16,
+    borderRadius: 6,
+    marginLeft: 6,
+  },
+  editIcon: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: '#e5e7eb',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginLeft: 8,
+  },
+  editIconBlur: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginLeft: 8,
+    overflow: 'hidden',
+  },
+  editIconOffWhite: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: '#EBEDF0',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginLeft: 8,
+  },
+  editIconGlass: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginLeft: 8,
+    overflow: 'hidden',
+  },
+  editButtonGlass: {
+    paddingVertical: 8,
+    paddingHorizontal: 18,
+    borderRadius: 12,
+    marginLeft: 6,
+    overflow: 'hidden',
+  },
+  editButtonText: {
+    color: 'black',
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  editButtonTextGlass: {
+    color: '#1a1a1a',
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  // Glass-specific text styles for better contrast
+  prayerNameGlass: {
+    color: '#000000',
+    fontWeight: '700',
+  },
+  timeLabelGlass: {
+    color: '#333333',
+  },
+  timeValueGlass: {
+    color: '#000000',
+    fontWeight: '700',
+  },
+  // Modal Styles
+  modalOverlay: {
+    flex: 1,
+    justifyContent: 'flex-end',
+  },
+  blurContainer: {
+    ...StyleSheet.absoluteFillObject,
+  },
+  modalContent: {
+    backgroundColor: '#FFFFFF',
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    paddingHorizontal: 20,
+    paddingTop: 12,
+    paddingBottom: 40,
+    maxHeight: '60%',
+  },
+  modalIndicator: {
+    width: 40,
+    height: 4,
+    backgroundColor: '#DDDDDD',
+    borderRadius: 2,
+    alignSelf: 'center',
+    marginBottom: 16,
+  },
+  sheetHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 24,
+  },
+  sheetTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#1a1a1a',
+  },
+  closeButton: {
+    padding: 4,
+  },
+  optionsContainer: {
+    gap: 20,
+  },
+  optionRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 14,
+  },
+  radioOuter: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    borderWidth: 2,
+    borderColor: '#007AFF',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 2,
+  },
+  radioOuterSelected: {
+    backgroundColor: '#007AFF',
+  },
+  radioInner: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: '#FFFFFF',
+  },
+  optionTextContainer: {
+    flex: 1,
+  },
+  optionTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#1a1a1a',
+    marginBottom: 4,
+  },
+  optionDescription: {
+    fontSize: 14,
+    color: '#666666',
+    lineHeight: 20,
+  },
+  saveButton: {
+    backgroundColor: '#007AFF',
+    paddingVertical: 16,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexDirection: 'row',
+    marginTop: 32,
+    marginBottom: 20,
+  },
+  saveButtonText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  saveButtonGlass: {
+    borderRadius: 12,
+    marginTop: 32,
+    marginBottom: 20,
+    overflow: 'hidden',
+    backgroundColor: 'rgba(0, 122, 255, 0.8)',
+  },
+  saveButtonInner: {
+    paddingVertical: 16,
+    paddingHorizontal: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexDirection: 'row',
+    backgroundColor: 'rgba(0, 122, 255, 0.85)',
+  },
+  saveButtonTextGlass: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+});

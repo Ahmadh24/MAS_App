@@ -96,14 +96,13 @@ const ClassesAndLecturesSettings = () => {
     <View className='flex-1 bg-white' style={{ flexGrow: 1 }}>
       <StatusBar barStyle={"dark-content"} />
       <Stack.Screen options={{ title: '', headerBackTitleVisible: false, headerStyle: { backgroundColor: "white" }, headerRight: () => <HeaderRight />, }} />
-      <Animated.ScrollView ref={scrollRef} scrollEventThrottle={16} contentContainerStyle={{ justifyContent: "center", alignItems: "center", marginTop: "2%", paddingBottom: 0 }}  >
-        <View>
-          <Animated.Image
-            source={program?.program_img ? { uri: program.program_img } : require("@/assets/images/MASHomeLogo.png")}
-            style={[{ width: width / 1.2, height: 300, borderRadius: 8 }, imageAnimatedStyle]}
-            resizeMode='stretch'
-          />
-        </View>
+      <Animated.ScrollView ref={scrollRef} scrollEventThrottle={16} contentContainerStyle={{ justifyContent: "center", alignItems: "center", marginTop: "2%", paddingBottom: 20 }}  >
+        <Animated.Image
+          source={program?.program_img ? { uri: program.program_img } : require("@/assets/images/MASHomeLogo.png")}
+          style={[{ width: width / 1.2, height: 300, borderRadius: 8 }, imageAnimatedStyle]}
+          resizeMode='stretch'
+          sharedTransitionTag={`program-image-${program_id}`}
+        />
         <View className='flex-col bg-white w-[100%]'>
           <Text className='font-bold text-2xl text-center'>{program?.program_name}</Text>
           <Text className='font-bold text-gray-400 text-center'>{speakers ? speakers.join('&') : ''}</Text>

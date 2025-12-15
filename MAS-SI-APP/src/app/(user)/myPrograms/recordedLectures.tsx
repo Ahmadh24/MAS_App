@@ -2,7 +2,6 @@ import { View, Text, ScrollView, StatusBar, RefreshControl, ActivityIndicator, F
 import React, { useEffect, useState, useRef, useMemo } from 'react'
 import { Stack, useRouter, useNavigation } from 'expo-router'
 import { Icon, Searchbar, Modal, Portal } from 'react-native-paper'
-import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs'
 import { supabase } from '@/src/lib/supabase'
 import { Program, EventsType } from '@/src/types'
 import FlyerImageComponent from '@/src/components/FlyerImageComponent'
@@ -122,7 +121,6 @@ const EventCard = ({ item, onPress }: { item: EventsType, onPress: () => void })
 }
 
 const RecordedLectures = () => {
-  const tabBarHeight = useBottomTabBarHeight()
   const router = useRouter()
   const navigation = useNavigation()
   const { width } = useWindowDimensions()
@@ -317,7 +315,7 @@ const RecordedLectures = () => {
         </View>
       ) : programsWithLectures.length === 0 && eventsWithLectures.length === 0 ? (
         <ScrollView 
-          contentContainerStyle={{ paddingBottom: tabBarHeight + 20, paddingHorizontal: 16, paddingTop: 16 }}
+          contentContainerStyle={{ paddingBottom: 20, paddingHorizontal: 16, paddingTop: 16 }}
           className="bg-white flex-1"
         >
           <View className="items-center justify-center" style={{ minHeight: 400 }}>
@@ -430,14 +428,14 @@ const RecordedLectures = () => {
                 renderItem={renderProgramCard}
                 keyExtractor={(item) => item.program_id}
                 showsVerticalScrollIndicator={false}
-                contentContainerStyle={{ paddingTop: 16, paddingBottom: tabBarHeight + 30 }}
+                contentContainerStyle={{ paddingTop: 16, paddingBottom: 30 }}
                 refreshControl={
                   <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
                 }
               />
             ) : (
               <ScrollView 
-                contentContainerStyle={{ paddingBottom: tabBarHeight + 30, paddingTop: 40, flexGrow: 1 }}
+                contentContainerStyle={{ paddingBottom: 30, paddingTop: 40, flexGrow: 1 }}
                 className="bg-white flex-1"
                 refreshControl={
                   <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
@@ -464,14 +462,14 @@ const RecordedLectures = () => {
                 renderItem={renderEventCard}
                 keyExtractor={(item) => item.event_id}
                 showsVerticalScrollIndicator={false}
-                contentContainerStyle={{ paddingTop: 16, paddingBottom: tabBarHeight + 30 }}
+                contentContainerStyle={{ paddingTop: 16, paddingBottom: 30 }}
                 refreshControl={
                   <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
                 }
               />
             ) : (
               <ScrollView 
-                contentContainerStyle={{ paddingBottom: tabBarHeight + 30, paddingTop: 40, flexGrow: 1 }}
+                contentContainerStyle={{ paddingBottom: 30, paddingTop: 40, flexGrow: 1 }}
                 className="bg-white flex-1"
                 refreshControl={
                   <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />

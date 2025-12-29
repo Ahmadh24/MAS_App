@@ -1,8 +1,15 @@
 import React from 'react';
 import { View, ViewProps } from 'react-native';
 
+// Type for LiquidGlassView props
+type LiquidGlassViewProps = ViewProps & {
+  interactive?: boolean;
+  effect?: 'clear' | 'regular' | 'strong';
+  children?: React.ReactNode;
+};
+
 // Safe import wrapper for @callstack/liquid-glass
-let LiquidGlassViewComponent: React.ComponentType<any> | null = null;
+let LiquidGlassViewComponent: React.ComponentType<LiquidGlassViewProps> | null = null;
 let isLiquidGlassSupportedValue = false;
 
 try {
@@ -20,13 +27,13 @@ try {
 }
 
 // Fallback component that just renders children
-const FallbackView: React.FC<ViewProps> = ({ children, style, ...props }) => (
+const FallbackView: React.FC<LiquidGlassViewProps> = ({ children, style, ...props }) => (
   <View style={style} {...props}>
     {children}
   </View>
 );
 
-// Export safe versions
-export const LiquidGlassView = LiquidGlassViewComponent || FallbackView;
+// Export safe versions - ensure fallback is used
+export const LiquidGlassView: React.FC<LiquidGlassViewProps> = (LiquidGlassViewComponent || FallbackView) as React.FC<LiquidGlassViewProps>;
 export const isLiquidGlassSupported = isLiquidGlassSupportedValue;
 

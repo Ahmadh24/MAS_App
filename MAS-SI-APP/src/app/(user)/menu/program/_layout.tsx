@@ -1,12 +1,14 @@
 import { Stack } from "expo-router";
 import ProgramProvider from "@/src/providers/programProvider";
 import ProgramsAndEventsScreen from './programsAndEventsScreen'
-import UpcomingEvents from "./upcomingEvents/UpcomingEvents";
+import UpcomingEvents from "./upcomingEvents";
 import ProgramLectures from "./[programId]";
 export default function programStack() {
     return (
-       <Stack>
-        <Stack.Screen name="programsAndEventsScreen" options={{ headerShown : false }}/>
+       <Stack screenOptions={{ headerShown: false }}>
+        <Stack.Screen name="programsAndEventsScreen" options={{ headerShown: false }}/>
+        <Stack.Screen name="[programId]" options={{ headerShown: true }}/>
+        <Stack.Screen name="upcomingEvents" options={{ headerShown: false }}/>
        </Stack>
     )
   };

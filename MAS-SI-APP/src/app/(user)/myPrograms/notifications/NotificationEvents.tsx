@@ -15,7 +15,7 @@ import { useRouter, Link } from 'expo-router'
 import JummahMarquee from '@/src/components/JummahMarquee'
 import { add } from 'date-fns'
 import { LinearGradient } from 'expo-linear-gradient'
-import { LiquidGlassView, isLiquidGlassSupported } from '@callstack/liquid-glass'
+import { LiquidGlassView, isLiquidGlassSupported } from '@/src/lib/liquidGlass'
 import HeroTransitionModal, { LayoutInfo } from '@/src/components/HeroTransitionModal'
 
 // Commented out - NotificationPaidScreen component (unused)

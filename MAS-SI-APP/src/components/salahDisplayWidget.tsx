@@ -6,6 +6,7 @@ import moment from 'moment';
 import { Link } from 'expo-router';
 import { Icon } from 'react-native-paper';
 import { LinearGradient } from 'expo-linear-gradient';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 type salahDisplayWidgetProp = {
     prayer: gettingPrayerData,
     nextPrayer: gettingPrayerData
@@ -19,6 +20,7 @@ type currentSalahProp = {
     iqamah: string
 }
 export default function SalahDisplayWidget({ prayer, nextPrayer }: salahDisplayWidgetProp) {
+    const insets = useSafeAreaInsets();
     if (!prayer) {
         return
     }
@@ -228,7 +230,7 @@ export default function SalahDisplayWidget({ prayer, nextPrayer }: salahDisplayW
                 <Pressable>
                     <LinearGradient
                         colors={['#214E91', '#1a3d6f']} // Two background colors - adjust as needed
-                        style={{ height: "100%", width: "100%", paddingTop: 80, paddingBottom: 80, justifyContent: "flex-end" }}
+                        style={{ height: "100%", width: "100%", paddingTop: insets.top, paddingBottom: 80, justifyContent: "flex-end" }}
                     >
                         <ImageBackground
                             source={require("@/assets/images/LogoClear.png")}

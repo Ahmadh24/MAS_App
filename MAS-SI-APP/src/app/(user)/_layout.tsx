@@ -1,6 +1,6 @@
 import { Tabs, Redirect, useSegments } from "expo-router";
 import * as Animatable from 'react-native-animatable';
-import { Pressable, TouchableOpacity, Modal, StyleSheet } from "react-native";
+import { Pressable, TouchableOpacity, Modal, StyleSheet, Platform } from "react-native";
 import { useEffect, useRef, useState } from "react";
 import TabArray from '@/src/lib/tabs';
 
@@ -15,6 +15,11 @@ import AccountModal from '../../components/AccountModal';
 import ClassicTabBar from '../../components/ClassicTabBar';
 // import TutorialOverlay from "@/src/components/TutorialOverlay";
 import { NativeTabs, Label, Icon } from 'expo-router/unstable-native-tabs';
+import { PersonalizedAccount } from '@/src/components/PersonalizedAccount';
+import { CreateProfilePopup } from '@/src/components/CreateProfilePopup';
+import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
+import { supabase } from '@/src/lib/supabase';
+import { OnboardingProvider, useOnboarding } from '@/src/providers/OnboardingProvider';
 
 // const toastConfig = {
 //   addProgramToNotificationsToast: ({ props }: any) => (
@@ -168,20 +173,17 @@ import { NativeTabs, Label, Icon } from 'expo-router/unstable-native-tabs';
 //   );
 // }
 
-const UserLayout = () => {
+const UserLayoutContent = () => {
   const { session, loading: authLoading } = useAuth();
-  // const [loading, setLoading] = useState(true);
-  // // const [showTutorial, setShowTutorial] = useState(false);
-  // const [accountModalVisible, setAccountModalVisible] = useState(false);
-  // const opacity = useSharedValue(1);
-  // interface TextWithDefaultProps extends Text {
-  //   defaultProps?: { allowFontScaling?: boolean };
-  // }
+  const { isOnboardingIncomplete, setOnboardingIncomplete, onboardingSheetRef } = useOnboarding();
   const [loading, setLoading] = useState(true);
   const [showTutorial, setShowTutorial] = useState(false);
   const [accountModalVisible, setAccountModalVisible] = useState(false);
   const segments = useSegments();
   const opacity = useSharedValue(1);
+  const [showOnboarding, setShowOnboarding] = useState(false);
+  const [showGuestPopup, setShowGuestPopup] = useState(false);
+  const guestPopupRef = useRef<{ present: () => void; dismiss: () => void }>(null);
   
   // Show account button only on home page (menu tab)
   // segments will be ['(user)', 'menu'] when on home page
@@ -215,6 +217,86 @@ const UserLayout = () => {
   // };
 
 
+  // Check onboarding status for non-anonymous users
+  useEffect(() => {
+    const checkOnboarding = async () => {
+      if (!session?.user || authLoading) return;
+      
+      // Skip for anonymous users - they get the CreateProfilePopup instead
+      if (session.user.is_anonymous) return;
+      
+      try {
+        const { data: profile, error } = await supabase
+          .from('profiles')
+          .select('onboarding_completed')
+          .eq('id', session.user.id)
+          .single();
+
+        // Show PersonalizedAccount if:
+        // 1. Profile doesn't exist (error) - shouldn't happen for logged in users
+        // 2. Profile exists but onboarding_completed is false or null
+        const shouldShowOnboarding = error || !profile || !profile.onboarding_completed;
+        
+        if (shouldShowOnboarding) {
+          setShowOnboarding(true);
+          setOnboardingIncomplete(true);
+          setTimeout(() => {
+            onboardingSheetRef.current?.present();
+          }, 800);
+        }
+      } catch (error) {
+        // On error, show onboarding to be safe
+        setShowOnboarding(true);
+        setOnboardingIncomplete(true);
+        setTimeout(() => {
+          onboardingSheetRef.current?.present();
+        }, 800);
+      }
+    };
+
+    checkOnboarding();
+  }, [session?.user?.id, authLoading]);
+
+  // Show create profile popup for guest/anonymous users
+  useEffect(() => {
+    const showGuestPrompt = async () => {
+      if (!session?.user || authLoading) return;
+      
+      // Only show for anonymous users
+      if (session.user.is_anonymous) {
+        // Delay to let the app load first
+        setTimeout(() => {
+          setShowGuestPopup(true);
+          guestPopupRef.current?.present();
+        }, 1500);
+      }
+    };
+
+    showGuestPrompt();
+  }, [session?.user?.id, authLoading]);
+
+  const handleGuestPopupDismiss = () => {
+    setShowGuestPopup(false);
+  };
+
+  const handleOnboardingComplete = async () => {
+    setShowOnboarding(false);
+    setOnboardingIncomplete(false);
+    console.log('Profile personalization completed successfully');
+  };
+
+  const handleOnboardingSkip = () => {
+    setShowOnboarding(false);
+    setOnboardingIncomplete(true);
+  };
+
+  const handleReopenOnboarding = () => {
+    setShowOnboarding(true);
+    setTimeout(() => {
+      onboardingSheetRef.current?.present();
+    }, 100);
+  };
+
   // Show nothing while checking authentication
   if (authLoading) {
     return null;
@@ -226,56 +308,94 @@ const UserLayout = () => {
   }
 
   return (
-    // <>
-    //   {loading && (
-    //     <Animated.View style={[{ zIndex: 1, position: 'absolute', width: '100%', height: '100%' }, playMASAnimation]}>
-    //       <LottieView
-    //         autoPlay
-    //         loop={false}
-    //         style={{
-    //           width: '100%',
-    //           height: '100%',
-    //           backgroundColor: 'white',
-    //         }}
-    //         source={require('@/assets/lottie/MASLogoAnimation3.json')}
-    //         onAnimationFinish={() => {
-    //           fadeOutAnimation();
-    //         }}
-    //         speed={1.5}
-    //       />
-    //     </Animated.View>
-    //   )}
+    <BottomSheetModalProvider>
+      {/* {loading && (
+        <Animated.View style={[{ zIndex: 1, position: 'absolute', width: '100%', height: '100%' }, playMASAnimation]}>
+          <LottieView
+            autoPlay
+            loop={false}
+            style={{
+              width: '100%',
+              height: '100%',
+              backgroundColor: 'white',
+            }}
+            source={require('@/assets/lottie/MASLogoAnimation3.json')}
+            onAnimationFinish={() => {
+              fadeOutAnimation();
+            }}
+            speed={1.5}
+          />
+        </Animated.View>
+      )} */}
 
-    <NativeTabs>
-      {/* {TabArray.map((tab, i) => (
-        <NativeTabs.Trigger key={i} name={`${tab.name}`} >
-          <Label>{tab.title}</Label>
-          <Icon sf={tab.icon as any} drawable="custom_android_drawable" />
+      <NativeTabs>
+        {/* {TabArray.map((tab, i) => (
+          <NativeTabs.Trigger key={i} name={`${tab.name}`} >
+            <Label>{tab.title}</Label>
+            <Icon sf={tab.icon as any} drawable="custom_android_drawable" />
+          </NativeTabs.Trigger>
+        ))} */}
+        <NativeTabs.Trigger name="menu">
+          <Label>Home</Label>
+          <Icon sf="house.fill" drawable="custom_android_drawable" />
         </NativeTabs.Trigger>
-      ))} */}
-      <NativeTabs.Trigger name="menu"
-      >
-        <Label>Home</Label>
-        <Icon sf="house.fill" drawable="custom_android_drawable" />
-      </NativeTabs.Trigger>
-      <NativeTabs.Trigger name="myPrograms"
-      >
-        <Label>My Library</Label>
-        <Icon sf="book" drawable="custom_android_drawable" />
-      </NativeTabs.Trigger>
-      <NativeTabs.Trigger name="prayersTable"
-      >
-        <Label>Prayer Times</Label>
-        <Icon sf="clock" drawable="custom_android_drawable" />
-      </NativeTabs.Trigger>
-      <NativeTabs.Trigger name="more"
-      >
-        <Label>More</Label>
-        <Icon sf="ellipsis.bubble.fill" drawable="custom_android_drawable" />
-      </NativeTabs.Trigger>
-    </NativeTabs>
+        <NativeTabs.Trigger name="myPrograms">
+          <Label>My Library</Label>
+          <Icon sf="book" drawable="custom_android_drawable" />
+        </NativeTabs.Trigger>
+        <NativeTabs.Trigger name="prayersTable">
+          <Label>Prayer Times</Label>
+          <Icon sf="clock" drawable="custom_android_drawable" />
+        </NativeTabs.Trigger>
+        <NativeTabs.Trigger name="more">
+          <Label>More</Label>
+          <Icon sf="ellipsis.bubble.fill" drawable="custom_android_drawable" />
+        </NativeTabs.Trigger>
+      </NativeTabs>
 
+      {(showOnboarding || isOnboardingIncomplete) && (
+        <PersonalizedAccount
+          ref={onboardingSheetRef}
+          onComplete={handleOnboardingComplete}
+          onSkip={handleOnboardingSkip}
+        />
+      )}
+
+      {/* Create Profile popup for guest users */}
+      {showGuestPopup && (
+        <CreateProfilePopup
+          ref={guestPopupRef}
+          onDismiss={handleGuestPopupDismiss}
+        />
+      )}
+
+      {/* Badge indicator for incomplete onboarding */}
+      {isOnboardingIncomplete && (
+        <View
+          style={{
+            position: 'absolute',
+            bottom: Platform.OS === 'ios' ? 28 : 18,
+            right: 28,
+            width: 10,
+            height: 10,
+            borderRadius: 5,
+            backgroundColor: '#EF4444',
+            borderWidth: 2,
+            borderColor: '#ffffff',
+            zIndex: 999,
+          }}
+        />
+      )}
+    </BottomSheetModalProvider>
   )
+};
+
+const UserLayout = () => {
+  return (
+    <OnboardingProvider>
+      <UserLayoutContent />
+    </OnboardingProvider>
+  );
 };
 
 export default UserLayout;

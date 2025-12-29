@@ -2,6 +2,8 @@ import { View, Text, ScrollView, StatusBar, RefreshControl, ActivityIndicator, F
 import React, { useEffect, useState, useRef, useMemo } from 'react'
 import { Stack, useRouter, useNavigation } from 'expo-router'
 import { Icon, Searchbar, Modal, Portal } from 'react-native-paper'
+import { Ionicons } from '@expo/vector-icons'
+import { LiquidGlassView, isLiquidGlassSupported } from '@/src/lib/liquidGlass'
 import { supabase } from '@/src/lib/supabase'
 import { Program, EventsType } from '@/src/types'
 import FlyerImageComponent from '@/src/components/FlyerImageComponent'
@@ -24,10 +26,12 @@ const ProgramCard = ({ item, onPress }: { item: Program, onPress: () => void }) 
         borderRadius: 16,
         overflow: 'hidden',
         shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 8,
-        elevation: 4,
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.18,
+        shadowRadius: 12,
+        elevation: 8,
+        borderWidth: 1,
+        borderColor: '#D1D5DB',
       }}>
         {/* Image */}
         <View style={{ width: '100%', height: 200, backgroundColor: '#F3F4F6' }}>
@@ -42,7 +46,11 @@ const ProgramCard = ({ item, onPress }: { item: Program, onPress: () => void }) 
         </View>
         
         {/* Content */}
-        <View style={{ padding: 16 }}>
+        <View style={{ 
+          padding: 16, 
+          borderTopWidth: 1, 
+          borderTopColor: '#D1D5DB' 
+        }}>
           <Text 
             className="text-xl font-bold text-gray-900 mb-2"
             numberOfLines={2}
@@ -79,10 +87,12 @@ const EventCard = ({ item, onPress }: { item: EventsType, onPress: () => void })
         borderRadius: 16,
         overflow: 'hidden',
         shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 8,
-        elevation: 4,
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.18,
+        shadowRadius: 12,
+        elevation: 8,
+        borderWidth: 1,
+        borderColor: '#D1D5DB',
       }}>
         {/* Image */}
         <View style={{ width: '100%', height: 200, backgroundColor: '#F3F4F6' }}>
@@ -97,7 +107,11 @@ const EventCard = ({ item, onPress }: { item: EventsType, onPress: () => void })
         </View>
         
         {/* Content */}
-        <View style={{ padding: 16 }}>
+        <View style={{ 
+          padding: 16, 
+          borderTopWidth: 1, 
+          borderTopColor: '#D1D5DB' 
+        }}>
           <Text 
             className="text-xl font-bold text-gray-900 mb-2"
             numberOfLines={2}
@@ -286,25 +300,118 @@ const RecordedLectures = () => {
           headerTitleStyle: { color: 'white' }, 
           headerStyle: { backgroundColor: '#214E91' },
           headerLeft: () => (
-            <Pressable 
-              style={{ paddingLeft: 8, paddingRight: 8, height: 44, alignItems: 'center', justifyContent: 'center' }}
-              onPress={() => {
-                navigation.getParent()?.getState().index == 0 ? router.replace('/myPrograms') : router.back()
-              }}
-            >
-              <Icon source={'chevron-left'} color='white' size={28} />
-            </Pressable>
+            isLiquidGlassSupported ? (
+              <LiquidGlassView 
+                style={{ 
+                  marginLeft: 8,
+                  width: 36,
+                  height: 36,
+                  borderRadius: 18,
+                }}
+                interactive
+                effect="clear"
+              >
+                <Pressable 
+                  style={{ 
+                    width: '100%',
+                    height: '100%',
+                    alignItems: 'center', 
+                    justifyContent: 'center'
+                  }}
+                  hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                  onPress={() => {
+                    navigation.getParent()?.getState().index == 0 ? router.replace('/myPrograms') : router.back()
+                  }}
+                >
+                  <View style={{ marginLeft: -12 }}>
+                    <Ionicons 
+                      name="chevron-back" 
+                      size={25} 
+                      color="white"
+                    />
+                  </View>
+                </Pressable>
+              </LiquidGlassView>
+            ) : (
+              <Pressable 
+                style={{ 
+                  marginLeft: 8,
+                  width: 36,
+                  height: 36,
+                  borderRadius: 18,
+                  alignItems: 'center', 
+                  justifyContent: 'center'
+                }}
+                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                onPress={() => {
+                  navigation.getParent()?.getState().index == 0 ? router.replace('/myPrograms') : router.back()
+                }}
+              >
+                <View style={{ marginLeft: -12 }}>
+                  <Ionicons 
+                    name="chevron-back" 
+                    size={25} 
+                    color="white"
+                  />
+                </View>
+              </Pressable>
+            )
           ),
           headerRight: () => (
-            <Pressable 
-              style={{ paddingRight: 16, height: 44, alignItems: 'center', justifyContent: 'center', minWidth: 44 }}
-              onPress={() => {
-                console.log('Search button pressed')
-                setSearchModalVisible(true)
-              }}
-            >
-              <Icon source={'magnify'} color='white' size={24} />
-            </Pressable>
+            isLiquidGlassSupported ? (
+              <LiquidGlassView 
+                style={{ 
+                  marginRight: 8,
+                  width: 36,
+                  height: 36,
+                  borderRadius: 18,
+                }}
+                interactive
+                effect="clear"
+              >
+                <Pressable 
+                  style={{ 
+                    width: '100%',
+                    height: '100%',
+                    alignItems: 'center', 
+                    justifyContent: 'center'
+                  }}
+                  hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                  onPress={() => {
+                    console.log('Search button pressed')
+                    setSearchModalVisible(true)
+                  }}
+                >
+                  <Ionicons 
+                    name="search" 
+                    size={20} 
+                    color="white"
+                  />
+                </Pressable>
+              </LiquidGlassView>
+            ) : (
+              <Pressable 
+                style={{ 
+                  marginRight: 8,
+                  width: 36,
+                  height: 36,
+                  borderRadius: 18,
+                  alignItems: 'center', 
+                  justifyContent: 'center'
+                }}
+                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                onPress={() => {
+                  console.log('Search button pressed')
+                  setSearchModalVisible(true)
+                }}
+              >
+                <Ionicons 
+                  name="search" 
+                  size={20} 
+                  color="white"
+                />
+              </Pressable>
+            )
           ),
         }}
       />
@@ -428,14 +535,14 @@ const RecordedLectures = () => {
                 renderItem={renderProgramCard}
                 keyExtractor={(item) => item.program_id}
                 showsVerticalScrollIndicator={false}
-                contentContainerStyle={{ paddingTop: 16, paddingBottom: 30 }}
+                contentContainerStyle={{ paddingTop: 16, paddingBottom: 100 }}
                 refreshControl={
                   <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
                 }
               />
             ) : (
               <ScrollView 
-                contentContainerStyle={{ paddingBottom: 30, paddingTop: 40, flexGrow: 1 }}
+                contentContainerStyle={{ paddingBottom: 100, paddingTop: 40, flexGrow: 1 }}
                 className="bg-white flex-1"
                 refreshControl={
                   <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
@@ -462,14 +569,14 @@ const RecordedLectures = () => {
                 renderItem={renderEventCard}
                 keyExtractor={(item) => item.event_id}
                 showsVerticalScrollIndicator={false}
-                contentContainerStyle={{ paddingTop: 16, paddingBottom: 30 }}
+                contentContainerStyle={{ paddingTop: 16, paddingBottom: 100 }}
                 refreshControl={
                   <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
                 }
               />
             ) : (
               <ScrollView 
-                contentContainerStyle={{ paddingBottom: 30, paddingTop: 40, flexGrow: 1 }}
+                contentContainerStyle={{ paddingBottom: 100, paddingTop: 40, flexGrow: 1 }}
                 className="bg-white flex-1"
                 refreshControl={
                   <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />

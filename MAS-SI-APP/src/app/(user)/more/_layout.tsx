@@ -11,8 +11,14 @@ const MoreLayout = () => {
             headerShown: false,
             presentation: 'transparentModal',
             animation: 'fade',
-            // cardStyle: { backgroundColor: 'transparent' },
-            // cardOverlayEnabled: true,
+          }} 
+        />
+        <Stack.Screen 
+          name='PreferencesOnboarding' 
+          options={{ 
+            headerShown: false,
+            presentation: 'card',
+            animation: 'slide_from_right',
           }} 
         />
     </Stack>

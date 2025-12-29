@@ -4,6 +4,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useLocalSearchParams, Stack, useRouter, Link, useNavigation } from 'expo-router';
 import LecturesListLecture from '@/src/components/LectureListLecture';
 import { Divider, Portal, Modal, IconButton, Icon, Button, Badge } from 'react-native-paper';
+import { Ionicons } from '@expo/vector-icons';
+import { LiquidGlassView, isLiquidGlassSupported } from '@/src/lib/liquidGlass';
 import { Lectures, SheikDataType, Program } from '@/src/types';
 import { ScrollView } from 'react-native-gesture-handler';
 import Animated,{ FadeInLeft, interpolate, useAnimatedRef, useAnimatedStyle, useScrollViewOffset, useSharedValue, withSequence, withTiming } from 'react-native-reanimated';
@@ -22,6 +24,7 @@ import { isBefore, format } from 'date-fns';
 import { FlyerSkeleton } from '@/src/components/FlyerSkeleton';
 import YoutubePlayer from "react-native-youtube-iframe";
 import DeckSwiper from 'react-native-deck-swiper';
+import { AIReasoningMarkdown, AIKeynotes } from '@/src/components/AIReasoningMarkdown';
 function setTimeToCurrentDate(timeString : string ) {
 
   // Split the time string into hours, minutes, and seconds
@@ -608,16 +611,28 @@ async function getUserPlaylists(){
   
    return(
     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-      <BlurView intensity={20} tint="dark" style={{ borderRadius: 16, overflow: 'hidden', width: 36, height: 36 }}>
-        <Pressable onPress={handlePress} style={{ width: 36, height: 36, alignItems: 'center', justifyContent: 'center' }}>
-          {programInNotfications ?  <Icon source={"bell-check"} color='black' size={20}/> : <Icon source={"bell-outline"} color='black' size={20}/> }
+      {isLiquidGlassSupported ? (
+        <LiquidGlassView style={{ borderRadius: 18, width: 36, height: 36, overflow: 'hidden' }} interactive effect="clear">
+          <Pressable onPress={handlePress} style={{ width: '100%', height: '100%', alignItems: 'center', justifyContent: 'center' }}>
+            {programInNotfications ? <Ionicons name="notifications" color="white" size={20} style={{ marginRight: -12 }}/> : <Ionicons name="notifications-outline" color="white" size={20} style={{ marginRight: -12 }}/> }
+          </Pressable>
+        </LiquidGlassView>
+      ) : (
+        <Pressable onPress={handlePress} style={{ width: 36, height: 36, alignItems: 'center', justifyContent: 'center', borderRadius: 18, overflow: 'hidden' }}>
+          {programInNotfications ? <Ionicons name="notifications" color="white" size={20} style={{ marginRight: -12 }}/> : <Ionicons name="notifications-outline" color="white" size={20} style={{ marginRight: -12 }}/> }
         </Pressable>
-      </BlurView>
-      <BlurView intensity={20} tint="dark" style={{ borderRadius: 16, overflow: 'hidden', width: 36, height: 36 }}>
-        <Pressable onPress={addToPrograms} style={{ width: 36, height: 36, alignItems: 'center', justifyContent: 'center' }}>
-          { programInPrograms ?  <Icon source={'minus-circle-outline'} color='black' size={20}/> : <Icon source={"plus-circle-outline"} color='black' size={20}/>}
+      )}
+      {isLiquidGlassSupported ? (
+        <LiquidGlassView style={{ borderRadius: 18, width: 36, height: 36, overflow: 'hidden' }} interactive effect="clear">
+          <Pressable onPress={addToPrograms} style={{ width: '100%', height: '100%', alignItems: 'center', justifyContent: 'center' }}>
+            { programInPrograms ? <Ionicons name="remove-circle" color="white" size={20} style={{ marginRight: -12 }}/> : <Ionicons name="add-circle-outline" color="white" size={20} style={{ marginRight: -12 }}/>}
+          </Pressable>
+        </LiquidGlassView>
+      ) : (
+        <Pressable onPress={addToPrograms} style={{ width: 36, height: 36, alignItems: 'center', justifyContent: 'center', borderRadius: 18, overflow: 'hidden' }}>
+          { programInPrograms ? <Ionicons name="remove-circle" color="white" size={20} style={{ marginRight: -12 }}/> : <Ionicons name="add-circle-outline" color="white" size={20} style={{ marginRight: -12 }}/>}
         </Pressable>
-      </BlurView>
+      )}
     </View>
    )
   }
@@ -652,11 +667,17 @@ async function getUserPlaylists(){
       )
     }
     return(
-      <BlurView intensity={20} tint="dark" style={{ borderRadius: 16, overflow: 'hidden', width: 36, height: 36 }}>
-        <Pressable onPress={addToPrograms} style={{ width: 36, height: 36, alignItems: 'center', justifyContent: 'center' }}>
-          { programInPrograms ?  <Icon source={'minus-circle'} color='black' size={20}/> : <Icon source={"plus-circle-outline"} color='black' size={20}/>}
+      isLiquidGlassSupported ? (
+        <LiquidGlassView style={{ borderRadius: 18, width: 36, height: 36, overflow: 'hidden' }} interactive effect="clear">
+          <Pressable onPress={addToPrograms} style={{ width: '100%', height: '100%', alignItems: 'center', justifyContent: 'center' }}>
+            { programInPrograms ? <Ionicons name="remove-circle" color="white" size={20} style={{ marginRight: -12 }}/> : <Ionicons name="add-circle-outline" color="white" size={20} style={{ marginRight: -12 }}/>}
+          </Pressable>
+        </LiquidGlassView>
+      ) : (
+        <Pressable onPress={addToPrograms} style={{ width: 36, height: 36, alignItems: 'center', justifyContent: 'center', borderRadius: 18, overflow: 'hidden' }}>
+          { programInPrograms ? <Ionicons name="remove-circle" color="white" size={20} style={{ marginRight: -8 }}/> : <Ionicons name="add-circle-outline" color="white" size={25} style={{ marginRight: -8 }}/>}
         </Pressable>
-      </BlurView>
+      )
     )
   }
   
@@ -705,41 +726,91 @@ async function getUserPlaylists(){
   const currDate = new Date().toISOString()
   return (
     <View className='flex-1' style={{flexGrow: 1, backgroundColor: '#FFFFFF'}}>
-     <Stack.Screen options={ { 
-       headerShown: false
-     } } />
+     <Stack.Screen 
+       options={{ 
+         title: '',
+         headerTintColor: 'white',
+         headerStyle: { backgroundColor: '#214E91' },
+         headerLeft: () => (
+           isLiquidGlassSupported ? (
+             <LiquidGlassView 
+               style={{ 
+                 marginLeft: 8,
+                 width: 36,
+                 height: 36,
+                 borderRadius: 18,
+                 overflow: 'hidden',
+               }}
+               interactive
+               effect="clear"
+             >
+               <Pressable 
+                 style={{ 
+                   width: '100%',
+                   height: '100%',
+                   alignItems: 'center', 
+                   justifyContent: 'center'
+                 }}
+                 hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                 onPress={() => {
+                   if (selectedLecture && selectedLecture.lecture_link && selectedLecture.lecture_link.trim() !== '' && selectedLecture.lecture_link !== 'N/A') {
+                     setSelectedLecture(null);
+                     setPlaying(false);
+                     scrollRef.current?.scrollTo({ y: 0, animated: true });
+                   } else {
+                     router.back();
+                   }
+                 }}
+               >
+                 <Ionicons 
+                   name="chevron-back" 
+                   size={24} 
+                   color="white"
+                   style={{ marginLeft: -12 }}
+                 />
+               </Pressable>
+             </LiquidGlassView>
+           ) : (
+             <Pressable 
+               style={{ 
+                 marginLeft: 8,
+                 width: 36,
+                 height: 36,
+                 borderRadius: 18,
+                 overflow: 'hidden',
+                 alignItems: 'center', 
+                 justifyContent: 'center'
+               }}
+               hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+               onPress={() => {
+                 if (selectedLecture && selectedLecture.lecture_link && selectedLecture.lecture_link.trim() !== '' && selectedLecture.lecture_link !== 'N/A') {
+                   setSelectedLecture(null);
+                   setPlaying(false);
+                   scrollRef.current?.scrollTo({ y: 0, animated: true });
+                 } else {
+                   router.back();
+                 }
+               }}
+             >
+               <Ionicons 
+                 name="chevron-back" 
+                 size={24} 
+                 color="white"
+                 style={{ marginLeft: -12 }}
+               />
+             </Pressable>
+           )
+         ),
+         headerRight: () => (
+           <View style={{ flexDirection: 'row', gap: 10, alignItems: 'center', marginRight: 8 }}>
+             {isBefore(currDate, program?.program_end_date!) ? <NotificationBell /> : <AddToProgramsButton />}
+           </View>
+         ),
+       }} 
+     />
      <StatusBar barStyle={"light-content"}/>
-     {/* Header with Back Button and Action Buttons */}
-     <View className="flex-row items-center justify-between px-4 pt-16 pb-4" style={{ backgroundColor: '#214E91', position: 'absolute', top: 0, left: 0, right: 0, zIndex: 100 }}>
-       <BlurView intensity={20} tint="dark" style={{ borderRadius: 16, overflow: 'hidden' }}>
-         <Pressable 
-           onPress={() => {
-             if (selectedLecture && selectedLecture.lecture_link && selectedLecture.lecture_link.trim() !== '' && selectedLecture.lecture_link !== 'N/A') {
-               // If a video is selected, deselect it instead of going back
-               setSelectedLecture(null);
-               setPlaying(false);
-               scrollRef.current?.scrollTo({ y: 0, animated: true });
-             } else {
-               // Navigate back smoothly - try to go back, or navigate to recorded lectures
-               if (navigation.canGoBack()) {
-                 router.back();
-               } else {
-                 router.push('/myPrograms/recordedLectures');
-               }
-             }
-           }}
-           style={{ width: 36, height: 36, alignItems: 'center', justifyContent: 'center' }}
-         >
-           <Icon source="chevron-left" size={20} color="black" />
-         </Pressable>
-       </BlurView>
-       
-       <View style={{ flexDirection: 'row', gap: 10, alignItems: 'center' }}>
-         {isBefore(currDate, program?.program_end_date!) ? <NotificationBell /> : <AddToProgramsButton />}
-       </View>
-     </View>
       <Animated.ScrollView ref={scrollRef}  scrollEventThrottle={16} contentContainerStyle={{justifyContent: "flex-start", alignItems: "stretch" }} style={{ flex: 1 }}>
-          <View className=' relative' style={{width: '100%', height: height * 0.5, borderBottomLeftRadius: 20, borderBottomRightRadius: 10, overflow: 'hidden', marginTop: 105, alignSelf: 'stretch' }}>
+          <View className=' relative' style={{width: '100%', height: height * 0.5, borderBottomLeftRadius: 20, borderBottomRightRadius: 10, overflow: 'hidden', alignSelf: 'stretch' }}>
             {selectedLecture && selectedLecture.lecture_link && selectedLecture.lecture_link.trim() !== '' && selectedLecture.lecture_link !== 'N/A' ? (
               <YoutubePlayer 
                 height={height * 0.5}
@@ -770,33 +841,35 @@ async function getUserPlaylists(){
               </View>
             ) : (
               <>
-                {/* Show the skeleton until the image is loaded or errored */}
-                { !imageReady && 
+                {/* Show the skeleton until program data AND image are loaded */}
+                { (!imageReady || !program) && 
                   <FlyerSkeleton 
                     width={width} 
                     height={height * 0.5} 
                     style={{ position: 'absolute', top: 0, zIndex: 2 }} 
                   />
                 }
-                <Animated.Image 
-                  source={
-                    // If there's an error or no URL, use the fallback image
-                    hasError || !program?.program_img || program.program_img.trim() === ''
-                      ? require("@/assets/images/massicliquidglassicon.png")
-                      : { uri: program.program_img }
-                  }
-                  style={[
-                    { width: '100%', height: '100%', borderRadius: 0 },
-                    imageAnimatedStyle
-                  ]}
-                  resizeMode="contain"
-                  onLoad={() => setImageReady(true)}
-                  onError={() => {
-                    // Mark that an error occurred and hide the skeleton
-                    setHasError(true);
-                    setImageReady(true);
-                  }}
-                />
+                {program && (
+                  <Animated.Image 
+                    source={
+                      // If there's an error or no URL, use the fallback image
+                      hasError || !program.program_img || program.program_img.trim() === ''
+                        ? require("@/assets/images/massicliquidglassicon.png")
+                        : { uri: program.program_img }
+                    }
+                    style={[
+                      { width: '100%', height: '100%', borderRadius: 0 },
+                      imageAnimatedStyle
+                    ]}
+                    resizeMode="contain"
+                    onLoad={() => setImageReady(true)}
+                    onError={() => {
+                      // Mark that an error occurred and hide the skeleton
+                      setHasError(true);
+                      setImageReady(true);
+                    }}
+                  />
+                )}
               </>
             )}
           </View>
@@ -898,70 +971,23 @@ async function getUserPlaylists(){
 
               {/* Video Tab Content */}
               {videoTab === 'keynotes' ? (
-                selectedLecture.lecture_key_notes && selectedLecture.lecture_key_notes.length > 0 ? (
-                  <View className='rounded-xl' style={{
-                    backgroundColor: '#1A2332',
-                    shadowColor: "#000",
-                    shadowOffset: { width: 0, height: 2 },
-                    shadowOpacity: 0.3,
-                    shadowRadius: 4,
-                    elevation: 3,
-                    maxHeight: 300,
-                  }}>
-                    <ScrollView 
-                      style={{ paddingHorizontal: 16, paddingVertical: 12 }}
-                      showsVerticalScrollIndicator={true}
-                      nestedScrollEnabled={true}
-                    >
-                      {selectedLecture.lecture_key_notes.map((keynote, index) => (
-                        <Text key={index} className='text-base text-gray-300 leading-6 mb-2'>
-                          • {keynote}
-                        </Text>
-                      ))}
-                    </ScrollView>
-                  </View>
-                ) : (
-                  <View className='px-4 py-3 rounded-xl' style={{
-                    backgroundColor: '#1A2332',
-                    shadowColor: "#000",
-                    shadowOffset: { width: 0, height: 2 },
-                    shadowOpacity: 0.3,
-                    shadowRadius: 4,
-                    elevation: 3,
-                  }}>
-                    <Text className='text-base text-gray-400 leading-6 text-center'>
-                      No keynotes available for this lecture
-                    </Text>
-                  </View>
-                )
+                <AIKeynotes 
+                  keynotes={selectedLecture.lecture_key_notes}
+                  title="Key Notes"
+                  variant="light"
+                  autoExpand={true}
+                  streamOnMount={true}
+                  maxHeight={300}
+                />
               ) : (
-                selectedLecture.lecture_ai && selectedLecture.lecture_ai !== "N/A" ? (
-                  <View className='px-4 py-3 rounded-xl' style={{
-                    backgroundColor: '#1A2332',
-                    shadowColor: "#000",
-                    shadowOffset: { width: 0, height: 2 },
-                    shadowOpacity: 0.3,
-                    shadowRadius: 4,
-                    elevation: 3,
-                  }}>
-                    <Text className='text-base text-gray-300 leading-6'>
-                      {selectedLecture.lecture_ai}
-                    </Text>
-                  </View>
-                ) : (
-                  <View className='px-4 py-3 rounded-xl' style={{
-                    backgroundColor: '#1A2332',
-                    shadowColor: "#000",
-                    shadowOffset: { width: 0, height: 2 },
-                    shadowOpacity: 0.3,
-                    shadowRadius: 4,
-                    elevation: 3,
-                  }}>
-                    <Text className='text-base text-gray-400 leading-6 text-center'>
-                      No summary available for this lecture
-                    </Text>
-                  </View>
-                )
+                <AIReasoningMarkdown 
+                  content={selectedLecture.lecture_ai}
+                  title="AI Summary"
+                  variant="light"
+                  autoExpand={true}
+                  streamOnMount={true}
+                  maxHeight={300}
+                />
               )}
 
               {/* Recommended Videos Section - Below the tabs */}
@@ -1185,70 +1211,23 @@ async function getUserPlaylists(){
 
               {/* Video Tab Content */}
               {videoTab === 'keynotes' ? (
-                selectedLecture.lecture_key_notes && selectedLecture.lecture_key_notes.length > 0 ? (
-                  <View className='rounded-xl' style={{
-                    backgroundColor: '#1A2332',
-                    shadowColor: "#000",
-                    shadowOffset: { width: 0, height: 2 },
-                    shadowOpacity: 0.3,
-                    shadowRadius: 4,
-                    elevation: 3,
-                    maxHeight: 300,
-                  }}>
-                    <ScrollView 
-                      style={{ paddingHorizontal: 16, paddingVertical: 12 }}
-                      showsVerticalScrollIndicator={true}
-                      nestedScrollEnabled={true}
-                    >
-                      {selectedLecture.lecture_key_notes.map((keynote, index) => (
-                        <Text key={index} className='text-base text-gray-300 leading-6 mb-2'>
-                          • {keynote}
-                        </Text>
-                      ))}
-                    </ScrollView>
-                  </View>
-                ) : (
-                  <View className='px-4 py-3 rounded-xl' style={{
-                    backgroundColor: '#1A2332',
-                    shadowColor: "#000",
-                    shadowOffset: { width: 0, height: 2 },
-                    shadowOpacity: 0.3,
-                    shadowRadius: 4,
-                    elevation: 3,
-                  }}>
-                    <Text className='text-base text-gray-400 leading-6 text-center'>
-                      No keynotes available for this lecture
-                    </Text>
-                  </View>
-                )
+                <AIKeynotes 
+                  keynotes={selectedLecture.lecture_key_notes}
+                  title="Key Notes"
+                  variant="dark"
+                  autoExpand={true}
+                  streamOnMount={true}
+                  maxHeight={300}
+                />
               ) : (
-                selectedLecture.lecture_ai && selectedLecture.lecture_ai !== "N/A" ? (
-                  <View className='px-4 py-3 rounded-xl' style={{
-                    backgroundColor: '#1A2332',
-                    shadowColor: "#000",
-                    shadowOffset: { width: 0, height: 2 },
-                    shadowOpacity: 0.3,
-                    shadowRadius: 4,
-                    elevation: 3,
-                  }}>
-                    <Text className='text-base text-gray-300 leading-6'>
-                      {selectedLecture.lecture_ai}
-                    </Text>
-                  </View>
-                ) : (
-                  <View className='px-4 py-3 rounded-xl' style={{
-                    backgroundColor: '#1A2332',
-                    shadowColor: "#000",
-                    shadowOffset: { width: 0, height: 2 },
-                    shadowOpacity: 0.3,
-                    shadowRadius: 4,
-                    elevation: 3,
-                  }}>
-                    <Text className='text-base text-gray-400 leading-6 text-center'>
-                      No summary available for this lecture
-                    </Text>
-                  </View>
-                )
+                <AIReasoningMarkdown 
+                  content={selectedLecture.lecture_ai}
+                  title="AI Summary"
+                  variant="dark"
+                  autoExpand={true}
+                  streamOnMount={true}
+                  maxHeight={300}
+                />
               )}
             </View>
           )}

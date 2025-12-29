@@ -10,7 +10,7 @@ import ProgramsCircularCarousel from '@/src/components/programsCircularCarousel'
 import BottomSheet, { BottomSheetModal } from "@gorhom/bottom-sheet";
 import { JummahBottomSheetProp } from '@/src/types';
 import LinkToVolunteersModal from '@/src/components/linkToVolunteersModal';
-import Animated, { interpolate, useAnimatedRef, useAnimatedStyle, useScrollViewOffset, useSharedValue, useAnimatedScrollHandler, withTiming, Easing, FadeIn, useDerivedValue, runOnJS } from 'react-native-reanimated';
+import Animated, { interpolate, useAnimatedRef, useAnimatedStyle, useScrollViewOffset, useSharedValue, useAnimatedScrollHandler, withTiming, Easing, FadeIn, runOnJS } from 'react-native-reanimated';
 import { Button, TextInput, Portal, Modal, Icon } from 'react-native-paper';
 import { Link, useRouter } from 'expo-router';
 import LinkToDonationModal from '@/src/components/LinkToDonationModal';
@@ -24,7 +24,6 @@ import IconsMarquee from '@/src/components/Marquee';
 import MASQuestionaire from '@/src/components/MASQuestionaire';
 import DailyProgramsWidget from '@/src/components/DailyProgramsWidget';
 import OverlappingWidget from '@/src/components/OverlappingWidget';
-import Spinner from '@/src/components/Spinner';
 import DonationVolunteerCarousel, { DonationVolunteerCarouselRef } from '@/src/components/DonationVolunteerCarousel';
 
 // Color Theme based on Figma design
@@ -61,7 +60,6 @@ export default function homeScreen() {
   const { width } = Dimensions.get("window")
   const scrollRef = useAnimatedRef<Animated.ScrollView>()
   const scrollOffset = useSharedValue(0)
-  const pullDistance = useSharedValue(0)
   const donationCarouselRef = useRef<View>(null);
   const exploreFeaturesRef = useRef<View>(null);
   const [exploreFeaturesY, setExploreFeaturesY] = useState(0);
@@ -77,8 +75,6 @@ export default function homeScreen() {
   const scrollHandler = useAnimatedScrollHandler({
     onScroll: (event) => {
       scrollOffset.value = interpolate(event.contentOffset.y, [-1, 1], [-1, 1]);
-      // Track pull distance for custom refresh spinner
-      pullDistance.value = Math.max(0, -event.contentOffset.y);
 
       // Check if we're at the bottom - disable bounce well before reaching bottom to prevent background showing
       const { contentOffset, contentSize, layoutMeasurement } = event;
@@ -120,40 +116,6 @@ export default function homeScreen() {
       width: interpolate(scrollOffset.value, [0, (width / 2.2) - (width / 3)], [width / 2.2, width / 3], 'clamp'),
     }
   })
-
-  // Custom refresh spinner animation
-  const showSpinner = useDerivedValue(() => {
-    return pullDistance.value > 30 || refreshing;
-  });
-
-  const refreshSpinnerStyle = useAnimatedStyle(() => {
-    const opacity = interpolate(
-      pullDistance.value,
-      [0, 50, 100],
-      [0, 0.7, 1],
-      'clamp'
-    );
-    const translateY = interpolate(
-      pullDistance.value,
-      [0, 100],
-      [-30, 20],
-      'clamp'
-    );
-    const scale = interpolate(
-      pullDistance.value,
-      [0, 100],
-      [0.5, 1],
-      'clamp'
-    );
-    return {
-      opacity: refreshing ? 1 : opacity,
-      transform: [
-        { translateY: refreshing ? 20 : translateY },
-        { scale: refreshing ? 1 : scale }
-      ]
-    };
-  });
-
 
   const getProfile = async () => {
     if (session?.user.is_anonymous) {
@@ -242,35 +204,6 @@ export default function homeScreen() {
     >
       <StatusBar barStyle={"light-content"} />
 
-      {/* Custom Refresh Spinner */}
-      <Animated.View
-        style={[
-          {
-            position: 'absolute',
-            top: -40,
-            left: 0,
-            right: 0,
-            alignItems: 'center',
-            zIndex: 1000,
-            pointerEvents: 'none',
-          },
-          refreshSpinnerStyle
-        ]}
-      >
-        <View style={{
-          backgroundColor: 'rgba(255, 255, 255, 0.2)',
-          borderRadius: 30,
-          padding: 12,
-          shadowColor: '#000',
-          shadowOffset: { width: 0, height: 2 },
-          shadowOpacity: 0.3,
-          shadowRadius: 4,
-          elevation: 5,
-        }}>
-          <Spinner size="large" color={COLORS.white} />
-        </View>
-      </Animated.View>
-
       <View style={{ height: 350, overflow: "hidden", justifyContent: "center" }} className=''>
         {prayer && prayer[0] && prayer[1] && (
           <SalahDisplayWidget
@@ -286,7 +219,7 @@ export default function homeScreen() {
 
       <Pressable
         className='pt-7 flex-row justify-between w-[100%] px-3'
-        onPress={() => router.push('/menu/program/programsAndEventsScreen')}
+        onPress={() => router.push('/menu/program/upcomingEvents')}
       >
         <Text style={{ color: COLORS.primary }} className='font-bold text-2xl'>Weekly Programs</Text>
         <View className='flex-row items-center'>

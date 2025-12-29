@@ -13,6 +13,7 @@ import { FlyerSkeleton } from './FlyerSkeleton';
 import YoutubePlayer from "react-native-youtube-iframe";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { BlurView } from 'expo-blur';
+import { LinearGradient } from 'expo-linear-gradient';
 
 // Toast configuration
 const toastConfig = {
@@ -197,6 +198,8 @@ export default function UpcomingProgramWidget() {
   const modalScrollRef = useRef<ScrollView>(null);
   const isScrolling = useRef(false);
   const scrollOffset = useRef(0);
+  const previousScrollOffset = useRef(0);
+  const panYValue = useRef(0);
   const isClosing = useRef(false);
   const [modalToast, setModalToast] = useState<{ type: string; props: any } | null>(null);
   const { width, height } = Dimensions.get("window");
@@ -289,7 +292,7 @@ export default function UpcomingProgramWidget() {
         }).start();
       },
       onPanResponderRelease: (evt, gestureState) => {
-        const threshold = height * 0.25; // Close if dragged down more than 25% of screen height
+        const threshold = -10; // Dismiss immediately on any downward drag
 
         if (gestureState.dy > threshold || gestureState.vy > 0.5) {
           // Mark as closing to prevent re-renders
@@ -915,10 +918,12 @@ export default function UpcomingProgramWidget() {
       setModalVisibleState(false);
       slideAnim.setValue(0);
       panY.setValue(0);
+      panYValue.current = 0;
       setModalSpeakerData([]);
       setModalSpeakerString('');
       setModalImageReady(false);
       scrollOffset.current = 0;
+      previousScrollOffset.current = 0;
       isScrolling.current = false;
       isClosing.current = false;
       return;
@@ -947,7 +952,9 @@ export default function UpcomingProgramWidget() {
       setModalSpeakerString('');
       setModalImageReady(false);
       panY.setValue(0);
+      panYValue.current = 0;
       scrollOffset.current = 0;
+      previousScrollOffset.current = 0;
       isScrolling.current = false;
       isClosing.current = false;
     });
@@ -1038,7 +1045,9 @@ export default function UpcomingProgramWidget() {
     setModalVisibleState(false);
     setModalImageReady(false);
     panY.setValue(0); // Reset pan gesture
+    panYValue.current = 0;
     scrollOffset.current = 0;
+    previousScrollOffset.current = 0;
     isScrolling.current = false;
     isClosing.current = false;
     Animated.spring(slideAnim, {
@@ -1342,31 +1351,48 @@ export default function UpcomingProgramWidget() {
               <Animated.View
                 style={{
                   height: height * 0.95,
-                  backgroundColor: '#0A1628',
                   borderTopLeftRadius: 20,
                   borderTopRightRadius: 20,
                   borderBottomLeftRadius: 0,
                   borderBottomRightRadius: 0,
                   borderBottomWidth: 0,
                   overflow: 'hidden',
-                  transform: [{
-                    translateY: Animated.add(
-                      slideAnim.interpolate({
-                        inputRange: [0, 1],
-                        outputRange: [height, 0],
-                      }),
-                      panY
-                    )
-                  }]
-                }}
-              >
-                {/* Drag Handle - Separate view with pan responder */}
+                  backgroundColor: '#FFFFFF',
+                  shadowColor: '#000',
+                  shadowOffset: { width: 0, height: -8 },
+                  shadowOpacity: 0.3,
+                  shadowRadius: 12,
+                  elevation: 20,
+                                    transform: [{
+                                      translateY: Animated.add(
+                                        slideAnim.interpolate({
+                                          inputRange: [0, 1],
+                                          outputRange: [height, 0],
+                                        }),
+                                        panY
+                                      )
+                                    }]
+                                  }}
+                                >
+                                <LinearGradient
+                                    colors={['#FFFFFF', '#FFFFFF', '#FFFFFF', '#FFFFFF', '#FFFFFF']}
+                                    start={{ x: 0, y: 0 }}
+                                    end={{ x: 0, y: 1 }}
+                                    style={{
+                                        position: 'absolute',
+                                        top: 0,
+                                        left: 0,
+                                        right: 0,
+                                        bottom: 0,
+                                    }}
+                                />
+                                {/* Drag Handle - Separate view with pan responder */}
                 <Animated.View
                   {...panResponder.panHandlers}
                   style={{
                     width: '100%',
-                    paddingTop: 8,
-                    paddingBottom: 12,
+                    paddingTop: 2,
+                    paddingBottom: 2,
                     alignItems: 'center',
                   }}
                 >
@@ -1374,7 +1400,7 @@ export default function UpcomingProgramWidget() {
                     width: 40,
                     height: 4,
                     borderRadius: 2,
-                    backgroundColor: 'rgba(255, 255, 255, 0.3)',
+                    backgroundColor: '#000000',
                   }} />
                 </Animated.View>
 
@@ -1383,13 +1409,57 @@ export default function UpcomingProgramWidget() {
                   showsVerticalScrollIndicator={true}
                   scrollEnabled={true}
                   scrollEventThrottle={16}
-                  onScrollBeginDrag={() => {
+                  onScrollBeginDrag={(event) => {
                     isScrolling.current = true;
-                    // Reset pan if user starts scrolling
-                    panY.setValue(0);
+                    const offset = event.nativeEvent.contentOffset.y;
+                    previousScrollOffset.current = offset;
+                    // Reset pan if user starts scrolling down from content
+                    if (offset > 0) {
+                      panY.setValue(0);
+                      panYValue.current = 0;
+                    }
                   }}
-                  onScrollEndDrag={() => {
-                    // Small delay to ensure scroll has ended
+                  onScrollEndDrag={(event) => {
+                    const offset = event.nativeEvent.contentOffset.y;
+                    
+                    // If at the top and we have a panY value, check if we should close
+                    if (offset <= 0 && panYValue.current > 20) {
+                      const threshold = -10;
+                      
+                      if (panYValue.current > threshold) {
+                        // Close the sheet
+                        isClosing.current = true;
+                        slideAnim.stopAnimation();
+                        panY.stopAnimation();
+                        
+                        const currentPanY = panYValue.current;
+                        const remainingDistance = height - currentPanY;
+                        
+                        Animated.timing(panY, {
+                          toValue: height,
+                          duration: Math.max(150, Math.min(300, 300 * (remainingDistance / height))),
+                          useNativeDriver: true,
+                        }).start((finished) => {
+                          if (finished) {
+                            closeModal(true);
+                          }
+                        });
+                      } else {
+                        // Snap back to open position
+                        Animated.spring(panY, {
+                          toValue: 0,
+                          useNativeDriver: true,
+                          tension: 50,
+                          friction: 9,
+                        }).start(() => {
+                          panYValue.current = 0;
+                        });
+                      }
+                    } else if (panYValue.current > 0 && offset > 0) {
+                      panY.setValue(0);
+                      panYValue.current = 0;
+                    }
+                    
                     setTimeout(() => {
                       isScrolling.current = false;
                     }, 100);
@@ -1397,28 +1467,129 @@ export default function UpcomingProgramWidget() {
                   onMomentumScrollBegin={() => {
                     isScrolling.current = true;
                   }}
-                  onMomentumScrollEnd={() => {
+                  onMomentumScrollEnd={(event) => {
+                    const offset = event.nativeEvent.contentOffset.y;
+                    
+                    if (offset <= 0 && panYValue.current > 20) {
+                      const threshold = -10;
+                      
+                      if (panYValue.current > threshold) {
+                        isClosing.current = true;
+                        slideAnim.stopAnimation();
+                        panY.stopAnimation();
+                        
+                        const currentPanY = panYValue.current;
+                        const remainingDistance = height - currentPanY;
+                        
+                        Animated.timing(panY, {
+                          toValue: height,
+                          duration: Math.max(150, Math.min(300, 300 * (remainingDistance / height))),
+                          useNativeDriver: true,
+                        }).start((finished) => {
+                          if (finished) {
+                            closeModal(true);
+                          }
+                        });
+                      } else {
+                        Animated.spring(panY, {
+                          toValue: 0,
+                          useNativeDriver: true,
+                          tension: 50,
+                          friction: 9,
+                        }).start(() => {
+                          panYValue.current = 0;
+                        });
+                      }
+                    }
+                    
                     setTimeout(() => {
                       isScrolling.current = false;
                     }, 100);
                   }}
                   onScroll={(event) => {
                     const offset = event.nativeEvent.contentOffset.y;
-                    scrollOffset.current = offset;
-                    // If user scrolls down, cancel any active pan gesture
-                    if (offset > 5) {
-                      panY.setValue(0);
+                    const previousOffset = previousScrollOffset.current;
+                    
+                    // When at or past the top (negative offset from bounce)
+                    if (offset <= 0) {
+                      // User is pulling down - move sheet down
+                      if (offset < previousOffset) {
+                        const scrollUpAmount = Math.abs(offset);
+                        const resistance = scrollUpAmount < 100 ? 0.6 : (scrollUpAmount < 200 ? 0.8 : 1);
+                        const newValue = Math.min(scrollUpAmount * resistance, height * 0.5);
+                        panY.setValue(newValue);
+                        panYValue.current = newValue;
+                      } else if (offset > previousOffset && panYValue.current > 0) {
+                        // Scrolling back, reduce pan value
+                        const reduction = previousOffset - offset;
+                        const newValue = Math.max(0, panYValue.current - Math.abs(reduction));
+                        panY.setValue(newValue);
+                        panYValue.current = newValue;
+                      }
+                    } else {
+                      // User has scrolled into content, reset pan
+                      if (panYValue.current > 0) {
+                        panY.setValue(0);
+                        panYValue.current = 0;
+                      }
                     }
+                    
+                    scrollOffset.current = offset;
+                    previousScrollOffset.current = offset;
                   }}
                   bounces={true}
+                  alwaysBounceVertical={true}
+                  overScrollMode="always"
                   contentContainerStyle={{
                     justifyContent: "flex-start",
                     alignItems: "stretch",
-                    backgroundColor: '#0A1628',
-                    paddingBottom: 100
+                    paddingBottom: 40
                   }}
-                  style={{ backgroundColor: '#0A1628' }}
+                  style={{ flex: 1 }}
                 >
+                  {/* Custom Header with Notification and Playlist Buttons */}
+                  <View style={{ 
+                    position: 'absolute', 
+                    top: 0, 
+                    left: 0, 
+                    right: 0, 
+                    zIndex: 100, 
+                    paddingTop: 12, 
+                    paddingHorizontal: 10, 
+                    flexDirection: 'row', 
+                    justifyContent: 'space-between', 
+                    alignItems: 'center' 
+                  }}>
+                    <BlurView intensity={20} tint="dark" style={{ borderRadius: 16, overflow: 'hidden', width: 36, height: 36 }}>
+                      <Pressable onPress={() => closeModal()} style={{ width: 36, height: 36, alignItems: 'center', justifyContent: 'center' }}>
+                        <Icon source="chevron-left" size={20} color="#0D509D" />
+                      </Pressable>
+                    </BlurView>
+                    <View style={{ flexDirection: 'row', gap: 10 }}>
+                      {((upcomingItem.type === 'program' && programData && isBefore(new Date().toISOString(), programData.program_end_date || '')) ||
+                        (upcomingItem.type === 'event' && eventData && isBefore(new Date().toISOString(), eventData.event_end_date || ''))) ? (
+                        <>
+                          <BlurView intensity={20} tint="dark" style={{ borderRadius: 16, overflow: 'hidden', width: 36, height: 36 }}>
+                            <Pressable onPress={handleNotificationPress} style={{ width: 36, height: 36, alignItems: 'center', justifyContent: 'center' }}>
+                              {itemInNotifications ? <Icon source={"bell-check"} color='#0D509D' size={20} /> : <Icon source={"bell-outline"} color='#0D509D' size={20} />}
+                            </Pressable>
+                          </BlurView>
+                          <BlurView intensity={20} tint="dark" style={{ borderRadius: 16, overflow: 'hidden', width: 36, height: 36 }}>
+                            <Pressable onPress={handleAddToProgramsPress} style={{ width: 36, height: 36, alignItems: 'center', justifyContent: 'center' }}>
+                              {itemInPrograms ? <Icon source={'minus-circle-outline'} color='#0D509D' size={20} /> : <Icon source={"plus-circle-outline"} color='#0D509D' size={20} />}
+                            </Pressable>
+                          </BlurView>
+                        </>
+                      ) : (
+                        <BlurView intensity={20} tint="dark" style={{ borderRadius: 16, overflow: 'hidden', width: 36, height: 36 }}>
+                          <Pressable onPress={handleAddToProgramsPress} style={{ width: 36, height: 36, alignItems: 'center', justifyContent: 'center' }}>
+                            {itemInPrograms ? <Icon source={'minus-circle'} color='#0D509D' size={20} /> : <Icon source={"plus-circle-outline"} color='#0D509D' size={20} />}
+                          </Pressable>
+                        </BlurView>
+                      )}
+                    </View>
+                  </View>
+
                   {/* Program Image */}
                   <View style={{
                     width: '100%',
@@ -1426,7 +1597,9 @@ export default function UpcomingProgramWidget() {
                     borderRadius: 0,
                     overflow: 'hidden',
                     alignSelf: 'stretch',
-                    backgroundColor: '#0A1628',
+                    backgroundColor: '#FFFFFF',
+                    justifyContent: 'center',
+                    alignItems: 'center',
                   }}>
                     {!modalImageReady && (
                       <FlyerSkeleton
@@ -1442,46 +1615,9 @@ export default function UpcomingProgramWidget() {
                         height: '100%',
                         borderRadius: 0,
                       }}
-                      resizeMode="cover"
+                      resizeMode="contain"
                       onLoad={() => setModalImageReady(true)}
                     />
-                    {/* Header Buttons - Close, Notification, Add to Programs */}
-                    <View style={{
-                      position: 'absolute',
-                      top: 0,
-                      left: 0,
-                      right: 0,
-                      zIndex: 100,
-                      paddingTop: 50,
-                      paddingHorizontal: 10,
-                      flexDirection: 'row',
-                      justifyContent: 'space-between',
-                      alignItems: 'center'
-                    }}>
-                      <BlurView intensity={20} tint="dark" style={{ borderRadius: 16, overflow: 'hidden' }}>
-                        <Pressable onPress={closeModal} style={{ width: 36, height: 36, alignItems: 'center', justifyContent: 'center' }}>
-                          <Icon source="chevron-left" size={20} color="white" />
-                        </Pressable>
-                      </BlurView>
-                      <View style={{ flexDirection: 'row', gap: 10 }}>
-                        {((upcomingItem.type === 'program' && programData && isBefore(new Date().toISOString(), programData.program_end_date || '')) ||
-                          (upcomingItem.type === 'event' && eventData && isBefore(new Date().toISOString(), eventData.event_end_date || ''))) ? (
-                          <>
-                            <BlurView intensity={20} tint="dark" style={{ borderRadius: 16, overflow: 'hidden' }}>
-                              <Pressable onPress={handleNotificationPress} style={{ width: 36, height: 36, alignItems: 'center', justifyContent: 'center' }}>
-                                {itemInNotifications ? <Icon source={"bell-check"} color='white' size={20} /> : <Icon source={"bell-outline"} color='white' size={20} />}
-                              </Pressable>
-                            </BlurView>
-                            <BlurView intensity={20} tint="dark" style={{ borderRadius: 16, overflow: 'hidden' }}>
-                              <Pressable onPress={handleAddToProgramsPress} style={{ width: 36, height: 36, alignItems: 'center', justifyContent: 'center' }}>
-                                {itemInPrograms ? <Icon source={'minus-circle-outline'} color='white' size={20} /> : <Icon source={"plus-circle-outline"} color='white' size={20} />}
-                              </Pressable>
-                            </BlurView>
-                          </>
-                        ) : null}
-                      </View>
-                    </View>
-
 
                     {/* Sign Up Button - Bottom Right of Flyer */}
                     {((upcomingItem.type === 'program' && programData && programData.program_is_paid) ||
@@ -1508,58 +1644,59 @@ export default function UpcomingProgramWidget() {
                               }}
                               style={{ paddingHorizontal: 12, paddingVertical: 8, flexDirection: 'row', alignItems: 'center', gap: 6 }}
                             >
-                              <Icon source={"cart-variant"} color='white' size={16} />
-                              <Text className='text-white font-semibold' style={{ fontSize: 12 }}>Sign Up Now</Text>
+                              <Icon source={"cart-variant"} color='#0D509D' size={16} />
+                              <Text style={{ fontSize: 12, fontWeight: '600', color: '#0D509D' }}>Sign Up Now</Text>
                             </Pressable>
                           </BlurView>
                         </View>
                       )}
                   </View>
 
-                  {/* Content Section - Dark Background */}
-                  <View style={{ width: '100%', paddingBottom: 0, backgroundColor: '#0A1628', paddingHorizontal: 16 }}>
-                    <Text style={{ textAlign: 'center', marginTop: 16, fontSize: 24, color: 'white', fontWeight: 'bold' }}>
+                  {/* Content Section */}
+                  <View className='w-[100%]' style={{ paddingBottom: 0 }}>
+                    <Text className='text-center mt-4 text-2xl text-black font-bold'>
                       {upcomingItem.type === 'program' && programData ? programData.program_name : upcomingItem.name}
                     </Text>
 
                     {modalSpeakerString && (
-                      <Pressable onPress={() => setModalVisibleState(true)}>
-                        <Text style={{ textAlign: 'center', marginTop: 8, color: '#60A5FA', width: '60%', alignSelf: 'center', fontWeight: '600' }} numberOfLines={1}>
+                      <Pressable onPress={() => setModalVisibleState(true)} style={{ alignSelf: 'center', marginTop: 8 }}>
+                        <Text style={{ textAlign: 'center', color: '#0D509D', fontWeight: '600', fontSize: 14 }} numberOfLines={1}>
                           {modalSpeakerString}
                         </Text>
                       </Pressable>
                     )}
 
                     {/* Description Content */}
-                    <View style={{ marginTop: 20, marginBottom: 20 }}>
-                      <Text style={{
-                        color: 'white',
-                        fontSize: 18,
-                        fontWeight: 'bold',
-                        marginBottom: 12,
-                        textAlign: 'left'
-                      }}>
+                    <View style={{ paddingHorizontal: 16, marginTop: 16, marginBottom: 16, width: '100%' }}>
+                      <Text className='text-2xl font-bold text-black mb-2' style={{ paddingHorizontal: 4 }}>
                         Description
                       </Text>
                       {upcomingItem.description ? (
-                        <Text style={{
-                          color: '#D1D5DB',
-                          fontSize: 16,
-                          lineHeight: 24,
-                          textAlign: 'left'
+                        <View className='px-4 py-3 rounded-xl' style={{
+                          backgroundColor: '#2A2A2A',
+                          shadowColor: "#000",
+                          shadowOffset: { width: 0, height: 4 },
+                          shadowOpacity: 0.4,
+                          shadowRadius: 8,
+                          elevation: 8,
                         }}>
-                          {upcomingItem.description}
-                        </Text>
+                          <Text className='text-base text-gray-300 leading-6'>
+                            {upcomingItem.description}
+                          </Text>
+                        </View>
                       ) : (
-                        <Text style={{
-                          color: '#9CA3AF',
-                          fontSize: 16,
-                          lineHeight: 24,
-                          textAlign: 'left',
-                          fontStyle: 'italic'
+                        <View className='px-4 py-3 rounded-xl' style={{
+                          backgroundColor: '#2A2A2A',
+                          shadowColor: "#000",
+                          shadowOffset: { width: 0, height: 4 },
+                          shadowOpacity: 0.4,
+                          shadowRadius: 8,
+                          elevation: 8,
                         }}>
-                          No description available
-                        </Text>
+                          <Text className='text-base text-gray-400 leading-6 text-center'>
+                            No description available
+                          </Text>
+                        </View>
                       )}
                     </View>
                   </View>

@@ -9,6 +9,7 @@ import { useAuth } from '@/src/providers/AuthProvider';
 import * as Haptics from "expo-haptics"
 import { ActivityIndicator } from 'react-native-paper';
 import { LayoutInfo } from '@/src/components/HeroTransitionModal';
+import { LinearGradient } from 'expo-linear-gradient';
 
 type ProgramsListProgramProps = {
     program_id: string,
@@ -38,15 +39,19 @@ export default function RenderAddedPrograms({ programInfo, onHeroPress }: Render
       return (
         <View style={{ justifyContent: "center", alignItems: "center", marginHorizontal: 8 }}>
           <TouchableOpacity onPress={handlePress} activeOpacity={0.9}>
-            <View ref={imageRef} collapsable={false}>
-              <Image 
-                source={programInfo?.program_img ? { uri: programInfo.program_img } : require("@/assets/images/MASHomeLogo.png")} 
-                style={{ width: 170, height: 170, borderRadius: 8 }}
-              />
-            </View>
-            <View className='flex-col w-[170] h-[40] flex-shrink'>
-              <Text className='text-black font-bold' numberOfLines={1}>{programInfo?.program_name}</Text>
-            </View>
+            <LinearGradient
+              colors={['#87CEEB', '#214E91', '#2A2A2A']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={styles.gradientBorder}
+            >
+              <View ref={imageRef} collapsable={false} style={styles.imageContainer}>
+                <Image 
+                  source={programInfo?.program_img ? { uri: programInfo.program_img } : require("@/assets/images/MASHomeLogo.png")} 
+                  style={styles.image}
+                />
+              </View>
+            </LinearGradient>
           </TouchableOpacity>
         </View>
       );
@@ -57,13 +62,19 @@ export default function RenderAddedPrograms({ programInfo, onHeroPress }: Render
         <View style={{ justifyContent: "center", alignItems: "center", marginHorizontal: 8 }} className=''>
         <Link href={`/myPrograms/notifications/ClassesAndLectures/${programInfo?.program_id}`} asChild>
             <TouchableOpacity>
-              <Image 
-                source={programInfo?.program_img ? { uri: programInfo.program_img } : require("@/assets/images/MASHomeLogo.png")} 
-                style={{ width: 170, height: 170, borderRadius: 8 }}
-              />
-              <View className='flex-col w-[170] h-[40] flex-shrink'>
-                  <Text className='text-black font-bold' numberOfLines={1}>{programInfo?.program_name}</Text>
-              </View>
+              <LinearGradient
+                colors={['#87CEEB', '#214E91', '#2A2A2A']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={styles.gradientBorder}
+              >
+                <View style={styles.imageContainer}>
+                  <Image 
+                    source={programInfo?.program_img ? { uri: programInfo.program_img } : require("@/assets/images/MASHomeLogo.png")} 
+                    style={styles.image}
+                  />
+                </View>
+              </LinearGradient>
             </TouchableOpacity>
         </Link>
     </View>
@@ -71,6 +82,20 @@ export default function RenderAddedPrograms({ programInfo, onHeroPress }: Render
 }
 
 const styles = StyleSheet.create({
+    gradientBorder: {
+      padding: 3,
+      borderRadius: 12,
+    },
+    imageContainer: {
+      borderRadius: 9,
+      overflow: 'hidden',
+      backgroundColor: 'white',
+    },
+    image: {
+      width: 164,
+      height: 164,
+      borderRadius: 9,
+    },
     dot: {
       width: 4,
       height: 4,

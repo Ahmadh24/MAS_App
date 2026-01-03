@@ -9,10 +9,6 @@ const MoreLayout = () => {
           name='index' 
           options={{ 
             headerShown: false,
-            presentation: 'transparentModal',
-            animation: 'fade',
-            // cardStyle: { backgroundColor: 'transparent' },
-            // cardOverlayEnabled: true,
           }} 
         />
     </Stack>

@@ -7,6 +7,7 @@ import { Program, UserPlaylistType } from '@/src/types';
 import { Button, Divider, Icon, TextInput } from 'react-native-paper';
 import { Link } from 'expo-router';
 import RenderLikedLectures from '@/src/components/UserProgramComponets/RenderLikedLectures';
+import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
 import { UserPlaylistFliers } from '@/src/components/UpcomingFliers';
 import LottieView from 'lottie-react-native';
 import { EventsType } from '@/src/types';
@@ -139,7 +140,7 @@ export default function userPrograms() {
     await getUserProgramLibrary()
     checkIfAnon()
   }  
-  const tabBarHeight = 20
+  const tabBarHeight = 35
   const onRefresh = async () => {
     await getUserProgramLibrary()
   }
@@ -166,86 +167,12 @@ async function signUpWithEmail() {
       alert('Fill in the fields to complete sign up')
     }
   } 
-  // Menu item component
-  const MenuItem = ({ 
-    icon, 
-    title, 
-    subtitle, 
-    href, 
-    showArrow = true,
-  }: { 
-    icon: string, 
-    title: string, 
-    subtitle: string, 
-    href?: string, 
-    showArrow?: boolean,
-  }) => {
-    const content = (
-      <View style={{
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        backgroundColor: 'white',
-        paddingVertical: 10,
-        paddingHorizontal: 12,
-        marginHorizontal: 12,
-        marginVertical: 3,
-        borderRadius: 12,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 1 },
-        shadowOpacity: 0.06,
-        shadowRadius: 4,
-        elevation: 2,
-        borderWidth: 1,
-        borderColor: '#F0F0F0',
-      }}>
-        <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}>
-          <View style={{
-            width: 36,
-            height: 36,
-            borderRadius: 8,
-            backgroundColor: '#EBF5FF',
-            alignItems: 'center',
-            justifyContent: 'center',
-            marginRight: 10,
-          }}>
-            <Icon source={icon} size={20} color="#0D509D" />
-          </View>
-          <View style={{ flex: 1 }}>
-            <Text style={{ fontSize: 15, fontWeight: '600', color: '#1a1a1a' }}>
-              {title}
-            </Text>
-            <Text style={{ fontSize: 11, color: '#888' }}>
-              {subtitle}
-            </Text>
-          </View>
-        </View>
-        {showArrow && (
-          <Icon source="chevron-right" size={18} color="#CCC" />
-        )}
-      </View>
-    )
-
-    if (href) {
-      return (
-        <Link href={href as any} asChild>
-          <Pressable>{content}</Pressable>
-        </Link>
-      )
-    }
-    return content
-  }
-
   return (
-    <ScrollView 
-      style={{ flex: 1, backgroundColor: '#F8F9FA' }}
-      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
-      showsVerticalScrollIndicator={false}
-    >
-      <StatusBar barStyle={"dark-content"}/>
-      
-      {/* Auth Modal */}
+    <ScrollView className='bg-white flex-1 w-[100%]' refreshControl={  <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+   }>
+     <StatusBar barStyle={"dark-content"}/>
       { anonStatus && ( 
+
         <BlurView style={{ height : height, zIndex : 1, position : 'absolute', width : width, justifyContent : 'center', alignItems : 'center' }} intensity={50} className=''>
       { signIn ?  <View className=' justify-center items-center flex-2 mt-5 w-[100%]'>
         <View className='w-[95%]  items-center h-[550]  bg-white p-2' style={{shadowColor: "black", shadowOffset: {width: 0, height: 0}, shadowOpacity: 3, shadowRadius: 3, borderRadius: 8}}>
@@ -463,47 +390,88 @@ async function signUpWithEmail() {
         </BlurView>
       )
       }
-
-      {/* Header */}
-      <View style={{ 
-        paddingTop: Platform.OS === 'ios' ? 50 : 30, 
-        paddingBottom: 8,
-        paddingHorizontal: 18,
-        backgroundColor: '#F8F9FA',
-      }}>
-        <Text style={{ fontSize: 26, fontWeight: '700', color: '#1a1a1a' }}>
-          My Library
-        </Text>
+      <View className='ml-2 mt-[15%]'>
+        <Text className='text-3xl font-bold'>My Library</Text>
       </View>
+      <ActivityIndicator animating={refreshing} color='blue' style={{}}/>
 
-      {refreshing && <ActivityIndicator color='#0D509D' style={{ marginBottom: 4 }}/>}
-
-      {/* Menu Items */}
-      <View>
-        <MenuItem title="Playlists" subtitle="Add Lectures to Playlist" href="/myPrograms/PlaylistIndex" icon="playlist-music" />
-        <MenuItem title="Notifications" subtitle="Customize Your Notifications" href="/myPrograms/notifications/NotificationEvents" icon="bell" />
-        <MenuItem title="Upcoming Events" subtitle="Enjoy a Lecture? Add it" href="/menu/program/upcomingEvents" icon="play-box-multiple" />
-        <MenuItem title="Recorded Lectures" subtitle="View your recorded lectures" href="/myPrograms/recordedLectures" icon="video" />
-      </View>
-
-      {/* My Programs */}
-      {userPrograms && userPrograms.length > 0 && (
-        <View style={{ marginTop: 12, paddingHorizontal: 16 }}>
-          <Text style={{ fontSize: 16, fontWeight: '700', color: '#1a1a1a', marginBottom: 10, marginLeft: 4 }}>
-            My Programs
-          </Text>
-          <View style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between' }}>
-            {userPrograms.map((program, index) => (
-              <View key={index} style={{ width: '48%', marginBottom: 10 }}>
-                <RenderMyLibraryProgram program_id={program.program_id} />
-              </View>
-            ))}
+      <View className='flex-row items-center ml-2 mt-2'>
+        <Link href={"/myPrograms/PlaylistIndex"} asChild>
+        <Pressable className='flex-row items-center justify-between w-[100%] pr-3'>
+          <View className='flex-row items-center justify-center'>
+            <Svg  width="31" height="30" viewBox="0 0 31 30" fill="none">
+              <Path d="M6.25 8.75H23.75" stroke="#3E98FF" stroke-linecap="round"/>
+              <Path d="M6.25 15H18.75" stroke="#3E98FF" stroke-linecap="round"/>
+              <Path d="M6.25 21.25H13.75" stroke="#3E98FF" stroke-linecap="round"/>
+              <Path d="M30 21.724L20.6897 27.9309L20.6897 15.5171L30 21.724Z" stroke="#3E98FF" stroke-width="2" stroke-linejoin="round"/>
+            </Svg> 
+            <View className='flex flex-col'>         
+              <Text className='text-xl font-bold px-[2]'>Playlists</Text>
+              <Text className='text-gray-400 text-sm mb-1'>Add Lectures to Playlist </Text>
+            </View>  
           </View>
+            <Text className='text-gray-400 text-right'>View All <Icon source={"chevron-right"} size={15} color='gray-400'/></Text>
+        </Pressable>
+        </Link>
+      </View>
+      <Divider className='my-2 w-[90%] self-center '/>
+      <View className='flex-row items-center ml-2 mt-2'>
+        <Link href={"/myPrograms/notifications/NotificationEvents"} asChild>
+        <Pressable className='flex-row items-center justify-between w-[100%] pr-3'>
+          <View className='flex-row items-center justify-center'>
+          <Svg width="30" height="29" viewBox="0 0 30 29" fill="none">
+            <Path d="M8.03631 11.0426C8.44301 7.50433 11.4384 4.8335 15 4.8335V4.8335C18.5616 4.8335 21.557 7.50433 21.9637 11.0426L22.2489 13.5237C22.295 13.9247 22.318 14.1252 22.3507 14.3222C22.4999 15.2221 22.802 16.0898 23.2438 16.8879C23.3405 17.0626 23.4469 17.2341 23.6598 17.577L24.3728 18.7257C25.194 20.0489 25.6047 20.7104 25.3363 21.2178C25.3297 21.2302 25.3229 21.2425 25.3158 21.2546C25.0263 21.7502 24.2476 21.7502 22.6903 21.7502H7.30966C5.75237 21.7502 4.97373 21.7502 4.68421 21.2546C4.67712 21.2425 4.67029 21.2302 4.66371 21.2178C4.39535 20.7104 4.80598 20.0489 5.62723 18.7257L6.34021 17.577C6.55309 17.2341 6.65953 17.0626 6.75623 16.8879C7.19803 16.0898 7.50008 15.2221 7.64932 14.3222C7.68199 14.1252 7.70504 13.9247 7.75113 13.5237L8.03631 11.0426Z" stroke="#1B85FF"/>
+            <Path d="M11.3778 22.2404C11.5914 23.1397 12.0622 23.9343 12.7171 24.5011C13.3721 25.0678 14.1745 25.375 15 25.375C15.8255 25.375 16.6279 25.0678 17.2829 24.5011C17.9378 23.9343 18.4086 23.1397 18.6222 22.2404" stroke="#1B85FF" stroke-linecap="round"/>
+          </Svg>
+          <View className='flex flex-col'>         
+              <Text className='text-xl font-bold px-[2]'>Notifications</Text>
+              <Text className='text-gray-400 text-sm mb-1'>Customize Your Notifications</Text>
+          </View>            
+          </View>
+          <Text className='text-gray-400 text-right'>View All <Icon source={"chevron-right"} size={15} color='gray-400'/></Text>
+        </Pressable>
+        </Link>
+      </View> 
+      <Divider className='my-2 w-[90%] self-center '/>
+      <View className='flex-row items-center ml-2 mt-2'>
+        <View className='flex-row items-center justify-between w-[100%] pr-3'>
+          <View className='flex-row items-center justify-center'>
+          <Svg width="30" height="30" viewBox="0 0 30 30" fill="none">
+            <Path fill-rule="evenodd" clip-rule="evenodd" d="M12.1984 7.5H17.8016C18.8078 7.49998 19.6383 7.49997 20.3148 7.55524C21.0174 7.61265 21.6633 7.73585 22.27 8.04497C23.2108 8.52434 23.9757 9.28924 24.455 10.23C24.7641 10.8367 24.8874 11.4826 24.9448 12.1852C25 12.8617 25 13.6922 25 14.6984V20.3016C25 21.3078 25 22.1383 24.9448 22.8148C24.8874 23.5174 24.7641 24.1633 24.455 24.77C23.9757 25.7108 23.2108 26.4757 22.27 26.955C21.6633 27.2641 21.0174 27.3874 20.3148 27.4448C19.6383 27.5 18.8078 27.5 17.8016 27.5H12.1984C11.1922 27.5 10.3617 27.5 9.68522 27.4448C8.9826 27.3874 8.33672 27.2641 7.73005 26.955C6.78924 26.4757 6.02434 25.7108 5.54497 24.77C5.23586 24.1633 5.11265 23.5174 5.05524 22.8148C4.99997 22.1383 4.99998 21.3078 5 20.3016V14.6984C4.99998 13.6922 4.99997 12.8617 5.05524 12.1852C5.11265 11.4826 5.23585 10.8367 5.54497 10.23C6.02434 9.28924 6.78924 8.52434 7.73005 8.04497C8.33672 7.73586 8.9826 7.61265 9.68522 7.55524C10.3617 7.49997 11.1922 7.49998 12.1984 7.5ZM9.8888 10.0469C9.34078 10.0917 9.06052 10.1729 8.86503 10.2725C8.39462 10.5122 8.01217 10.8946 7.77248 11.365C7.67287 11.5605 7.59172 11.8408 7.54694 12.3888C7.50097 12.9514 7.5 13.6793 7.5 14.75V20.25C7.5 21.3207 7.50097 22.0486 7.54694 22.6112C7.59172 23.1592 7.67287 23.4395 7.77248 23.635C8.01217 24.1054 8.39462 24.4878 8.86503 24.7275C9.06052 24.8271 9.34078 24.9083 9.8888 24.9531C10.4514 24.999 11.1793 25 12.25 25H17.75C18.8207 25 19.5486 24.999 20.1112 24.9531C20.6592 24.9083 20.9395 24.8271 21.135 24.7275C21.6054 24.4878 21.9878 24.1054 22.2275 23.635C22.3271 23.4395 22.4083 23.1592 22.4531 22.6112C22.499 22.0486 22.5 21.3207 22.5 20.25V14.75C22.5 13.6793 22.499 12.9514 22.4531 12.3888C22.4083 11.8408 22.3271 11.5605 22.2275 11.365C21.9878 10.8946 21.6054 10.5122 21.135 10.2725C20.9395 10.1729 20.6592 10.0917 20.1112 10.0469C19.5486 10.001 18.8207 10 17.75 10H12.25C11.1793 10 10.4514 10.001 9.8888 10.0469Z" fill="#0073EE"/>
+            <Path d="M12.5 15.004C12.5 14.007 13.61 13.4113 14.4409 13.9623L18.1886 16.4479C18.9415 16.9472 18.9415 18.0528 18.1886 18.5521L14.4409 21.0377C13.61 21.5888 12.5 20.993 12.5 19.996V15.004Z" fill="#0073EE"/>
+            <Path d="M7.5 3.75C7.5 4.44036 8.05964 5 8.75 5H21.25C21.9404 5 22.5 4.44036 22.5 3.75C22.5 3.05964 21.9404 2.5 21.25 2.5H8.75C8.05964 2.5 7.5 3.05964 7.5 3.75Z" fill="#0073EE"/>
+          </Svg>
+          <View className='flex flex-col'>         
+              <Text className='text-xl font-bold px-[2]'>Programs</Text>
+              <Text className='text-gray-400 text-sm mb-1'>Enjoy a Lecture? Add it </Text>
+          </View>           
         </View>
-      )}
-
-      {/* Bottom spacing for tab bar */}
-      <View style={{ height: 100 }} />
+        </View>
+      </View>
+      <Divider className='my-2 w-[90%] self-center '/>
+      <View className='flex-row items-center ml-2 mt-2'>
+        <Link href={"/myPrograms/recordedLectures"} asChild>
+        <Pressable className='flex-row items-center justify-between w-[100%] pr-3'>
+          <View className='flex-row items-center justify-center'>
+            <Icon source="video" size={30} color="#007AFF" />
+            <View className='flex flex-col'>         
+              <Text className='text-xl font-bold px-[2]'>Recorded Lectures</Text>
+              <Text className='text-gray-400 text-sm mb-1'>View your recorded lectures</Text>
+            </View>  
+          </View>
+          <Text className='text-gray-400 text-right'>View <Icon source={"chevron-right"} size={15} color='gray-400'/></Text>
+        </Pressable>
+        </Link>
+      </View> 
+      <View className='flex-row w-[100%] flex-wrap justify-center mt-5' style={{ paddingBottom : tabBarHeight }} > 
+        {userPrograms ? userPrograms.map((program, index) => {
+          return(
+            <View className='pb-5 justify-between mx-2' key={index}>
+              <RenderMyLibraryProgram program_id={program.program_id} />
+            </View>
+          )
+        }) : <></>}
+      </View>
     </ScrollView>
   )
 }

@@ -171,6 +171,7 @@ export type Profile = {
     last_name : string
     profile_email : string
     role : string
+    created_at : string
 }
 
 export type addProgramToNotificationsToastProp = {

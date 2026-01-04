@@ -12,7 +12,7 @@ const RecordedLectures = () => {
       <Stack.Screen 
         options={{ 
           title: 'Recorded Lectures', 
-          headerBackTitleVisible: false, 
+          headerBackTitle: true, 
           headerTintColor: '#007AFF', 
           headerTitleStyle: { color: 'black' }, 
           headerStyle: { backgroundColor: 'white' }

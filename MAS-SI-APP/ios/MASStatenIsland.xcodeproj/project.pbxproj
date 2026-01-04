@@ -55,7 +55,8 @@
 				AA286B85B6C04FC6940260E9 /* SplashScreen.storyboard */,
 				F34C4E73A5B850B0D2EA527B /* PrivacyInfo.xcprivacy */,
 			);
-			name = MASStatenIsland;
+			name = Pods;
+			path = Pods;
 			sourceTree = "<group>";
 		};
 		2D16E6871FA4F8E400B85C8A /* Frameworks */ = {

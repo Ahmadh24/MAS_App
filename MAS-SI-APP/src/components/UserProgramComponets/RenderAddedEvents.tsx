@@ -1,4 +1,4 @@
-import { View, Text, TouchableOpacity, Image } from 'react-native'
+import { View, Text, TouchableOpacity, Image, StyleSheet } from 'react-native'
 import React, { useEffect, useState, useRef } from 'react'
 import { Program } from '../../types'
 import { Link, router } from "expo-router"
@@ -8,6 +8,7 @@ import { useAuth } from "@/src/providers/AuthProvider"
 import { supabase } from '@/src/lib/supabase'
 import { EventsType } from '../../types'
 import { LayoutInfo } from '@/src/components/HeroTransitionModal'
+import { LinearGradient } from 'expo-linear-gradient'
 
 type RenderEventProp = {
     event_id: string
@@ -36,15 +37,19 @@ const RenderAddedEvents = ({ eventsInfo, onHeroPress }: RenderAddedEventsProps) 
     return (
       <View style={{ justifyContent: "center", alignItems: "center", marginHorizontal: 8 }}>
         <TouchableOpacity onPress={handlePress} activeOpacity={0.9}>
-          <View ref={imageRef} collapsable={false}>
-            <Image 
-              source={eventsInfo?.event_img ? { uri: eventsInfo?.event_img } : require("@/assets/images/MASHomeLogo.png")} 
-              style={{ width: 170, height: 170, borderRadius: 8 }}
-            />
-          </View>
-          <View className='flex-col w-[170] h-[40] flex-shrink'>
-            <Text className='text-black font-bold' numberOfLines={1}>{eventsInfo?.event_name}</Text>
-          </View>
+          <LinearGradient
+            colors={['#87CEEB', '#214E91', '#2A2A2A']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={styles.gradientBorder}
+          >
+            <View ref={imageRef} collapsable={false} style={styles.imageContainer}>
+              <Image 
+                source={eventsInfo?.event_img ? { uri: eventsInfo?.event_img } : require("@/assets/images/MASHomeLogo.png")} 
+                style={styles.image}
+              />
+            </View>
+          </LinearGradient>
         </TouchableOpacity>
       </View>
     );
@@ -55,17 +60,40 @@ const RenderAddedEvents = ({ eventsInfo, onHeroPress }: RenderAddedEventsProps) 
     <View style={{ justifyContent: "center", alignItems: "center", marginHorizontal: 8 }} className=''>
         <Link href={`/myPrograms/notifications/${eventsInfo?.event_id}`} asChild>
             <TouchableOpacity>
-              <Image 
-                source={eventsInfo?.event_img ? { uri: eventsInfo?.event_img } : require("@/assets/images/MASHomeLogo.png")} 
-                style={{ width: 170, height: 170, borderRadius: 8 }}
-              />
-              <View className='flex-col w-[170] h-[40] flex-shrink'>
-                  <Text className='text-black font-bold' numberOfLines={1}>{eventsInfo?.event_name}</Text>
-              </View>
+              <LinearGradient
+                colors={['#87CEEB', '#214E91', '#2A2A2A']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={styles.gradientBorder}
+              >
+                <View style={styles.imageContainer}>
+                  <Image 
+                    source={eventsInfo?.event_img ? { uri: eventsInfo?.event_img } : require("@/assets/images/MASHomeLogo.png")} 
+                    style={styles.image}
+                  />
+                </View>
+              </LinearGradient>
             </TouchableOpacity>
         </Link>
     </View>
   )
 }
+
+const styles = StyleSheet.create({
+  gradientBorder: {
+    padding: 3,
+    borderRadius: 12,
+  },
+  imageContainer: {
+    borderRadius: 9,
+    overflow: 'hidden',
+    backgroundColor: 'white',
+  },
+  image: {
+    width: 164,
+    height: 164,
+    borderRadius: 9,
+  },
+});
 
 export default RenderAddedEvents

@@ -6,6 +6,7 @@ import { format } from 'date-fns';
 import { Button } from 'react-native-paper';
 import { supabase } from '@/src/lib/supabase';
 import { err } from 'react-native-svg';
+import { LinearGradient } from 'expo-linear-gradient';
 
 
 type PrayerDetailsParams = {
@@ -59,38 +60,51 @@ const prayerDetails = () => {
     "Mute"
   ]
   return (
-    <ScrollView className='flex-1 bg-white' style={{ flexGrow: 1 }} contentContainerStyle={{ alignItems: "center", paddingBottom: 0 }}>
-      <StatusBar barStyle={"dark-content"} />
-      <Stack.Screen options={{ title: prayerName, headerBackTitleVisible: false, headerTintColor: 'black', headerStyle: { backgroundColor: "white" } }} />
-      <View className='mt-4'>
-        <Image
-          source={prayerImage}
-          style={{ width: width / 2, height: 200, borderRadius: 8 }}
-          resizeMode='stretch'
-        />
-      </View>
-      <View className='flex-col bg-white w-[100%]'>
-        <Text className='font-bold text-2xl text-center m-4'>{prayerName}</Text>
-        <View className='ml-2'>
-          <Text>Notification Options</Text>
+    <LinearGradient
+      colors={['#1d4681', '#3183bf']}
+      style={{ flex: 1 }}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 0, y: 1 }}
+    >
+      <ScrollView style={{ flex: 1 }} contentContainerStyle={{ alignItems: "center", paddingBottom: 40, paddingTop: 20 }}>
+        <StatusBar barStyle={"light-content"} />
+        <Stack.Screen options={{ 
+          title: prayerName, 
+          headerBackTitleVisible: false, 
+          headerTintColor: 'white', 
+          headerStyle: { backgroundColor: "transparent" },
+          headerTransparent: true,
+        }} />
+        <View className='mt-4'>
+          <Image
+            source={prayerImage}
+            style={{ width: width / 2, height: 200, borderRadius: 16, borderWidth: 2, borderColor: 'rgba(255, 255, 255, 0.2)' }}
+            resizeMode='stretch'
+          />
         </View>
-      </View>
+        <View style={{ width: '100%', paddingVertical: 16 }}>
+          <Text style={{ fontWeight: 'bold', fontSize: 24, textAlign: 'center', color: 'white' }}>{prayerName}</Text>
+        </View>
+        <View style={{ marginLeft: 8, width: '100%', paddingHorizontal: 20 }}>
+          <Text style={{ fontSize: 18, fontWeight: '600', color: 'white' }}>Notification Options</Text>
+        </View>
 
-      <View className='bg-white w-[100%] items-center'>
-        {
-          notificationArray.map((item, index) => {
-            return (
-              <View className='flex-col' key={index}>
-                <View className='flex-row items-center justify-center'>
-                  <NotificationCard height={NOTICARDHEIGHT} width={NOTICARDWIDTH} item={item} index={index} scrollY={scrollY} setSelectedNotification={setSelectedNotification} selectedNotification={selectedNotification} prayerName={prayerName!} />
+        <View style={{ width: '100%', alignItems: 'center', paddingTop: 12 }}>
+          {
+            notificationArray.map((item, index) => {
+              return (
+                <View className='flex-col' key={index}>
+                  <View className='flex-row items-center justify-center'>
+                    <NotificationCard height={NOTICARDHEIGHT} width={NOTICARDWIDTH} item={item} index={index} scrollY={scrollY} setSelectedNotification={setSelectedNotification} selectedNotification={selectedNotification} prayerName={prayerName!} />
+                  </View>
+                  <View style={{ height: 10 }} />
                 </View>
-                <View style={{ height: 10 }} />
-              </View>
-            )
-          })
-        }
-      </View>
-    </ScrollView>
+              )
+            })
+          }
+        </View>
+      </ScrollView>
+    </LinearGradient>
   )
 }
 

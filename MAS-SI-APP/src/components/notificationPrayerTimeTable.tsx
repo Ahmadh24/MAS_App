@@ -61,18 +61,17 @@ const NotificationPrayerTable = ({
   // Blur fade animation
   const blurOpacity = useRef(new Animated.Value(0)).current;
   
-  // Animate blur AFTER modal finishes sliding up
+  // Animate blur right after the modal starts sliding up
   useEffect(() => {
     if (modalVisible) {
-      // Wait for slide animation to complete (~300ms), then fade in blur
-      const timeout = setTimeout(() => {
+      // Very short delay so blur appears right after modal starts
+      setTimeout(() => {
         Animated.timing(blurOpacity, {
           toValue: 1,
-          duration: 400,
+          duration: 250,
           useNativeDriver: true,
         }).start();
-      }, 300);
-      return () => clearTimeout(timeout);
+      }, 0);
     } else {
       blurOpacity.setValue(0);
     }
@@ -197,7 +196,7 @@ const NotificationPrayerTable = ({
         <ScrollView
           style={{ width: "100%" }}
           showsVerticalScrollIndicator={false}
-          contentContainerStyle={{ paddingBottom: 25, paddingTop: 10 }}
+          contentContainerStyle={{ paddingBottom: 120, paddingTop: 10 }}
         >
           {
             Prayers.map((prayer) => {
@@ -231,7 +230,7 @@ const NotificationPrayerTable = ({
                       <Switch
                         value={isEnabled}
                         onValueChange={() => handleToggle(prayer.PrayerCap)}
-                        color="#007AFF"
+                        color="#6EE7B7"
                       />
                     </View>
                   </View>
@@ -436,7 +435,7 @@ const NotificationPrayerTable = ({
                 {selectedPrayer} notification settings
               </Text>
               <Pressable onPress={handleCloseModal} style={styles.closeButton}>
-                <X color="#666" size={24} />
+                <X color="rgba(255, 255, 255, 0.7)" size={24} />
               </Pressable>
             </View>
 
@@ -528,7 +527,7 @@ const NotificationPrayerTable = ({
               </LiquidGlassView>
             ) : (
               <Pressable style={styles.saveButton} onPress={handleSave}>
-                <Check color="white" size={20} strokeWidth={2.5} style={{ marginRight: 8 }} />
+                <Check color="#6EE7B7" size={20} strokeWidth={2.5} style={{ marginRight: 8 }} />
                 <Text style={styles.saveButtonText}>Save</Text>
               </Pressable>
             )}
@@ -655,14 +654,11 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   prayerCardOffWhite: {
-    marginBottom: 24,
+    marginBottom: 16,
     borderRadius: 16,
-    backgroundColor: '#F8F9FA',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
-    shadowRadius: 8,
-    elevation: 2,
+    backgroundColor: 'rgba(255, 255, 255, 0.12)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.2)',
   },
   prayerCardGlass: {
     marginBottom: 30,
@@ -672,8 +668,8 @@ const styles = StyleSheet.create({
   prayerCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 16,
-    paddingHorizontal: 16,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
     backgroundColor: 'transparent',
   },
   iconContainer: {
@@ -693,9 +689,9 @@ const styles = StyleSheet.create({
     left: 0,
   },
   prayerIcon: {
-    width: 80,
-    height: 80,
-    marginRight: 12,
+    width: 56,
+    height: 56,
+    marginRight: 10,
   },
   arabicText: {
     fontSize: 8,
@@ -709,26 +705,26 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   prayerName: {
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: '600',
-    color: '#1a1a1a',
-    marginBottom: 4,
+    color: 'white',
+    marginBottom: 2,
   },
   timeRow: {
     flexDirection: 'row',
-    marginBottom: 2,
+    marginBottom: 1,
   },
   timeLabel: {
-    fontSize: 11,
+    fontSize: 10,
     fontWeight: '600',
-    color: '#666666',
-    marginRight: 6,
-    minWidth: 45,
+    color: 'rgba(255, 255, 255, 0.7)',
+    marginRight: 4,
+    minWidth: 40,
   },
   timeValue: {
-    fontSize: 11,
+    fontSize: 10,
     fontWeight: '600',
-    color: '#1a1a1a',
+    color: '#6EE7B7',
   },
   editButton: {
     paddingVertical: 6,
@@ -810,7 +806,7 @@ const styles = StyleSheet.create({
     ...StyleSheet.absoluteFillObject,
   },
   modalContent: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#1a3a5c',
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
     paddingHorizontal: 20,
@@ -821,7 +817,7 @@ const styles = StyleSheet.create({
   modalIndicator: {
     width: 40,
     height: 4,
-    backgroundColor: '#DDDDDD',
+    backgroundColor: 'rgba(255, 255, 255, 0.3)',
     borderRadius: 2,
     alignSelf: 'center',
     marginBottom: 16,
@@ -835,7 +831,7 @@ const styles = StyleSheet.create({
   sheetTitle: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#1a1a1a',
+    color: 'white',
   },
   closeButton: {
     padding: 4,
@@ -853,19 +849,19 @@ const styles = StyleSheet.create({
     height: 24,
     borderRadius: 12,
     borderWidth: 2,
-    borderColor: '#007AFF',
+    borderColor: '#6EE7B7',
     alignItems: 'center',
     justifyContent: 'center',
     marginTop: 2,
   },
   radioOuterSelected: {
-    backgroundColor: '#007AFF',
+    backgroundColor: '#6EE7B7',
   },
   radioInner: {
     width: 10,
     height: 10,
     borderRadius: 5,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#1a3a5c',
   },
   optionTextContainer: {
     flex: 1,
@@ -873,16 +869,16 @@ const styles = StyleSheet.create({
   optionTitle: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#1a1a1a',
+    color: 'white',
     marginBottom: 4,
   },
   optionDescription: {
     fontSize: 14,
-    color: '#666666',
+    color: 'rgba(255, 255, 255, 0.7)',
     lineHeight: 20,
   },
   saveButton: {
-    backgroundColor: '#007AFF',
+    backgroundColor: 'rgba(110, 231, 183, 0.25)',
     paddingVertical: 16,
     borderRadius: 12,
     alignItems: 'center',
@@ -890,9 +886,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     marginTop: 32,
     marginBottom: 20,
+    borderWidth: 1.5,
+    borderColor: 'rgba(110, 231, 183, 0.5)',
   },
   saveButtonText: {
-    color: '#FFFFFF',
+    color: '#6EE7B7',
     fontSize: 16,
     fontWeight: '600',
   },

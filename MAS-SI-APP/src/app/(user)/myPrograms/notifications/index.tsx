@@ -1,29 +1,51 @@
-import React from 'react';
-import { View, Text, ScrollView, StyleSheet, TouchableOpacity, Pressable, Platform, Image } from 'react-native';
+import React, { useState, useRef } from 'react';
+import { View, Text, ScrollView, StyleSheet, TouchableOpacity, Pressable, Platform, Image, Modal, Dimensions } from 'react-native';
 import { Stack, useRouter, useNavigation } from 'expo-router';
 import { Icon } from 'react-native-paper';
 import { LinearGradient } from 'expo-linear-gradient';
 import { LiquidGlassView, isLiquidGlassSupported } from '@/src/lib/liquidGlass';
 import { Bell } from 'lucide-react-native';
+import LottieView from 'lottie-react-native';
+
+const { width, height } = Dimensions.get('window');
 
 export default function NotificationsIndex() {
   const router = useRouter();
   const navigation = useNavigation();
+  const [showAnimation, setShowAnimation] = useState(false);
+  const lottieRef = useRef<LottieView>(null);
+
+  const handleEnableNotifications = () => {
+    setShowAnimation(true);
+    // Animation plays for 2.5 seconds then navigates
+    setTimeout(() => {
+      setShowAnimation(false);
+      router.push('/myPrograms/notifications/NotificationEvents');
+    }, 2500);
+  };
 
   return (
     <>
       <Stack.Screen 
         options={{ 
-          title: 'Notifications',
-          headerBackTitleVisible: false,
-          headerTintColor: '#007AFF',
-          headerTitleStyle: { color: 'black' },
-          headerStyle: { backgroundColor: 'white' },
-          headerShadowVisible: false,
-          headerLeft: () => (
+          headerShown: false,
+        }}
+      />
+      <LinearGradient
+        colors={['#1d4681', '#3183bf']}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 0, y: 1 }}
+        style={{ flex: 1 }}
+      >
+        <ScrollView 
+          style={styles.container}
+          contentContainerStyle={styles.contentContainer}
+          showsVerticalScrollIndicator={false}
+        >
+          {/* Custom Header */}
+          <View style={{ paddingTop: 30, paddingHorizontal: 0, flexDirection: 'row', alignItems: 'center', marginBottom: 20 }}>
             <Pressable
               style={{ 
-                marginLeft: 0, 
                 width: 40, 
                 height: 40, 
                 alignItems: 'center', 
@@ -35,22 +57,20 @@ export default function NotificationsIndex() {
                   : router.back();
               }}
             >
-              <Icon source={'chevron-left'} color='black' size={28} />
+              <Icon source={'chevron-left'} color='white' size={28} />
             </Pressable>
-          ),
-          headerRight: () => null,
-        }}
-      />
-      <LinearGradient
-        colors={['#FFFFFF', '#6BA8D1']}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 0, y: 1 }}
-        style={{ flex: 1 }}
-      >
-        <ScrollView 
-          style={styles.container}
-          contentContainerStyle={styles.contentContainer}
-        >
+            <Text style={{ 
+              color: 'white', 
+              fontSize: 20, 
+              fontWeight: '600', 
+              flex: 1, 
+              textAlign: 'center',
+              marginRight: 40,
+            }}>
+              Notifications
+            </Text>
+          </View>
+
         {/* Notification Cards */}
         <View style={styles.notificationCards}>
           {isLiquidGlassSupported ? (
@@ -135,9 +155,7 @@ export default function NotificationsIndex() {
             >
               <TouchableOpacity 
                 style={styles.enableButtonInner}
-                onPress={() => {
-                  router.push('/myPrograms/notifications/NotificationEvents');
-                }}
+                onPress={handleEnableNotifications}
               >
                 <Bell color="#1a1a1a" size={20} strokeWidth={2.5} style={{ marginRight: 10 }} />
                 <Text style={styles.enableButtonTextGlass}>Enable Push Notifications</Text>
@@ -146,17 +164,34 @@ export default function NotificationsIndex() {
           ) : (
             <TouchableOpacity 
               style={styles.enableButton}
-              onPress={() => {
-                router.push('/myPrograms/notifications/NotificationEvents');
-              }}
+              onPress={handleEnableNotifications}
             >
-              <Bell color="white" size={20} strokeWidth={2.5} style={{ marginRight: 10 }} />
+              <Bell color="#6EE7B7" size={20} strokeWidth={2.5} style={{ marginRight: 10 }} />
               <Text style={styles.enableButtonText}>Enable Push Notifications</Text>
             </TouchableOpacity>
           )}
         </View>
       </ScrollView>
       </LinearGradient>
+
+      {/* Lottie Animation Overlay */}
+      <Modal
+        visible={showAnimation}
+        transparent
+        animationType="fade"
+        statusBarTranslucent
+      >
+        <View style={styles.animationOverlay}>
+          <LottieView
+            ref={lottieRef}
+            source={require('@/assets/animations/otp-notification.json')}
+            autoPlay
+            loop={false}
+            speed={1.2}
+            style={styles.lottieAnimation}
+          />
+        </View>
+      </Modal>
     </>
   );
 }
@@ -167,9 +202,9 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent',
   },
   contentContainer: {
-    paddingTop: 20,
+    paddingTop: 0,
     paddingHorizontal: 20,
-    paddingBottom: 40,
+    paddingBottom: 100,
   },
   headerRightIcon: {
     width: 32,
@@ -191,15 +226,12 @@ const styles = StyleSheet.create({
   notificationCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'white',
-    borderRadius: 12,
+    backgroundColor: 'rgba(255, 255, 255, 0.15)',
+    borderRadius: 16,
     padding: 16,
     marginBottom: 12,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 3,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.25)',
   },
   notificationCardGlass: {
     borderRadius: 16,
@@ -231,31 +263,31 @@ const styles = StyleSheet.create({
   cardTitle: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#1a1a1a',
+    color: 'white',
     marginBottom: 4,
   },
   cardTitleGlass: {
     fontSize: 16,
     fontWeight: '700',
-    color: '#000000',
+    color: 'white',
     marginBottom: 4,
   },
   cardSubtitle: {
     fontSize: 14,
-    color: '#666666',
+    color: 'rgba(255, 255, 255, 0.7)',
   },
   cardSubtitleGlass: {
     fontSize: 14,
-    color: '#333333',
+    color: 'rgba(255, 255, 255, 0.7)',
   },
   cardTime: {
     fontSize: 12,
-    color: '#999999',
+    color: 'rgba(255, 255, 255, 0.5)',
     marginLeft: 8,
   },
   cardTimeGlass: {
     fontSize: 12,
-    color: '#444444',
+    color: 'rgba(255, 255, 255, 0.5)',
     marginLeft: 8,
   },
   mainContent: {
@@ -265,13 +297,13 @@ const styles = StyleSheet.create({
   noNotificationsText: {
     fontSize: 24,
     fontWeight: '600',
-    color: '#1a1a1a',
+    color: 'white',
     marginBottom: 24,
     textAlign: 'center',
   },
   descriptionText: {
     fontSize: 16,
-    color: '#666666',
+    color: 'rgba(255, 255, 255, 0.8)',
     textAlign: 'center',
     lineHeight: 24,
     marginBottom: 16,
@@ -279,7 +311,7 @@ const styles = StyleSheet.create({
   },
   instructionText: {
     fontSize: 16,
-    color: '#666666',
+    color: 'rgba(255, 255, 255, 0.8)',
     textAlign: 'center',
     lineHeight: 24,
     marginBottom: 32,
@@ -288,12 +320,14 @@ const styles = StyleSheet.create({
   enableButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#007AFF',
+    backgroundColor: 'rgba(110, 231, 183, 0.25)',
     paddingVertical: 16,
     paddingHorizontal: 32,
     borderRadius: 999,
     minWidth: 280,
     justifyContent: 'center',
+    borderWidth: 1.5,
+    borderColor: 'rgba(110, 231, 183, 0.5)',
   },
   liquidGlassButton: {
     borderRadius: 999,
@@ -337,9 +371,19 @@ const styles = StyleSheet.create({
     left: 6,
   },
   enableButtonText: {
-    color: 'white',
+    color: '#6EE7B7',
     fontSize: 16,
     fontWeight: '600',
+  },
+  animationOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(255, 255, 255, 0.95)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  lottieAnimation: {
+    width: width * 0.8,
+    height: width * 0.8,
   },
 });
 

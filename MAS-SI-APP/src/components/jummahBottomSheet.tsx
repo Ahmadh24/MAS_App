@@ -1,109 +1,321 @@
-import { View, Image, ScrollView } from 'react-native';
-import React, {forwardRef, useCallback, useEffect, useMemo, useRef, useState, } from 'react'
-import BottomSheet, { BottomSheetModal, BottomSheetBackdrop } from "@gorhom/bottom-sheet";
-import { SheikDataType } from '../types';
+import { View, Image, ScrollView, StyleSheet, Modal, Pressable, Dimensions, PanResponder } from 'react-native';
+import React, { forwardRef, useImperativeHandle, useState, useRef } from 'react';
 import { JummahBottomSheetProp } from '../types';
-import { Modal, Portal, Text, Button, PaperProvider, Icon, Divider } from 'react-native-paper';
-import { supabase } from '../lib/supabase';
+import { Text, Icon, Divider } from 'react-native-paper';
+import { LinearGradient } from 'expo-linear-gradient';
+import Animated, { 
+  FadeIn, 
+  FadeOut, 
+  SlideInDown, 
+  SlideOutDown, 
+  Easing,
+  useSharedValue,
+  useAnimatedStyle,
+  withSpring,
+  withTiming,
+  runOnJS,
+} from 'react-native-reanimated';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 
-type Ref = BottomSheetModal;
+const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 
-export const JummahBottomSheet = forwardRef<Ref, JummahBottomSheetProp>(({speaker, topic, desc, jummah_time}, ref) => {
-    const snapPoints = useMemo(() => ["50%", "75%"], []);
-    const [ visible, setVisible ] = useState(false);
-    const showModal = () => setVisible(true);
-    const hideModal = () => setVisible(false);
-  
+const COLORS = {
+  primary: '#214E91',
+  accent: '#57BA47',
+  gold: '#62E090',
+  white: '#FFFFFF',
+  lightBlue: '#E8F4FD',
+  gray: '#6B7280',
+};
 
-    const GetSheikData =  () => {
-      return( 
-        <View className='flex-1'>
-          { 
-            speaker && (
-             <View className='border-2 border-gray-400 border-solid rounded-[25px] p-2 my-1'>
-              <View className=' flex-row '>
-                  <Image source={speaker?.speaker_img ? {uri : speaker.speaker_img } : require("@/assets/images/MASHomeLogo.png") } style={{width: 110, height: 110, borderRadius: 50}} resizeMode='cover'/>
-              <View className='flex-col px-5'>
-                <Text className='text-xl font-bold text-black'>Name: </Text>
-                <Text className='pt-2 font-semibold text-black'> {speaker?.speaker_name} </Text>
-              </View>
-            </View>
-      
-            <View className='flex-col py-3'>
-              { speaker?.speaker_name == "MAS" ? <Text className='font-bold text-black'>Impact </Text> :  <Text className='font-bold text-black'>Credentials: </Text> } 
-              { speaker?.speaker_creds.map( (cred, i) => {
-                return <Text key={i} className='text-black'> <Icon source="cards-diamond-outline"  size={15} color='black'/> {cred} {'\n'}</Text>
-              })}
-            </View>
-            </View>
-            )
-          }
-        </View>
-      )
-    }
-    {
-      /*
-      speakerData?.map((speakerData) => (
-                <View className='border-2 border-gray-400 border-solid rounded-[25px] p-2 my-1'>
-                  <Animated.View className=' flex-row'>
-                      <Image source={{uri : speakerData?.speaker_img || defaultProgramImage}} style={{width: 110, height: 110, borderRadius: 50}} resizeMode='cover'/>
-                  <View className='flex-col px-1'>
-                    <Text className='text-xl font-bold'>Name: </Text>
-                    <Text className='pt-2 font-semibold' numberOfLines={1}> {speakerData?.speaker_name} </Text>
-                  </View>
-                </Animated.View>
-          
-                <View className='flex-col py-3'>
-                  { speakerData?.speaker_name == "MAS" ? <Text className='font-bold'>Impact </Text> :  <Text className='font-bold'>Credentials: </Text> } 
-                  { speakerData?.speaker_creds.map( (cred, i) => {
-                    return <Text key={i}> <Icon source="cards-diamond-outline"  size={15} color='black'/> {cred} {'\n'}</Text>
-                  })}
-                </View>
-                </View>
-                ))
-      */
-
-    }
-  const renderBackDrop = useCallback( (props : any ) => <BottomSheetBackdrop appearsOnIndex={0} disappearsOnIndex={-1} {...props}/> , [])
-  return (
-    <BottomSheetModal
-        ref={ref}
-        index={1}
-        snapPoints={snapPoints}
-        enablePanDownToClose={true}
-        backgroundStyle={{backgroundColor: "#0D509D"}}
-        handleIndicatorStyle={{backgroundColor: "white"}}
-        backdropComponent={renderBackDrop}
-    >
-      <Text variant="headlineMedium" style={{marginLeft: 5, color : "white", fontWeight : "bold"}} className='px-6 p-2'>{jummah_time} Prayer</Text>
-      <View className=' bg-white h-full mt-1 pt-2 p-2' style={{borderRadius: 40}}>
-        <View className='flex-row w-[100%] justify-evenly px-5 items-center pt-2'>
-          <Text className='text-2xl font-semibold text-black' numberOfLines={2}>{topic}</Text>
-        </View>
-        <Divider style={{width : "90%", alignSelf: "center"}}/>
-        <View className='flex-row items-center justify-between px-1 p-1'>
-          <Text className='font-bold text-black text-2xl ml-4'>Speaker:</Text> 
-          <Button onPress={showModal} style={{cursor: "pointer"}} > <Text variant='titleMedium' style={{color : "blue", textDecorationLine: "underline"}}>{speaker?.speaker_name}</Text> </Button>
-        </View>
-        <View className='p-1'>
-         <Text className='font-semi text-black text-2xl ml-4'>Description:</Text> 
-         <ScrollView className='h-[58%] w-[90%] self-center rounded-lg bg-white border-gray-400 border-2' contentContainerStyle={{ paddingHorizontal : 4 }}>
-          <Text className='text-lg text-black p-3'>{desc}</Text>
-         </ScrollView>
-        </View>
-
-        <Portal>
-        <Modal visible={visible} onDismiss={hideModal} contentContainerStyle={{backgroundColor: 'white', padding: 20, minHeight : 400, maxHeight: "70%", width: "95%", borderRadius: 35, alignSelf: "center"}} >
-          <ScrollView className='flex-1'
-          showsVerticalScrollIndicator={true}
-          
-          >
-            <GetSheikData />
-          </ScrollView>
-        </Modal>
-      </Portal>
-      </View>
-    </BottomSheetModal>
-  )
+export interface JummahBottomSheetRef {
+  snapToIndex: (index: number) => void;
+  close: () => void;
 }
-)
+
+export const JummahBottomSheet = forwardRef<JummahBottomSheetRef, JummahBottomSheetProp>(
+  ({ speaker, topic, desc, jummah_time }, ref) => {
+    const [isVisible, setIsVisible] = useState(false);
+    const insets = useSafeAreaInsets();
+    const translateY = useSharedValue(0);
+
+    const closeSheet = () => {
+      setIsVisible(false);
+    };
+
+    useImperativeHandle(ref, () => ({
+      snapToIndex: (index: number) => {
+        if (index >= 0) {
+          translateY.value = 0;
+          setIsVisible(true);
+        } else {
+          setIsVisible(false);
+        }
+      },
+      close: () => {
+        setIsVisible(false);
+      },
+    }));
+
+    const panGesture = Gesture.Pan()
+      .onUpdate((event) => {
+        if (event.translationY > 0) {
+          translateY.value = event.translationY;
+        }
+      })
+      .onEnd((event) => {
+        if (event.translationY > 100 || event.velocityY > 500) {
+          translateY.value = withTiming(SCREEN_HEIGHT, { duration: 200 }, () => {
+            runOnJS(closeSheet)();
+          });
+        } else {
+          translateY.value = withSpring(0, { damping: 20, stiffness: 300 });
+        }
+      });
+
+    const animatedSheetStyle = useAnimatedStyle(() => ({
+      transform: [{ translateY: translateY.value }],
+    }));
+
+    return (
+      <>
+        <Modal
+          visible={isVisible}
+          transparent
+          animationType="none"
+          onRequestClose={() => setIsVisible(false)}
+        >
+          {/* Backdrop */}
+          <Pressable 
+            style={styles.backdrop} 
+            onPress={() => setIsVisible(false)}
+          >
+            <Animated.View 
+              entering={FadeIn.duration(200)}
+              exiting={FadeOut.duration(200)}
+              style={StyleSheet.absoluteFill}
+            />
+          </Pressable>
+
+          {/* Sheet Content */}
+          <GestureDetector gesture={panGesture}>
+            <Animated.View
+              entering={SlideInDown.duration(300).easing(Easing.out(Easing.cubic))}
+              exiting={SlideOutDown.duration(250).easing(Easing.in(Easing.cubic))}
+              style={[styles.sheetContainer, { paddingBottom: insets.bottom }, animatedSheetStyle]}
+            >
+              {/* Header with gradient */}
+              <LinearGradient
+                colors={['#1e3a5f', '#2d5a87']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={styles.headerGradient}
+              >
+                {/* Handle inside gradient */}
+                <View style={styles.handleContainer}>
+                  <View style={styles.handle} />
+                </View>
+              
+              <View style={styles.headerContent}>
+                <View style={styles.timeContainer}>
+                  <Icon source="clock-outline" size={20} color="rgba(255,255,255,0.8)" />
+                  <Text style={styles.timeText}>{jummah_time}</Text>
+                </View>
+                <Text style={styles.headerTitle}>{topic || 'Jummah Prayer'}</Text>
+              </View>
+            </LinearGradient>
+
+            {/* Content */}
+            <ScrollView 
+              style={styles.contentContainer} 
+              contentContainerStyle={styles.contentContainerStyle}
+              showsVerticalScrollIndicator={false}
+            >
+              {/* Speaker Section */}
+              <View style={styles.speakerSection}>
+                {/* Profile Picture */}
+                <Image
+                  source={speaker?.speaker_img ? { uri: speaker.speaker_img } : require("@/assets/images/MASHomeLogo.png")}
+                  style={styles.speakerImage}
+                  resizeMode='cover'
+                />
+                
+                {/* Speaker Info */}
+                <View style={styles.speakerInfo}>
+                  <Text style={styles.speakerLabel}>Speaker</Text>
+                  <View style={styles.speakerNamePill}>
+                    <Icon source="account" size={20} color={COLORS.primary} />
+                    <Text style={styles.speakerName}>
+                      {speaker?.speaker_name || 'To be announced'}
+                    </Text>
+                  </View>
+                </View>
+              </View>
+
+              <Divider style={styles.divider} />
+
+              {/* Description Section */}
+              <View style={styles.section}>
+                <View style={styles.sectionHeader}>
+                  <Icon source="text-box-outline" size={20} color={COLORS.primary} />
+                  <Text style={styles.sectionTitle}>About This Week</Text>
+                </View>
+                <View style={styles.descriptionContainer}>
+                  <Text style={styles.descriptionText}>{desc}</Text>
+                </View>
+              </View>
+
+              {/* Footer */}
+              <View style={styles.footer}>
+                <Icon source="mosque" size={16} color={COLORS.gray} />
+                <Text style={styles.footerText}>MAS Staten Island</Text>
+              </View>
+            </ScrollView>
+            </Animated.View>
+          </GestureDetector>
+        </Modal>
+      </>
+    );
+  }
+);
+
+const styles = StyleSheet.create({
+  backdrop: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+  },
+  sheetContainer: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: COLORS.white,
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    maxHeight: SCREEN_HEIGHT * 0.75,
+    overflow: 'hidden',
+  },
+  handleContainer: {
+    alignItems: 'center',
+    paddingBottom: 16,
+  },
+  handle: {
+    width: 40,
+    height: 4,
+    backgroundColor: 'rgba(255, 255, 255, 0.5)',
+    borderRadius: 2,
+  },
+  headerGradient: {
+    paddingHorizontal: 20,
+    paddingTop: 14,
+    paddingBottom: 24,
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+  },
+  headerContent: {
+    gap: 8,
+  },
+  timeContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  timeText: {
+    fontSize: 14,
+    color: 'rgba(255,255,255,0.8)',
+    fontWeight: '500',
+  },
+  headerTitle: {
+    fontSize: 24,
+    fontWeight: '700',
+    color: COLORS.white,
+  },
+  contentContainer: {
+    flex: 1,
+    backgroundColor: COLORS.white,
+  },
+  contentContainerStyle: {
+    padding: 20,
+    paddingBottom: 40,
+  },
+  section: {
+    marginBottom: 16,
+  },
+  sectionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: 12,
+  },
+  sectionTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: COLORS.primary,
+  },
+  speakerSection: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  speakerImage: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    borderWidth: 3,
+    borderColor: COLORS.primary,
+  },
+  speakerInfo: {
+    flex: 1,
+    marginLeft: 16,
+  },
+  speakerLabel: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#1F2937',
+    marginBottom: 8,
+  },
+  speakerNamePill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    backgroundColor: COLORS.white,
+    paddingVertical: 8,
+    paddingHorizontal: 14,
+    borderRadius: 24,
+    borderWidth: 1,
+    borderColor: COLORS.primary,
+  },
+  speakerName: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: COLORS.primary,
+  },
+  divider: {
+    marginVertical: 16,
+    backgroundColor: '#E5E7EB',
+  },
+  descriptionContainer: {
+    backgroundColor: '#F9FAFB',
+    padding: 16,
+    borderRadius: 12,
+    borderLeftWidth: 3,
+    borderLeftColor: COLORS.gold,
+  },
+  descriptionText: {
+    fontSize: 15,
+    color: '#374151',
+    lineHeight: 24,
+  },
+  footer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    marginTop: 20,
+  },
+  footerText: {
+    fontSize: 12,
+    color: COLORS.gray,
+  },
+});

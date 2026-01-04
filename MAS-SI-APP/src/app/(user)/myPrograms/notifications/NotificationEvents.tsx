@@ -1,6 +1,6 @@
 import { View, Text, ScrollView, useWindowDimensions, Button, FlatList, Pressable, ImageBackground, StyleSheet } from 'react-native'
 import React, { useEffect, useRef, useState } from 'react'
-import { Redirect, Stack } from 'expo-router'
+import { Redirect, Stack, useLocalSearchParams } from 'expo-router'
 import { supabase } from '@/src/lib/supabase'
 import { useAuth } from "@/src/providers/AuthProvider"
 import { EventsType, Program } from '@/src/types'
@@ -245,10 +245,12 @@ const ProgramsScreen = ({ addedPrograms, addedLecturePrograms, addedEvents, layo
 }
 const SalahTimesScreen = () => {
   const { data: prayerTimesWeek } = usePrayerTimes();
+  const [tableIndex, setTableIndex] = useState(0)
+
+  // Early return AFTER all hooks are called
   if (!prayerTimesWeek || prayerTimesWeek.length == 0) {
     return <View style={{ flex: 1, backgroundColor: 'transparent' }} />
   }
-  const [tableIndex, setTableIndex] = useState(0)
 
   // Use the first day's prayer times for now (today)
   const todayPrayerData = prayerTimesWeek[0] || prayerTimesWeek[tableIndex];
@@ -270,10 +272,21 @@ const SalahTimesScreen = () => {
 
 const NotificationEvents = () => {
   const { session } = useAuth()
+  const { initialTab } = useLocalSearchParams<{ initialTab?: string }>()
   const [addedEvents, setAddedEvents] = useState<EventsType[]>([])
   const [addedPrograms, setAddedPrograms] = useState<Program[]>([])
   const [addedLecturePrograms, setAddedProgramLectures] = useState<Program[]>([])
-  const [index, setIndex] = useState(0)
+  
+  // Map tab names to indices
+  const getInitialTabIndex = () => {
+    switch (initialTab) {
+      case 'prayer': return 0
+      case 'programs': return 1
+      case 'jummah': return 2
+      default: return 0
+    }
+  }
+  const [index, setIndex] = useState(getInitialTabIndex())
   const layout = useWindowDimensions().width
 
   // Hero transition modal state

@@ -17,8 +17,8 @@ const MoreLayout = () => {
           name='PreferencesOnboarding' 
           options={{ 
             headerShown: false,
-            presentation: 'card',
-            animation: 'slide_from_right',
+            presentation: 'fullScreenModal',
+            animation: 'slide_from_bottom',
           }} 
         />
     </Stack>

@@ -1,16 +1,12 @@
-import { View, Text, ScrollView, StatusBar, RefreshControl, ActivityIndicator, FlatList, Pressable, Dimensions, useWindowDimensions, Image, KeyboardAvoidingView, Platform, TouchableWithoutFeedback, Keyboard } from 'react-native'
+import { View, Text, ScrollView, StatusBar, RefreshControl, ActivityIndicator, FlatList, Pressable, Dimensions, useWindowDimensions, Image, TextInput, Platform } from 'react-native'
 import React, { useEffect, useState, useRef, useMemo } from 'react'
 import { Stack, useRouter, useNavigation } from 'expo-router'
-import { Icon, Searchbar, Modal, Portal } from 'react-native-paper'
+import { Icon } from 'react-native-paper'
 import { Ionicons } from '@expo/vector-icons'
-import { LiquidGlassView, isLiquidGlassSupported } from '@/src/lib/liquidGlass'
 import { supabase } from '@/src/lib/supabase'
 import { Program, EventsType } from '@/src/types'
-import FlyerImageComponent from '@/src/components/FlyerImageComponent'
-import EventImageComponent from '@/src/components/EventImageComponent'
-import DeckSwiper from 'react-native-deck-swiper'
-import Animated, { useSharedValue, useAnimatedStyle, withTiming } from 'react-native-reanimated'
-import { BlurView } from 'expo-blur'
+import Animated, { useSharedValue, useAnimatedStyle, withTiming, FadeIn } from 'react-native-reanimated'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 // Program Card Component
 const ProgramCard = ({ item, onPress }: { item: Program, onPress: () => void }) => {
@@ -137,6 +133,7 @@ const EventCard = ({ item, onPress }: { item: EventsType, onPress: () => void })
 const RecordedLectures = () => {
   const router = useRouter()
   const navigation = useNavigation()
+  const insets = useSafeAreaInsets()
   const { width } = useWindowDimensions()
   const [programsWithLectures, setProgramsWithLectures] = useState<Program[]>([])
   const [eventsWithLectures, setEventsWithLectures] = useState<EventsType[]>([])
@@ -144,7 +141,8 @@ const RecordedLectures = () => {
   const [refreshing, setRefreshing] = useState(false)
   const [activeTab, setActiveTab] = useState<'programs' | 'events'>('programs')
   const [searchQuery, setSearchQuery] = useState('')
-  const [searchModalVisible, setSearchModalVisible] = useState(false)
+  const [isSearchActive, setIsSearchActive] = useState(false)
+  const searchInputRef = useRef<TextInput>(null)
   const tabPosition = useSharedValue(0)
 
   const fetchAllLectures = async () => {
@@ -291,131 +289,125 @@ const RecordedLectures = () => {
     )
   }
 
+  const activateSearch = () => {
+    setIsSearchActive(true)
+    setTimeout(() => searchInputRef.current?.focus(), 100)
+  }
+
+  const deactivateSearch = () => {
+    searchInputRef.current?.blur()
+    setIsSearchActive(false)
+    setSearchQuery('')
+  }
+
   return (
     <>
       <Stack.Screen 
         options={{ 
-          title: 'Recorded Lectures', 
-          headerTintColor: 'white', 
-          headerTitleStyle: { color: 'white' }, 
-          headerStyle: { backgroundColor: '#214E91' },
-          headerLeft: () => (
-            isLiquidGlassSupported ? (
-              <LiquidGlassView 
-                style={{ 
-                  marginLeft: 8,
-                  width: 36,
-                  height: 36,
-                  borderRadius: 18,
-                }}
-                interactive
-                effect="clear"
-              >
-                <Pressable 
-                  style={{ 
-                    width: '100%',
-                    height: '100%',
-                    alignItems: 'center', 
-                    justifyContent: 'center'
-                  }}
-                  hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-                  onPress={() => {
-                    navigation.getParent()?.getState().index == 0 ? router.replace('/myPrograms') : router.back()
-                  }}
-                >
-                  <View style={{ marginLeft: -12 }}>
-                    <Ionicons 
-                      name="chevron-back" 
-                      size={25} 
-                      color="white"
-                    />
-                  </View>
-                </Pressable>
-              </LiquidGlassView>
-            ) : (
-              <Pressable 
-                style={{ 
-                  marginLeft: 8,
-                  width: 36,
-                  height: 36,
-                  borderRadius: 18,
-                  alignItems: 'center', 
-                  justifyContent: 'center'
-                }}
-                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-                onPress={() => {
-                  navigation.getParent()?.getState().index == 0 ? router.replace('/myPrograms') : router.back()
-                }}
-              >
-                <View style={{ marginLeft: -12 }}>
-                  <Ionicons 
-                    name="chevron-back" 
-                    size={25} 
-                    color="white"
-                  />
-                </View>
-              </Pressable>
-            )
-          ),
-          headerRight: () => (
-            isLiquidGlassSupported ? (
-              <LiquidGlassView 
-                style={{ 
-                  marginRight: 8,
-                  width: 36,
-                  height: 36,
-                  borderRadius: 18,
-                }}
-                interactive
-                effect="clear"
-              >
-                <Pressable 
-                  style={{ 
-                    width: '100%',
-                    height: '100%',
-                    alignItems: 'center', 
-                    justifyContent: 'center'
-                  }}
-                  hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-                  onPress={() => {
-                    console.log('Search button pressed')
-                    setSearchModalVisible(true)
-                  }}
-                >
-                  <Ionicons 
-                    name="search" 
-                    size={20} 
-                    color="white"
-                  />
-                </Pressable>
-              </LiquidGlassView>
-            ) : (
-              <Pressable 
-                style={{ 
-                  marginRight: 8,
-                  width: 36,
-                  height: 36,
-                  borderRadius: 18,
-                  alignItems: 'center', 
-                  justifyContent: 'center'
-                }}
-                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-                onPress={() => {
-                  console.log('Search button pressed')
-                  setSearchModalVisible(true)
-                }}
-              >
-                <Ionicons 
-                  name="search" 
-                  size={20} 
-                  color="white"
-                />
-              </Pressable>
-            )
-          ),
+          headerShown: false,
         }}
       />
       <StatusBar barStyle="light-content" />
+      
+      {/* Custom Header with integrated search */}
+      <View style={{ backgroundColor: '#214E91', paddingTop: insets.top }}>
+        <View style={{ 
+          height: 56, 
+          flexDirection: 'row', 
+          alignItems: 'center', 
+          paddingHorizontal: 16,
+        }}>
+          {isSearchActive ? (
+            // Search Mode
+            <Animated.View 
+              entering={FadeIn.duration(150)}
+              style={{ flex: 1, flexDirection: 'row', alignItems: 'center' }}
+            >
+              <View style={{
+                flex: 1,
+                flexDirection: 'row',
+                alignItems: 'center',
+                backgroundColor: 'rgba(255, 255, 255, 0.15)',
+                borderRadius: 10,
+                paddingHorizontal: 12,
+                height: 40,
+              }}>
+                <Ionicons name="search" size={18} color="rgba(255, 255, 255, 0.6)" />
+                <TextInput
+                  ref={searchInputRef}
+                  value={searchQuery}
+                  onChangeText={setSearchQuery}
+                  placeholder="Search..."
+                  placeholderTextColor="rgba(255, 255, 255, 0.5)"
+                  style={{
+                    flex: 1,
+                    color: 'white',
+                    fontSize: 16,
+                    marginLeft: 8,
+                    paddingVertical: 0,
+                  }}
+                  autoFocus
+                  returnKeyType="search"
+                />
+                {searchQuery.length > 0 && (
+                  <Pressable onPress={() => setSearchQuery('')}>
+                    <Ionicons name="close-circle" size={18} color="rgba(255, 255, 255, 0.5)" />
+                  </Pressable>
+                )}
+              </View>
+              <Pressable 
+                onPress={deactivateSearch}
+                style={{ paddingLeft: 12 }}
+              >
+                <Text style={{ color: 'white', fontSize: 15, fontWeight: '500' }}>Cancel</Text>
+              </Pressable>
+            </Animated.View>
+          ) : (
+            // Normal Header
+            <>
+              <Pressable 
+                onPress={() => {
+                  navigation.getParent()?.getState().index == 0 ? router.replace('/myPrograms') : router.back()
+                }}
+                style={{
+                  width: 36,
+                  height: 36,
+                  borderRadius: 18,
+                  backgroundColor: 'rgba(255, 255, 255, 0.15)',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                <Ionicons name="chevron-back" size={22} color="white" />
+              </Pressable>
+              
+              <Text style={{ 
+                flex: 1,
+                color: 'white', 
+                fontSize: 17, 
+                fontWeight: '600',
+                textAlign: 'center',
+              }}>
+                Recorded Lectures
+              </Text>
+              
+              <Pressable 
+                onPress={activateSearch}
+                style={{
+                  width: 36,
+                  height: 36,
+                  borderRadius: 18,
+                  backgroundColor: 'rgba(255, 255, 255, 0.15)',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                <Ionicons name="search" size={18} color="white" />
+              </Pressable>
+            </>
+          )}
+        </View>
+      </View>
       {loading ? (
         <View className="flex-1 items-center justify-center bg-white">
           <ActivityIndicator size="large" color="#007AFF" />
@@ -600,87 +592,6 @@ const RecordedLectures = () => {
         </View>
       )}
 
-      {/* Search Modal */}
-      <Portal>
-        <Modal
-          visible={searchModalVisible}
-          onDismiss={() => {
-            console.log('Modal dismissed')
-            setSearchModalVisible(false)
-          }}
-          contentContainerStyle={{
-            backgroundColor: 'white',
-            padding: 24,
-            margin: 20,
-            borderRadius: 24,
-            maxHeight: '85%',
-            minHeight: 200,
-          }}
-          style={{ 
-            justifyContent: 'flex-start',
-            paddingTop: Platform.OS === 'ios' ? 60 : 40,
-          }}
-          dismissable
-          dismissableBackButton
-        >
-          <KeyboardAvoidingView 
-            behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-            style={{ flex: 1 }}
-            keyboardVerticalOffset={Platform.OS === 'ios' ? 100 : 0}
-          >
-            <ScrollView 
-              keyboardShouldPersistTaps="handled"
-              showsVerticalScrollIndicator={false}
-              contentContainerStyle={{ flexGrow: 1 }}
-            >
-              <Searchbar
-                placeholder="Search programs and events..."
-                onChangeText={setSearchQuery}
-                value={searchQuery}
-                style={{
-                  backgroundColor: '#F3F4F6',
-                  borderRadius: 12,
-                  elevation: 0,
-                  marginBottom: 16,
-                }}
-                inputStyle={{ color: '#1F2937', fontSize: 15 }}
-                iconColor="#6B7280"
-                placeholderTextColor="#9CA3AF"
-                autoFocus
-              />
-
-              {searchQuery.trim() && (
-                <View style={{ marginBottom: 16 }}>
-                  <Text style={{ fontSize: 15, color: '#6B7280', fontWeight: '500' }}>
-                    {activeTab === 'programs' 
-                      ? `Found ${filteredPrograms.length} program${filteredPrograms.length !== 1 ? 's' : ''}`
-                      : `Found ${filteredEvents.length} event${filteredEvents.length !== 1 ? 's' : ''}`}
-                  </Text>
-                </View>
-              )}
-
-              <Pressable
-                onPress={() => {
-                  setSearchQuery('')
-                  setSearchModalVisible(false)
-                }}
-                style={{
-                  paddingVertical: 14,
-                  paddingHorizontal: 20,
-                  backgroundColor: '#F3F4F6',
-                  borderRadius: 12,
-                  alignItems: 'center',
-                  marginTop: 8,
-                }}
-              >
-                <Text style={{ color: '#214E91', fontWeight: '600', fontSize: 15 }}>
-                  Clear Search
-                </Text>
-              </Pressable>
-            </ScrollView>
-          </KeyboardAvoidingView>
-        </Modal>
-      </Portal>
     </>
   )
 }

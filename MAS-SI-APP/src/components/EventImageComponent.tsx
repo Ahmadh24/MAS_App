@@ -11,10 +11,10 @@ import { BlurView } from 'expo-blur'
 import { LinearGradient } from 'expo-linear-gradient'
 import DeckSwiper from 'react-native-deck-swiper'
 
-const EventImageComponent = ({item} : {item : EventsType}) => {
+const EventImageComponent = ({item, autoOpen = false, onModalClose} : {item : EventsType, autoOpen?: boolean, onModalClose?: () => void}) => {
     const { session } = useAuth()
     const [ imageReady, setImageReady ] = useState(false)
-    const [modalVisible, setModalVisible] = useState(false)
+    const [modalVisible, setModalVisible] = useState(autoOpen)
     const [event, setEvent] = useState<EventsType | null>(null)
     const [speakerData, setSpeakerData] = useState<SheikDataType[]>([])
     const [speakerString, setSpeakerString] = useState('')
@@ -282,6 +282,31 @@ const EventImageComponent = ({item} : {item : EventsType}) => {
             }, 100);
         }
     }, [speakerModalVisible]);
+
+    // Auto-open modal when autoOpen prop is true
+    const hasOpenedRef = useRef(false);
+    useEffect(() => {
+        if (autoOpen && !hasOpenedRef.current) {
+            hasOpenedRef.current = true;
+            // Trigger animation
+            Animated.spring(slideAnim, {
+                toValue: 1,
+                useNativeDriver: true,
+                tension: 40,
+                friction: 8,
+            }).start();
+            // Fetch data
+            fetchEventData();
+            fetchSpeakerData();
+        }
+    }, [autoOpen]);
+
+    // Call onModalClose callback when modal closes (only after it was opened)
+    useEffect(() => {
+        if (!modalVisible && hasOpenedRef.current && onModalClose) {
+            onModalClose();
+        }
+    }, [modalVisible]);
 
     const handleNotificationPress = async () => {
         if (!session?.user?.id || !event) return;
@@ -619,8 +644,8 @@ const EventImageComponent = ({item} : {item : EventsType}) => {
                 )}
             </View>
 
-            {/* Event Detail Modal - Slide Up - Only show if no lectures */}
-            {(modalVisible || isClosing.current) && !item.has_lecture && (
+            {/* Event Detail Modal - Slide Up - Show if no lectures OR if autoOpen is true */}
+            {(modalVisible || isClosing.current) && (autoOpen || !item.has_lecture) && (
                 <Portal>
                     <Modal
                         visible={modalVisible}

@@ -1,4 +1,4 @@
-import { View, Text, Dimensions, StatusBar, Pressable, Platform, ScrollView } from 'react-native'
+import { View, Text, Dimensions, StatusBar, Pressable, Platform, ScrollView, Modal } from 'react-native'
 import React, { useState, useEffect, useRef } from 'react'
 import { Icon, ActivityIndicator, Checkbox } from 'react-native-paper'
 import { Stack, router } from "expo-router"
@@ -20,12 +20,13 @@ import Animated, {
 } from 'react-native-reanimated'
 import { LinearGradient } from 'expo-linear-gradient'
 import { useAuth } from '@/src/providers/AuthProvider'
+import DateTimePicker from '@react-native-community/datetimepicker'
 
 const { width, height } = Dimensions.get('window')
 
 // Types for our onboarding data
 type OnboardingData = {
-  birthYear: string
+  dateOfBirth: Date | null
   gender: 'brother' | 'sister' | 'prefer_not_to_say' | null
   maritalStatus: 'single' | 'married' | 'prefer_not_to_say' | null
   childrenAges: string[]
@@ -38,9 +39,6 @@ type OnboardingData = {
   quietHoursStart: string
   quietHoursEnd: string
 }
-
-// Generate birth years
-const birthYears = Array.from({ length: 76 }, (_, i) => (2015 - i).toString())
 
 // Constants for options
 const GENDER_OPTIONS = [
@@ -274,63 +272,37 @@ const CheckOption = ({
   </Pressable>
 )
 
-// Year Picker Component
-const YearPicker = ({ 
-  selectedYear, 
-  onSelect 
-}: { 
-  selectedYear: string
-  onSelect: (year: string) => void 
-}) => {
-  const scrollRef = useRef<ScrollView>(null)
-  
-  return (
-    <View style={{
-      height: 200,
-      backgroundColor: 'rgba(15, 65, 132, 0.04)',
-      borderRadius: 16,
-      borderWidth: 2,
-      borderColor: 'rgba(15, 65, 132, 0.1)',
-      overflow: 'hidden',
-    }}>
-      <ScrollView
-        ref={scrollRef}
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingVertical: 10 }}
-      >
-        {birthYears.map((year) => (
-          <Pressable
-            key={year}
-            onPress={() => onSelect(year)}
-            style={{
-              paddingVertical: 12,
-              paddingHorizontal: 20,
-              backgroundColor: selectedYear === year ? 'rgba(15, 65, 132, 0.15)' : 'transparent',
-            }}
-          >
-            <Text style={{
-              fontFamily: selectedYear === year ? 'Poppins_600SemiBold' : 'Poppins_400Regular',
-              fontSize: 16,
-              color: selectedYear === year ? '#0F4184' : '#0f172a',
-              textAlign: 'center',
-            }}>
-              {year}
-            </Text>
-          </Pressable>
-        ))}
-      </ScrollView>
-    </View>
-  )
+// Format date of birth as MM/DD/YYYY
+const formatDateOfBirth = (date: Date | null) => {
+  if (!date) return ''
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+  const year = date.getFullYear()
+  return `${month}/${day}/${year}`
 }
 
 // Step content components
 const StepDemographics = ({ 
   data, 
-  setData 
+  setData,
+  showDatePicker,
+  setShowDatePicker 
 }: { 
   data: OnboardingData
-  setData: React.Dispatch<React.SetStateAction<OnboardingData>> 
-}) => (
+  setData: React.Dispatch<React.SetStateAction<OnboardingData>>
+  showDatePicker: boolean
+  setShowDatePicker: React.Dispatch<React.SetStateAction<boolean>>
+}) => {
+  const handleDateChange = (event: any, selectedDate?: Date) => {
+    if (Platform.OS === 'android') {
+      setShowDatePicker(false)
+    }
+    if (selectedDate) {
+      setData(prev => ({ ...prev, dateOfBirth: selectedDate }))
+    }
+  }
+
+  return (
   <Animated.View entering={FadeInDown.duration(400)} style={{ flex: 1 }}>
     <View style={{ marginBottom: 24 }}>
       <Text style={{
@@ -339,7 +311,7 @@ const StepDemographics = ({
         color: '#0f172a',
         marginBottom: 8,
       }}>
-        Help us serve you better
+        And, how old are you?
       </Text>
       <Text style={{
         fontFamily: 'Poppins_400Regular',
@@ -351,7 +323,7 @@ const StepDemographics = ({
       </Text>
     </View>
 
-    {/* Birth Year */}
+    {/* Date of Birth */}
     <View style={{ marginBottom: 24 }}>
       <Text style={{
         fontFamily: 'Poppins_600SemiBold',
@@ -359,13 +331,127 @@ const StepDemographics = ({
         color: '#0f172a',
         marginBottom: 12,
       }}>
-        Birth Year
+        Date of Birth
       </Text>
-      <YearPicker 
-        selectedYear={data.birthYear} 
-        onSelect={(year) => setData(prev => ({ ...prev, birthYear: year }))} 
-      />
+      <Pressable
+        onPress={() => setShowDatePicker(true)}
+        style={{
+          backgroundColor: data.dateOfBirth ? 'rgba(15, 65, 132, 0.08)' : 'rgba(15, 65, 132, 0.04)',
+          borderRadius: 16,
+          borderWidth: 2,
+          borderColor: data.dateOfBirth ? '#0F4184' : 'rgba(15, 65, 132, 0.1)',
+          flexDirection: 'row',
+          alignItems: 'center',
+          paddingHorizontal: 18,
+          paddingVertical: 18,
+        }}
+      >
+        <Icon source="calendar" size={24} color={data.dateOfBirth ? '#0F4184' : 'rgba(15, 65, 132, 0.5)'} />
+        <Text style={{ 
+          flex: 1,
+          fontSize: 16,
+          fontFamily: 'Poppins_500Medium',
+          marginLeft: 14,
+          color: data.dateOfBirth ? '#0f172a' : 'rgba(15, 65, 132, 0.4)',
+        }}>
+          {data.dateOfBirth ? formatDateOfBirth(data.dateOfBirth) : 'MM/DD/YYYY'}
+        </Text>
+        {data.dateOfBirth && (
+          <View style={{
+            width: 28,
+            height: 28,
+            borderRadius: 14,
+            backgroundColor: '#22c55e',
+            justifyContent: 'center',
+            alignItems: 'center',
+          }}>
+            <Icon source="check" size={16} color="#ffffff" />
+          </View>
+        )}
+      </Pressable>
     </View>
+
+    {/* Date Picker Modal for iOS */}
+    {Platform.OS === 'ios' && (
+      <Modal
+        visible={showDatePicker}
+        transparent
+        animationType="slide"
+      >
+        <View style={{
+          flex: 1,
+          justifyContent: 'flex-end',
+          backgroundColor: 'rgba(0, 0, 0, 0.5)',
+        }}>
+          <View style={{
+            backgroundColor: '#ffffff',
+            borderTopLeftRadius: 24,
+            borderTopRightRadius: 24,
+            paddingBottom: 40,
+          }}>
+            {/* Header */}
+            <View style={{
+              flexDirection: 'row',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              paddingHorizontal: 20,
+              paddingVertical: 16,
+              borderBottomWidth: 1,
+              borderBottomColor: 'rgba(15, 65, 132, 0.1)',
+            }}>
+              <Pressable onPress={() => setShowDatePicker(false)}>
+                <Text style={{
+                  fontSize: 16,
+                  color: '#EF4444',
+                  fontFamily: 'Poppins_500Medium',
+                }}>
+                  Cancel
+                </Text>
+              </Pressable>
+              <Text style={{
+                fontSize: 17,
+                color: '#0f172a',
+                fontFamily: 'Poppins_600SemiBold',
+              }}>
+                Date of Birth
+              </Text>
+              <Pressable onPress={() => setShowDatePicker(false)}>
+                <Text style={{
+                  fontSize: 16,
+                  color: '#0F4184',
+                  fontFamily: 'Poppins_600SemiBold',
+                }}>
+                  Confirm
+                </Text>
+              </Pressable>
+            </View>
+
+            {/* Date Picker */}
+            <DateTimePicker
+              value={data.dateOfBirth || new Date(2000, 0, 1)}
+              mode="date"
+              display="spinner"
+              onChange={handleDateChange}
+              maximumDate={new Date()}
+              minimumDate={new Date(1900, 0, 1)}
+              style={{ height: 200 }}
+            />
+          </View>
+        </View>
+      </Modal>
+    )}
+
+    {/* Date Picker for Android */}
+    {Platform.OS === 'android' && showDatePicker && (
+      <DateTimePicker
+        value={data.dateOfBirth || new Date(2000, 0, 1)}
+        mode="date"
+        display="spinner"
+        onChange={handleDateChange}
+        maximumDate={new Date()}
+        minimumDate={new Date(1900, 0, 1)}
+      />
+    )}
 
     {/* Gender */}
     <View style={{ marginBottom: 24 }}>
@@ -442,7 +528,7 @@ const StepDemographics = ({
       ))}
     </View>
   </Animated.View>
-)
+)}
 
 const StepAvailability = ({ 
   data, 
@@ -1026,8 +1112,9 @@ const Onboarding = () => {
   const { session } = useAuth()
   const [currentStep, setCurrentStep] = useState(0)
   const [loading, setLoading] = useState(false)
+  const [showDatePicker, setShowDatePicker] = useState(false)
   const [data, setData] = useState<OnboardingData>({
-    birthYear: '',
+    dateOfBirth: null,
     gender: null,
     maritalStatus: null,
     childrenAges: [],
@@ -1079,7 +1166,7 @@ const Onboarding = () => {
         const { error } = await supabase
           .from('profiles')
           .update({
-            birth_year: data.birthYear || null,
+            date_of_birth: data.dateOfBirth ? data.dateOfBirth.toISOString().split('T')[0] : null,
             gender: data.gender,
             marital_status: data.maritalStatus,
             children_ages: data.childrenAges,
@@ -1113,7 +1200,7 @@ const Onboarding = () => {
   const renderStep = () => {
     switch (currentStep) {
       case 0:
-        return <StepDemographics data={data} setData={setData} />
+        return <StepDemographics data={data} setData={setData} showDatePicker={showDatePicker} setShowDatePicker={setShowDatePicker} />
       case 1:
         return <StepAvailability data={data} setData={setData} />
       case 2:

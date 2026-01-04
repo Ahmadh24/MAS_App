@@ -180,28 +180,32 @@ export default function homeScreen() {
     )
   }
   return (
-    <Animated.ScrollView
-      ref={scrollRef}
-      style={{ backgroundColor: '#214E91' }}
-      contentContainerStyle={{ backgroundColor: COLORS.background, minHeight: '100%', paddingBottom: 100 + 20 }}
-      className="h-full z-[0]"
-      bounces={!isAtBottom}
-      alwaysBounceVertical={false}
-      overScrollMode="never"
-      onScroll={scrollHandler}
-      onScrollEndDrag={handleScrollEndDrag}
-      onMomentumScrollEnd={handleMomentumScrollEnd}
-      refreshControl={
-        <RefreshControl
-          refreshing={refreshing}
-          onRefresh={onRefresh}
-          tintColor={COLORS.white}
-          colors={[COLORS.white]}
-          progressViewOffset={0}
-          style={{ backgroundColor: 'transparent' }}
-        />
-      }
-    >
+    <View style={{ flex: 1, backgroundColor: COLORS.background }}>
+      {/* Blue area for top over-scroll */}
+      <View style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 500, backgroundColor: '#214E91' }} />
+      
+      <Animated.ScrollView
+        ref={scrollRef}
+        style={{ backgroundColor: 'transparent' }}
+        contentContainerStyle={{ backgroundColor: COLORS.background, minHeight: '100%', paddingBottom: 100 + 20 }}
+        className="h-full z-[0]"
+        bounces={true}
+        alwaysBounceVertical={true}
+        overScrollMode="never"
+        onScroll={scrollHandler}
+        onScrollEndDrag={handleScrollEndDrag}
+        onMomentumScrollEnd={handleMomentumScrollEnd}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor={COLORS.white}
+            colors={[COLORS.white]}
+            progressViewOffset={0}
+            style={{ backgroundColor: 'transparent' }}
+          />
+        }
+      >
       <StatusBar barStyle={"light-content"} />
 
       <View style={{ height: 350, overflow: "hidden", justifyContent: "center" }} className=''>
@@ -303,6 +307,14 @@ export default function homeScreen() {
         </View>
       </View>
 
+      {/* Jummah Schedule */}
+      <View className='pt-6'>
+        <View className='flex-row pl-3 pb-2'>
+          <Text style={{ color: COLORS.primary }} className='font-bold text-2xl'>Jummah Schedule</Text>
+        </View>
+        <JummahTable ref={bottomSheetRef} />
+      </View>
+
       {/* Commented out sections below Explore Features
                   <ApprovedAds setRenderedFalse={() => setIsRendered(false)} setRenderedTrue={() => setIsRendered(true) }/>
                       
@@ -374,7 +386,8 @@ export default function homeScreen() {
                 */}
 
       <View style={[{ paddingBottom: 100 }]}></View>
-    </Animated.ScrollView>
+      </Animated.ScrollView>
+    </View>
   )
 
 }

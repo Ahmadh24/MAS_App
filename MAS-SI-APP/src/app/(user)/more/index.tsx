@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, StyleSheet, Alert, Share, Platform } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, StyleSheet, Alert, Share, Platform, Linking } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter, Link } from 'expo-router';
 import { 
@@ -155,12 +155,20 @@ const Index = () => {
             </View>
           )}
 
-          {/* Sign In Button for Anonymous Users */}
+          {/* Sign In & Sign Up Buttons for Anonymous Users */}
           {anonStatus && (
-            <View style={styles.inviteButtonContainer}>
-              <TouchableOpacity style={styles.inviteButton} onPress={() => setVisible(true)}>
-                <Text style={styles.inviteButtonText}>Sign In</Text>
-              </TouchableOpacity>
+            <View style={styles.authButtonsRow}>
+              <View style={[styles.inviteButtonContainer, { flex: 1 }]}>
+                <TouchableOpacity style={styles.inviteButton} onPress={() => setVisible(true)}>
+                  <Text style={styles.inviteButtonText}>Sign In</Text>
+                </TouchableOpacity>
+              </View>
+              <View style={{ width: 12 }} />
+              <View style={[styles.inviteButtonContainer, { flex: 1 }]}>
+                <TouchableOpacity style={styles.inviteButton} onPress={() => router.push('/(auth)/SignUp')}>
+                  <Text style={styles.inviteButtonText}>Sign Up</Text>
+                </TouchableOpacity>
+              </View>
             </View>
           )}
         </View>
@@ -266,24 +274,48 @@ const Index = () => {
           {/* NOTIFICATIONS */}
           <Text style={styles.sectionLabel}>NOTIFICATIONS</Text>
           <View style={styles.menuCard}>
-            <TouchableOpacity style={styles.menuButton}>
+            <TouchableOpacity 
+              style={styles.menuButton}
+              onPress={() => {
+                router.push({
+                  pathname: '/myPrograms/notifications/NotificationEvents',
+                  params: { initialTab: 'prayer' }
+                });
+              }}
+            >
               <Bell color="white" size={20} strokeWidth={2.5} style={{ marginRight: 12 }} />
               <Text style={styles.menuButtonText}>Prayer</Text>
             </TouchableOpacity>
             <TouchableOpacity 
               style={styles.menuButton}
               onPress={() => {
-                router.push('/myPrograms/notifications');
+                router.push({
+                  pathname: '/myPrograms/notifications/NotificationEvents',
+                  params: { initialTab: 'programs' }
+                });
               }}
             >
               <Calendar color="white" size={20} strokeWidth={2.5} style={{ marginRight: 12 }} />
               <Text style={styles.menuButtonText}>Program</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.menuButton}>
+            <TouchableOpacity 
+              style={styles.menuButton}
+              onPress={() => {
+                router.push({
+                  pathname: '/myPrograms/notifications/NotificationEvents',
+                  params: { initialTab: 'programs' }
+                });
+              }}
+            >
               <PartyPopper color="white" size={20} strokeWidth={2.5} style={{ marginRight: 12 }} />
               <Text style={styles.menuButtonText}>Event</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.menuButton}>
+            <TouchableOpacity 
+              style={styles.menuButton}
+              onPress={() => {
+                Linking.openSettings();
+              }}
+            >
               <Settings color="white" size={20} strokeWidth={2.5} style={{ marginRight: 12 }} />
               <Text style={styles.menuButtonText}>Setting</Text>
             </TouchableOpacity>
@@ -388,6 +420,10 @@ const styles = StyleSheet.create({
     color: 'white',
     opacity: 0.9,
     marginBottom: 12,
+  },
+  authButtonsRow: {
+    flexDirection: 'row',
+    width: '100%',
   },
   inviteButtonContainer: {
     width: '100%',

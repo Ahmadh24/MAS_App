@@ -95,9 +95,17 @@ export default function SalahDisplayWidget({ prayer, nextPrayer }: salahDisplayW
         const currentMoment = moment(currentTime, "HH:mm A")
         let iqamahMoment = moment(currentSalah.iqamah, "HH:mm A")
 
-        // If showing next day's Fajr, add a day to the iqamah time
+        // If showing next day's Fajr, only add a day if we're in the evening (after Isha)
+        // Don't add a day if we're in early morning (before Fajr) - Fajr is later today
         if (salahIndex === 5) {
-            iqamahMoment.add(1, "day")
+            const ishaMoment = moment(prayer.athan_isha, "HH:mm A")
+            const fajrMoment = moment(prayer.athan_fajr, "HH:mm A")
+            
+            // Only add a day if current time is after Isha (evening hours)
+            // If we're before Fajr (early morning), Fajr is later today, not tomorrow
+            if (currentMoment.isAfter(ishaMoment)) {
+                iqamahMoment.add(1, "day")
+            }
         }
 
         // Calculate time until next iqamah

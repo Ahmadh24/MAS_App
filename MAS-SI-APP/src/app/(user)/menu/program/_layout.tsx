@@ -9,6 +9,7 @@ export default function programStack() {
         <Stack.Screen name="programsAndEventsScreen" options={{ headerShown: false }}/>
         <Stack.Screen name="[programId]" options={{ headerShown: true }}/>
         <Stack.Screen name="upcomingEvents" options={{ headerShown: false }}/>
+        <Stack.Screen name="events/[event_id]" options={{ headerShown: false }}/>
        </Stack>
     )
   };

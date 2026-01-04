@@ -202,6 +202,9 @@ export default function UpcomingProgramWidget() {
   const panYValue = useRef(0);
   const isClosing = useRef(false);
   const [modalToast, setModalToast] = useState<{ type: string; props: any } | null>(null);
+  const [notificationOptionsVisible, setNotificationOptionsVisible] = useState(false);
+  const [selectedNotificationTime, setSelectedNotificationTime] = useState<number | null>(null);
+  const notificationSlideAnim = useRef(new Animated.Value(0)).current;
   const { width, height } = Dimensions.get("window");
 
   // Get current day of the week
@@ -583,6 +586,149 @@ export default function UpcomingProgramWidget() {
     }
   };
 
+  // Open notification options modal
+  const openNotificationOptions = () => {
+    setSelectedNotificationTime(null);
+    setNotificationOptionsVisible(true);
+    Animated.spring(notificationSlideAnim, {
+      toValue: 1,
+      useNativeDriver: true,
+      tension: 40,
+      friction: 8,
+    }).start();
+  };
+
+  // Select notification time and auto-save
+  const selectNotificationTime = async (minutes: number) => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    setSelectedNotificationTime(minutes);
+    
+    // Auto-save after selection
+    setTimeout(() => {
+      handleConfirmNotificationsWithTime(minutes);
+    }, 200);
+  };
+
+  // Handle confirm with specific time (for auto-save)
+  const handleConfirmNotificationsWithTime = async (minutesBefore: number) => {
+    if (!session?.user.id || !upcomingItem) return;
+
+    closeNotificationOptions();
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+
+    const TodaysDate = new Date();
+    const DaysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+
+    const getTimeLabel = (minutes: number) => {
+      if (minutes === 120) return '2 hours';
+      if (minutes === 60) return '1 hour';
+      if (minutes === 30) return '30 minutes';
+      return `${minutes} minutes`;
+    };
+
+    const timeLabel = getTimeLabel(minutesBefore);
+
+    if (upcomingItem.type === 'program' && programData) {
+      const { error } = await supabase
+        .from('added_notifications_programs')
+        .insert({
+          user_id: session.user.id,
+          program_id: upcomingItem.id,
+          has_lectures: programData.has_lectures || false
+        });
+
+      if (!error) {
+        const programDays = programData.program_days;
+        const ProgramStartTime = setTimeToCurrentDate(programData.program_start_time || '');
+        const NotificationTime = new Date(ProgramStartTime.getTime() - minutesBefore * 60 * 1000);
+
+        if (programDays && isBefore(TodaysDate, NotificationTime)) {
+          await Promise.all(
+            (Array.isArray(programDays) ? programDays : [programDays]).map(async (day: string) => {
+              const { data: user_push_token } = await supabase
+                .from('profiles')
+                .select('push_notification_token')
+                .eq('id', session.user.id)
+                .single();
+
+              if ((TodaysDate.getDay() === DaysOfWeek.indexOf(day)) && user_push_token?.push_notification_token) {
+                await schedule_notification(
+                  session.user.id,
+                  user_push_token.push_notification_token,
+                  `${programData.program_name} starts in ${timeLabel}!`,
+                  `${timeLabel} Before`,
+                  programData.program_name,
+                  NotificationTime
+                );
+              }
+            })
+          );
+        }
+
+        setModalToast({
+          type: 'addProgramToNotificationsToast',
+          props: { props: programData, onPress: () => { } }
+        });
+        setTimeout(() => setModalToast(null), 3000);
+      }
+    } else if (upcomingItem.type === 'event' && eventData) {
+      const { error } = await supabase
+        .from('added_notifications_events')
+        .insert({
+          user_id: session.user.id,
+          event_id: upcomingItem.id
+        });
+
+      if (!error) {
+        const eventDays = eventData.event_days;
+        const EventStartTime = setTimeToCurrentDate(eventData.event_start_time || '');
+        const NotificationTime = new Date(EventStartTime.getTime() - minutesBefore * 60 * 1000);
+
+        if (eventDays && isBefore(TodaysDate, NotificationTime)) {
+          await Promise.all(
+            (Array.isArray(eventDays) ? eventDays : [eventDays]).map(async (day: string) => {
+              const { data: user_push_token } = await supabase
+                .from('profiles')
+                .select('push_notification_token')
+                .eq('id', session.user.id)
+                .single();
+
+              if ((TodaysDate.getDay() === DaysOfWeek.indexOf(day)) && user_push_token?.push_notification_token) {
+                await schedule_notification(
+                  session.user.id,
+                  user_push_token.push_notification_token,
+                  `${eventData.event_name} starts in ${timeLabel}!`,
+                  `${timeLabel} Before`,
+                  eventData.event_name,
+                  NotificationTime
+                );
+              }
+            })
+          );
+        }
+
+        setModalToast({
+          type: 'addEventToNotificationsToast',
+          props: { props: eventData, onPress: () => { } }
+        });
+        setTimeout(() => setModalToast(null), 3000);
+      }
+    }
+
+    setItemInNotifications(true);
+  };
+
+  // Close notification options modal
+  const closeNotificationOptions = () => {
+    Animated.timing(notificationSlideAnim, {
+      toValue: 0,
+      duration: 250,
+      useNativeDriver: true,
+    }).start(() => {
+      setNotificationOptionsVisible(false);
+    });
+  };
+
   // Handle notification button press
   const handleNotificationPress = async () => {
     if (!session?.user.id || !upcomingItem) return;
@@ -635,117 +781,122 @@ export default function UpcomingProgramWidget() {
 
       setItemInNotifications(false);
     } else {
-      // Add to notifications
-      const TodaysDate = new Date();
-      const DaysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-
-      if (upcomingItem.type === 'program' && programData) {
-        const { error } = await supabase
-          .from('added_notifications_programs')
-          .insert({
-            user_id: session.user.id,
-            program_id: upcomingItem.id,
-            has_lectures: programData.has_lectures || false
-          });
-
-        if (!error) {
-          const programDays = programData.program_days;
-          const ProgramStartTime = setTimeToCurrentDate(programData.program_start_time || '');
-
-          if (programDays && isBefore(TodaysDate, ProgramStartTime)) {
-            await Promise.all(
-              (Array.isArray(programDays) ? programDays : [programDays]).map(async (day: string) => {
-                const { data: user_push_token } = await supabase
-                  .from('profiles')
-                  .select('push_notification_token')
-                  .eq('id', session.user.id)
-                  .single();
-
-                if ((TodaysDate.getDay() === DaysOfWeek.indexOf(day)) && user_push_token?.push_notification_token) {
-                  await schedule_notification(
-                    session.user.id,
-                    user_push_token.push_notification_token,
-                    `${programData.program_name} is Starting Now!`,
-                    'When Program Starts',
-                    programData.program_name,
-                    ProgramStartTime
-                  );
-                }
-              })
-            );
-          }
-
-          // Show toast in modal
-          setModalToast({
-            type: 'addProgramToNotificationsToast',
-            props: { props: programData, onPress: () => { } }
-          });
-          // Also show root toast for when modal is closed
-          // Toast.show({
-          //   type: 'addProgramToNotificationsToast',
-          //   props: { props: programData, onPress: goToProgram },
-          //   position: 'top',
-          //   topOffset: 50,
-          // });
-          // Auto-hide modal toast after 3 seconds
-          setTimeout(() => setModalToast(null), 3000);
-          // Auto-hide modal toast after 3 seconds
-          setTimeout(() => setModalToast(null), 3000);
-        }
-      } else if (upcomingItem.type === 'event' && eventData) {
-        const { error } = await supabase
-          .from('added_notifications_events')
-          .insert({
-            user_id: session.user.id,
-            event_id: upcomingItem.id
-          });
-
-        if (!error) {
-          const eventDays = eventData.event_days;
-          const EventStartTime = setTimeToCurrentDate(eventData.event_start_time || '');
-
-          if (eventDays && isBefore(TodaysDate, EventStartTime)) {
-            await Promise.all(
-              (Array.isArray(eventDays) ? eventDays : [eventDays]).map(async (day: string) => {
-                const { data: user_push_token } = await supabase
-                  .from('profiles')
-                  .select('push_notification_token')
-                  .eq('id', session.user.id)
-                  .single();
-
-                if ((TodaysDate.getDay() === DaysOfWeek.indexOf(day)) && user_push_token?.push_notification_token) {
-                  await schedule_notification(
-                    session.user.id,
-                    user_push_token.push_notification_token,
-                    `${eventData.event_name} is Starting Now!`,
-                    'When Program Starts',
-                    eventData.event_name,
-                    EventStartTime
-                  );
-                }
-              })
-            );
-          }
-
-          // Show toast in modal
-          setModalToast({
-            type: 'addEventToNotificationsToast',
-            props: { props: eventData, onPress: () => { } }
-          });
-          // Also show root toast for when modal is closed
-          // Toast.show({
-          //   type: 'addEventToNotificationsToast',
-          //   props: { props: eventData, onPress: goToEvent },
-          //   position: 'top',
-          //   topOffset: 50,
-          // });
-          // Auto-hide modal toast after 3 seconds
-          setTimeout(() => setModalToast(null), 3000);
-        }
-      }
-
-      setItemInNotifications(true);
+      // Show notification options modal instead of adding directly
+      openNotificationOptions();
     }
+  };
+
+  // Handle confirm notification selection
+  const handleConfirmNotifications = async () => {
+    if (!session?.user.id || !upcomingItem || selectedNotificationTime === null) return;
+
+    closeNotificationOptions();
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+
+    const TodaysDate = new Date();
+    const DaysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+
+    // Helper to get time label
+    const getTimeLabel = (minutes: number) => {
+      if (minutes === 120) return '2 hours';
+      if (minutes === 60) return '1 hour';
+      if (minutes === 30) return '30 minutes';
+      return `${minutes} minutes`;
+    };
+
+    const minutesBefore = selectedNotificationTime;
+    const timeLabel = getTimeLabel(minutesBefore);
+
+    if (upcomingItem.type === 'program' && programData) {
+      const { error } = await supabase
+        .from('added_notifications_programs')
+        .insert({
+          user_id: session.user.id,
+          program_id: upcomingItem.id,
+          has_lectures: programData.has_lectures || false
+        });
+
+      if (!error) {
+        const programDays = programData.program_days;
+        const ProgramStartTime = setTimeToCurrentDate(programData.program_start_time || '');
+        const NotificationTime = new Date(ProgramStartTime.getTime() - minutesBefore * 60 * 1000);
+
+        if (programDays && isBefore(TodaysDate, NotificationTime)) {
+          await Promise.all(
+            (Array.isArray(programDays) ? programDays : [programDays]).map(async (day: string) => {
+              const { data: user_push_token } = await supabase
+                .from('profiles')
+                .select('push_notification_token')
+                .eq('id', session.user.id)
+                .single();
+
+              if ((TodaysDate.getDay() === DaysOfWeek.indexOf(day)) && user_push_token?.push_notification_token) {
+                await schedule_notification(
+                  session.user.id,
+                  user_push_token.push_notification_token,
+                  `${programData.program_name} starts in ${timeLabel}!`,
+                  `${timeLabel} Before`,
+                  programData.program_name,
+                  NotificationTime
+                );
+              }
+            })
+          );
+        }
+
+        // Show toast
+        setModalToast({
+          type: 'addProgramToNotificationsToast',
+          props: { props: programData, onPress: () => { } }
+        });
+        setTimeout(() => setModalToast(null), 3000);
+      }
+    } else if (upcomingItem.type === 'event' && eventData) {
+      const { error } = await supabase
+        .from('added_notifications_events')
+        .insert({
+          user_id: session.user.id,
+          event_id: upcomingItem.id
+        });
+
+      if (!error) {
+        const eventDays = eventData.event_days;
+        const EventStartTime = setTimeToCurrentDate(eventData.event_start_time || '');
+        const NotificationTime = new Date(EventStartTime.getTime() - minutesBefore * 60 * 1000);
+
+        if (eventDays && isBefore(TodaysDate, NotificationTime)) {
+          await Promise.all(
+            (Array.isArray(eventDays) ? eventDays : [eventDays]).map(async (day: string) => {
+              const { data: user_push_token } = await supabase
+                .from('profiles')
+                .select('push_notification_token')
+                .eq('id', session.user.id)
+                .single();
+
+              if ((TodaysDate.getDay() === DaysOfWeek.indexOf(day)) && user_push_token?.push_notification_token) {
+                await schedule_notification(
+                  session.user.id,
+                  user_push_token.push_notification_token,
+                  `${eventData.event_name} starts in ${timeLabel}!`,
+                  `${timeLabel} Before`,
+                  eventData.event_name,
+                  NotificationTime
+                );
+              }
+            })
+          );
+        }
+
+        // Show toast
+        setModalToast({
+          type: 'addEventToNotificationsToast',
+          props: { props: eventData, onPress: () => { } }
+        });
+        setTimeout(() => setModalToast(null), 3000);
+      }
+    }
+
+    setItemInNotifications(true);
   };
 
   // Handle add to programs button press
@@ -1346,7 +1497,7 @@ export default function UpcomingProgramWidget() {
             >
               <Pressable
                 style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.5)' }}
-                onPress={closeModal}
+                onPress={() => closeModal()}
               />
               <Animated.View
                 style={{
@@ -1760,6 +1911,240 @@ export default function UpcomingProgramWidget() {
               </View>
             </View>
           )}
+        </Portal>
+      )}
+
+      {/* Notification Options Slide-up Modal */}
+      {notificationOptionsVisible && (
+        <Portal>
+          <Animated.View
+            style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              backgroundColor: 'rgba(0,0,0,0.5)',
+              opacity: notificationSlideAnim,
+            }}
+          >
+            <Pressable 
+              style={{ flex: 1 }} 
+              onPress={closeNotificationOptions}
+            />
+          </Animated.View>
+          <Animated.View
+            style={{
+              position: 'absolute',
+              bottom: 0,
+              left: 0,
+              right: 0,
+              backgroundColor: '#FFFFFF',
+              borderTopLeftRadius: 24,
+              borderTopRightRadius: 24,
+              paddingBottom: 34,
+              shadowColor: '#000',
+              shadowOffset: { width: 0, height: -4 },
+              shadowOpacity: 0.15,
+              shadowRadius: 12,
+              elevation: 20,
+              transform: [{
+                translateY: notificationSlideAnim.interpolate({
+                  inputRange: [0, 1],
+                  outputRange: [500, 0],
+                })
+              }]
+            }}
+          >
+            {/* Drag Handle */}
+            <View style={{ 
+              width: '100%', 
+              alignItems: 'center', 
+              paddingTop: 12, 
+              paddingBottom: 8 
+            }}>
+              <View style={{
+                width: 36,
+                height: 5,
+                borderRadius: 3,
+                backgroundColor: '#D1D5DB',
+              }} />
+            </View>
+
+            {/* Header */}
+            <View style={{ 
+              flexDirection: 'row', 
+              alignItems: 'center', 
+              justifyContent: 'space-between',
+              paddingHorizontal: 20, 
+              paddingTop: 8, 
+              paddingBottom: 20 
+            }}>
+              <Text style={{ 
+                fontSize: 20, 
+                fontWeight: '600', 
+                color: '#111827',
+              }}>
+                Notification settings
+              </Text>
+              <Pressable
+                onPress={closeNotificationOptions}
+                style={{
+                  width: 32,
+                  height: 32,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                <Icon source="close" size={24} color="#6B7280" />
+              </Pressable>
+            </View>
+
+            {/* Radio Options */}
+            <View style={{ paddingHorizontal: 20 }}>
+              {/* 2 Hours Before */}
+              <Pressable
+                onPress={() => selectNotificationTime(120)}
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'flex-start',
+                  paddingVertical: 14,
+                }}
+              >
+                <View style={{
+                  width: 24,
+                  height: 24,
+                  borderRadius: 12,
+                  borderWidth: 2,
+                  borderColor: selectedNotificationTime === 120 ? '#2196F3' : '#D1D5DB',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  marginRight: 14,
+                  marginTop: 2,
+                }}>
+                  {selectedNotificationTime === 120 && (
+                    <View style={{
+                      width: 12,
+                      height: 12,
+                      borderRadius: 6,
+                      backgroundColor: '#2196F3',
+                    }} />
+                  )}
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text style={{ 
+                    fontSize: 17, 
+                    fontWeight: '600', 
+                    color: '#111827',
+                  }}>
+                    2 Hours Before:
+                  </Text>
+                  <Text style={{ 
+                    fontSize: 15, 
+                    color: '#6B7280',
+                    marginTop: 2,
+                  }}>
+                    Get reminded with plenty of time to prepare
+                  </Text>
+                </View>
+              </Pressable>
+
+              {/* 1 Hour Before */}
+              <Pressable
+                onPress={() => selectNotificationTime(60)}
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'flex-start',
+                  paddingVertical: 14,
+                }}
+              >
+                <View style={{
+                  width: 24,
+                  height: 24,
+                  borderRadius: 12,
+                  borderWidth: 2,
+                  borderColor: selectedNotificationTime === 60 ? '#2196F3' : '#D1D5DB',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  marginRight: 14,
+                  marginTop: 2,
+                }}>
+                  {selectedNotificationTime === 60 && (
+                    <View style={{
+                      width: 12,
+                      height: 12,
+                      borderRadius: 6,
+                      backgroundColor: '#2196F3',
+                    }} />
+                  )}
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text style={{ 
+                    fontSize: 17, 
+                    fontWeight: '600', 
+                    color: '#111827',
+                  }}>
+                    1 Hour Before:
+                  </Text>
+                  <Text style={{ 
+                    fontSize: 15, 
+                    color: '#6B7280',
+                    marginTop: 2,
+                  }}>
+                    Standard reminder time
+                  </Text>
+                </View>
+              </Pressable>
+
+              {/* 30 Minutes Before */}
+              <Pressable
+                onPress={() => selectNotificationTime(30)}
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'flex-start',
+                  paddingVertical: 14,
+                }}
+              >
+                <View style={{
+                  width: 24,
+                  height: 24,
+                  borderRadius: 12,
+                  borderWidth: 2,
+                  borderColor: selectedNotificationTime === 30 ? '#2196F3' : '#D1D5DB',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  marginRight: 14,
+                  marginTop: 2,
+                }}>
+                  {selectedNotificationTime === 30 && (
+                    <View style={{
+                      width: 12,
+                      height: 12,
+                      borderRadius: 6,
+                      backgroundColor: '#2196F3',
+                    }} />
+                  )}
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text style={{ 
+                    fontSize: 17, 
+                    fontWeight: '600', 
+                    color: '#111827',
+                  }}>
+                    30 Minutes Before:
+                  </Text>
+                  <Text style={{ 
+                    fontSize: 15, 
+                    color: '#6B7280',
+                    marginTop: 2,
+                  }}>
+                    Last minute reminder before it starts
+                  </Text>
+                </View>
+              </Pressable>
+            </View>
+
+          </Animated.View>
         </Portal>
       )}
     </>

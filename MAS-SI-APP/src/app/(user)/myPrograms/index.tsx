@@ -482,7 +482,7 @@ async function signUpWithEmail() {
       <View>
         <MenuItem title="Playlists" subtitle="Add Lectures to Playlist" href="/myPrograms/PlaylistIndex" icon="playlist-music" />
         <MenuItem title="Notifications" subtitle="Customize Your Notifications" href="/myPrograms/notifications/NotificationEvents" icon="bell" />
-        <MenuItem title="Programs" subtitle="Enjoy a Lecture? Add it" showArrow={false} icon="play-box-multiple" />
+        <MenuItem title="Upcoming Events" subtitle="Enjoy a Lecture? Add it" href="/menu/program/upcomingEvents" icon="play-box-multiple" />
         <MenuItem title="Recorded Lectures" subtitle="View your recorded lectures" href="/myPrograms/recordedLectures" icon="video" />
       </View>
 

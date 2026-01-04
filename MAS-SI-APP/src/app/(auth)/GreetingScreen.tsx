@@ -17,12 +17,15 @@ import Animated, {
 import { Link, Stack } from 'expo-router'
 import { LinearGradient } from 'expo-linear-gradient'
 import { supabase } from '@/src/lib/supabase'
-// Video import - uncomment after rebuilding development build
-// import { Video, ResizeMode, AVPlaybackStatus } from 'expo-av'
+import { useVideoPlayer, VideoView } from 'expo-video'
+import { LiquidGlassView } from '@/src/lib/liquidGlass'
 
 // Video background configuration
-// Set to true AFTER creating a new development build with: eas build --profile development --platform ios
-const ENABLE_VIDEO_BACKGROUND = false
+// Set to true AFTER rebuilding development build with: npx expo prebuild --clean && open ios/*.xcworkspace
+const ENABLE_VIDEO_BACKGROUND = true
+
+// Video source
+const videoSource = require('@/assets/videos/GreetingScreen2.mp4')
 
 const { height, width } = Dimensions.get('window')
 
@@ -146,16 +149,17 @@ const GreetingScreen = () => {
   // Start at 1 if video is disabled (show gradient immediately)
   const backgroundOpacity = useSharedValue(ENABLE_VIDEO_BACKGROUND ? 0 : 1)
   
-  // Logo animation values
+  // Logo animation values - start hidden and above screen for drop-down effect
   const logoScale = useSharedValue(0.3)
   const logoOpacity = useSharedValue(0)
   const logoFloat = useSharedValue(0)
+  const logoTranslateY = useSharedValue(-100) // Start above screen
   
   // Buttons animation
   const buttonsTranslate = useSharedValue(100)
   const buttonsOpacity = useSharedValue(0)
 
-  // Handle video end - transition to blue gradient
+  // Handle video end - transition to blue gradient and animate logo
   const handleVideoEnd = useCallback(() => {
     setVideoEnded(true)
     // Smooth fade to blue gradient over 1.5 seconds
@@ -163,27 +167,14 @@ const GreetingScreen = () => {
       duration: 1500, 
       easing: Easing.inOut(Easing.ease) 
     })
-  }, [])
-
-  // Handle video playback status
-  const onPlaybackStatusUpdate = useCallback((status: any) => {
-    if (status.isLoaded && status.didJustFinish) {
-      handleVideoEnd()
-    }
-  }, [handleVideoEnd])
-
-  // Animated style for the gradient overlay
-  const gradientOverlayStyle = useAnimatedStyle(() => ({
-    opacity: backgroundOpacity.value,
-  }))
-
-  useEffect(() => {
-    // Logo entrance animation
-    logoOpacity.value = withDelay(300, withTiming(1, { duration: 1000 }))
-    logoScale.value = withDelay(300, withSpring(1, { damping: 12, stiffness: 80 }))
     
-    // Logo floating animation (continuous)
-    logoFloat.value = withDelay(1300, withRepeat(
+    // Animate logo dropping down after video ends
+    logoOpacity.value = withDelay(500, withTiming(1, { duration: 800 }))
+    logoScale.value = withDelay(500, withSpring(1, { damping: 12, stiffness: 80 }))
+    logoTranslateY.value = withDelay(500, withSpring(0, { damping: 14, stiffness: 90 }))
+    
+    // Start floating animation after drop-in completes
+    logoFloat.value = withDelay(1500, withRepeat(
       withSequence(
         withTiming(-15, { duration: 3000, easing: Easing.inOut(Easing.ease) }),
         withTiming(0, { duration: 3000, easing: Easing.inOut(Easing.ease) })
@@ -191,17 +182,62 @@ const GreetingScreen = () => {
       -1,
       true
     ))
+  }, [])
+
+  // Create video player with expo-video
+  const player = useVideoPlayer(ENABLE_VIDEO_BACKGROUND ? videoSource : null, (player) => {
+    if (player) {
+      player.loop = false
+      player.muted = true
+      player.play()
+    }
+  })
+
+  // Listen for video end
+  useEffect(() => {
+    if (!ENABLE_VIDEO_BACKGROUND || !player) return
+
+    const subscription = player.addListener('playToEnd', () => {
+      handleVideoEnd()
+    })
+
+    return () => {
+      subscription.remove()
+    }
+  }, [player, handleVideoEnd])
+
+  // Animated style for the gradient overlay
+  const gradientOverlayStyle = useAnimatedStyle(() => ({
+    opacity: backgroundOpacity.value,
+  }))
+
+  useEffect(() => {
+    // If video is disabled, animate logo immediately
+    if (!ENABLE_VIDEO_BACKGROUND) {
+      logoOpacity.value = withDelay(300, withTiming(1, { duration: 800 }))
+      logoScale.value = withDelay(300, withSpring(1, { damping: 12, stiffness: 80 }))
+      logoTranslateY.value = withDelay(300, withSpring(0, { damping: 14, stiffness: 90 }))
+      
+      logoFloat.value = withDelay(1300, withRepeat(
+        withSequence(
+          withTiming(-15, { duration: 3000, easing: Easing.inOut(Easing.ease) }),
+          withTiming(0, { duration: 3000, easing: Easing.inOut(Easing.ease) })
+        ),
+        -1,
+        true
+      ))
+    }
     
-    // Buttons entrance
-    buttonsOpacity.value = withDelay(800, withTiming(1, { duration: 600 }))
-    buttonsTranslate.value = withDelay(800, withSpring(0, { damping: 15, stiffness: 80 }))
+    // Buttons entrance (always animate)
+    buttonsOpacity.value = withDelay(ENABLE_VIDEO_BACKGROUND ? 1800 : 1500, withTiming(1, { duration: 600 }))
+    buttonsTranslate.value = withDelay(ENABLE_VIDEO_BACKGROUND ? 1800 : 1500, withSpring(0, { damping: 15, stiffness: 80 }))
   }, [])
 
   const logoStyle = useAnimatedStyle(() => ({
     opacity: logoOpacity.value,
     transform: [
       { scale: logoScale.value },
-      { translateY: logoFloat.value },
+      { translateY: logoTranslateY.value + logoFloat.value }, // Combine drop-down and float
     ],
   }))
 
@@ -216,18 +252,14 @@ const GreetingScreen = () => {
       <StatusBar barStyle="light-content" />
 
       {/* Video Background - plays first, then fades to gradient */}
-      {/* Uncomment after rebuilding development build with expo-av */}
-      {/* ENABLE_VIDEO_BACKGROUND && !videoEnded && (
-        <Video
-          source={require('@/assets/videos/greeting-background.mp4')}
+      {ENABLE_VIDEO_BACKGROUND && !videoEnded && player && (
+        <VideoView
+          player={player}
           style={StyleSheet.absoluteFill}
-          resizeMode={ResizeMode.COVER}
-          shouldPlay
-          isLooping={false}
-          isMuted={true}
-          onPlaybackStatusUpdate={onPlaybackStatusUpdate}
+          contentFit="cover"
+          nativeControls={false}
         />
-      ) */}
+      )}
 
       {/* Background gradient - fades in after video ends */}
       <Animated.View style={[StyleSheet.absoluteFill, gradientOverlayStyle]}>
@@ -281,7 +313,7 @@ const GreetingScreen = () => {
       <FloatingOrb delay={2300} size={22} startX={width * 0.82} startY={height * 0.88} color="rgba(255, 255, 255, 0.2)" duration={5250} />
       */}
 
-      {/* Center logo section */}
+      {/* Center logo section - drops down after video ends */}
       <View style={{
         flex: 1,
         justifyContent: 'center',
@@ -331,43 +363,49 @@ const GreetingScreen = () => {
         paddingBottom: 50,
         gap: 12,
       }, buttonsStyle]}>
-        {/* Create Account Button - Solid White */}
+        {/* Create Account Button - Liquid Glass */}
         <Link href='/SignUp' asChild>
-          <Pressable style={{
-            backgroundColor: '#ffffff',
-            paddingVertical: 18,
-            borderRadius: 50,
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}>
-            <Text style={{
-              fontFamily: 'Poppins_600SemiBold',
-              fontSize: 17,
-              color: '#0E519F',
-            }}>
-              Create Account
-            </Text>
+          <Pressable>
+            <LiquidGlassView
+              style={{
+                paddingVertical: 18,
+                borderRadius: 50,
+                alignItems: 'center',
+                justifyContent: 'center',
+                overflow: 'hidden',
+              }}
+            >
+              <Text style={{
+                fontFamily: 'Poppins_600SemiBold',
+                fontSize: 17,
+                color: '#ffffff',
+              }}>
+                Create Account
+              </Text>
+            </LiquidGlassView>
           </Pressable>
         </Link>
 
-        {/* Sign In Button - Outlined */}
+        {/* Sign In Button - Liquid Glass */}
         <Link href='/SignIn' asChild>
-          <Pressable style={{
-            backgroundColor: 'transparent',
-            paddingVertical: 18,
-            borderRadius: 50,
-            alignItems: 'center',
-            justifyContent: 'center',
-            borderWidth: 1.5,
-            borderColor: 'rgba(255, 255, 255, 0.4)',
-          }}>
-            <Text style={{
-              fontFamily: 'Poppins_600SemiBold',
-              fontSize: 17,
-              color: '#ffffff',
-            }}>
-              Sign In
-            </Text>
+          <Pressable>
+            <LiquidGlassView
+              style={{
+                paddingVertical: 18,
+                borderRadius: 50,
+                alignItems: 'center',
+                justifyContent: 'center',
+                overflow: 'hidden',
+              }}
+            >
+              <Text style={{
+                fontFamily: 'Poppins_600SemiBold',
+                fontSize: 17,
+                color: '#ffffff',
+              }}>
+                Sign In
+              </Text>
+            </LiquidGlassView>
           </Pressable>
         </Link>
 

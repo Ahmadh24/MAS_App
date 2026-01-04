@@ -1,4 +1,4 @@
-import { View, Text, Pressable, Platform, ScrollView, SafeAreaView } from 'react-native'
+import { View, Text, Pressable, Platform, ScrollView, SafeAreaView, TextInput } from 'react-native'
 import React, { useState, useEffect, useCallback } from 'react'
 import { Icon, ActivityIndicator } from 'react-native-paper'
 import { Stack, router } from "expo-router"
@@ -21,9 +21,6 @@ type OnboardingData = {
   quietHoursStart: string
   quietHoursEnd: string
 }
-
-// Generate birth years (1940-2015)
-const birthYears = Array.from({ length: 76 }, (_, i) => (2015 - i).toString())
 
 // Constants for options
 const GENDER_OPTIONS = [
@@ -62,35 +59,35 @@ const WEEKEND_TIMES = [
 ]
 
 const LANGUAGES = [
-  { value: 'english', label: 'English', flag: '🇺🇸' },
-  { value: 'arabic', label: 'Arabic', flag: '🇸🇦' },
-  { value: 'urdu', label: 'Urdu', flag: '🇵🇰' },
-  { value: 'albanian', label: 'Albanian', flag: '🇦🇱' },
-  { value: 'no_preference', label: 'No preference', flag: '🌍' },
+  { value: 'english', label: 'English', icon: 'alpha-e-circle' },
+  { value: 'arabic', label: 'Arabic', icon: 'alpha-a-circle' },
+  { value: 'urdu', label: 'Urdu', icon: 'alpha-u-circle' },
+  { value: 'albanian', label: 'Albanian', icon: 'alpha-a-circle-outline' },
+  { value: 'no_preference', label: 'No preference', icon: 'earth' },
 ]
 
 const INTERESTS = {
-  'Islamic Education': [
+  '📖 Islamic Education': [
     { value: 'quran_memorization', label: 'Quran Memorization' },
     { value: 'quran_tafsir', label: 'Quran Tafsir' },
     { value: 'arabic_classes', label: 'Arabic Classes' },
     { value: 'fiqh', label: 'Fiqh/Islamic Law' },
     { value: 'seerah', label: 'Seerah/History' },
   ],
-  'Community': [
+  '🤝 Community': [
     { value: 'brothers_halaqas', label: "Brothers' Halaqas" },
     { value: 'sisters_halaqas', label: "Sisters' Halaqas" },
     { value: 'convert_support', label: 'Convert Support Circle' },
     { value: 'new_moms', label: 'New Moms Group' },
     { value: 'seniors', label: 'Seniors Gathering' },
   ],
-  'Youth & Children': [
+  '👨‍👩‍👧‍👦 Youth & Children': [
     { value: 'after_school', label: 'After School Program' },
     { value: 'weekend_school', label: 'Weekend School' },
     { value: 'youth_group', label: 'Youth Group (13-17)' },
     { value: 'young_professionals', label: 'Young Professionals (18-25)' },
   ],
-  'Sports & Activities': [
+  '⚽ Sports & Activities': [
     { value: 'basketball', label: 'Basketball (Men/Boys)' },
     { value: 'soccer', label: 'Soccer' },
     { value: 'martial_arts', label: 'Martial Arts' },
@@ -147,8 +144,8 @@ const RadioOption = ({ selected, label, onPress }: { selected: boolean; label: s
 )
 
 // Checkbox option component
-const CheckOption = ({ checked, label, sublabel, icon, onPress, compact = false }: { 
-  checked: boolean; label: string; sublabel?: string; icon?: string; onPress: () => void; compact?: boolean 
+const CheckOption = ({ checked, label, sublabel, icon, emoji, onPress, compact = false }: { 
+  checked: boolean; label: string; sublabel?: string; icon?: string; emoji?: string; onPress: () => void; compact?: boolean 
 }) => (
   <Pressable
     onPress={onPress}
@@ -165,8 +162,9 @@ const CheckOption = ({ checked, label, sublabel, icon, onPress, compact = false 
       flex: compact ? 1 : undefined,
     }}
   >
-    {icon && <Icon source={icon} size={20} color={checked ? '#0F4184' : 'rgba(15, 65, 132, 0.5)'} />}
-    <View style={{ flex: 1, marginLeft: icon ? 12 : 0 }}>
+    {emoji && <Text style={{ fontSize: 18, marginRight: 12 }}>{emoji}</Text>}
+    {icon && !emoji && <Icon source={icon} size={20} color={checked ? '#0F4184' : 'rgba(15, 65, 132, 0.5)'} />}
+    <View style={{ flex: 1, marginLeft: (icon && !emoji) ? 12 : 0 }}>
       <Text style={{ fontFamily: 'Poppins_500Medium', fontSize: compact ? 13 : 15, color: checked ? '#0F4184' : '#0f172a' }}>
         {label}
       </Text>
@@ -305,6 +303,28 @@ const PreferencesOnboarding = () => {
     })
   }, [])
 
+  // Calculate completion percentage based on individual questions answered
+  const calculateCompletionPercentage = useCallback(() => {
+    let completed = 0
+    const totalQuestions = 8
+
+    // Step 1 questions (4 questions)
+    if (data.birthYear && data.birthYear.length === 4) completed++
+    if (data.gender) completed++
+    if (data.maritalStatus) completed++
+    if (data.childrenAges.length > 0) completed++
+
+    // Step 2 questions (3 questions)
+    if (data.weekdayAvailability.length > 0) completed++
+    if (data.weekendAvailability.length > 0) completed++
+    if (data.languagePreferences.length > 0) completed++
+
+    // Step 3 questions (1 question)
+    if (data.interests.length > 0) completed++
+
+    return Math.round((completed / totalQuestions) * 100)
+  }, [data])
+
   const renderStepContent = () => {
     switch (currentStep) {
       case 0:
@@ -318,25 +338,50 @@ const PreferencesOnboarding = () => {
             </Text>
 
             <Text style={{ fontFamily: 'Poppins_600SemiBold', fontSize: 16, color: '#0f172a', marginBottom: 12 }}>Birth Year</Text>
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 24 }}>
-              <View style={{ flexDirection: 'row', gap: 8 }}>
-                {birthYears.map((year) => (
-                  <Pressable
-                    key={year}
-                    onPress={() => updateData('birthYear', year)}
-                    style={{
-                      paddingVertical: 10, paddingHorizontal: 16, borderRadius: 20,
-                      backgroundColor: data.birthYear === year ? '#0F4184' : 'rgba(15, 65, 132, 0.08)',
-                      borderWidth: 1, borderColor: data.birthYear === year ? '#0F4184' : 'rgba(15, 65, 132, 0.15)',
-                    }}
-                  >
-                    <Text style={{ fontFamily: 'Poppins_500Medium', fontSize: 14, color: data.birthYear === year ? '#fff' : '#0f172a' }}>
-                      {year}
-                    </Text>
-                  </Pressable>
-                ))}
-              </View>
-            </ScrollView>
+            <View style={{
+              backgroundColor: 'rgba(15, 65, 132, 0.04)',
+              borderRadius: 14,
+              borderWidth: 2,
+              borderColor: data.birthYear ? '#0F4184' : 'rgba(15, 65, 132, 0.1)',
+              flexDirection: 'row',
+              alignItems: 'center',
+              paddingHorizontal: 16,
+              marginBottom: 24,
+            }}>
+              <Icon source="calendar" size={22} color={data.birthYear ? '#0F4184' : 'rgba(15, 65, 132, 0.4)'} />
+              <TextInput
+                value={data.birthYear}
+                onChangeText={(text) => {
+                  // Only allow numbers and limit to 4 digits
+                  const cleaned = text.replace(/\D/g, '').slice(0, 4)
+                  updateData('birthYear', cleaned)
+                }}
+                placeholder="Enter your birth year (e.g., 1990)"
+                placeholderTextColor="rgba(15, 65, 132, 0.4)"
+                keyboardType="number-pad"
+                maxLength={4}
+                style={{
+                  flex: 1,
+                  fontSize: 16,
+                  fontFamily: 'Poppins_500Medium',
+                  color: '#0f172a',
+                  paddingVertical: 14,
+                  paddingHorizontal: 12,
+                }}
+              />
+              {data.birthYear.length === 4 && (
+                <View style={{
+                  width: 24,
+                  height: 24,
+                  borderRadius: 12,
+                  backgroundColor: '#22c55e',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}>
+                  <Icon source="check" size={14} color="#fff" />
+                </View>
+              )}
+            </View>
 
             <Text style={{ fontFamily: 'Poppins_600SemiBold', fontSize: 16, color: '#0f172a', marginBottom: 12 }}>Gender</Text>
             {GENDER_OPTIONS.map((opt) => (
@@ -375,9 +420,9 @@ const PreferencesOnboarding = () => {
               <CheckOption key={opt.value} checked={data.weekendAvailability.includes(opt.value)} label={opt.label} icon={opt.icon} onPress={() => toggleArrayItem('weekendAvailability', opt.value)} />
             ))}
 
-            <Text style={{ fontFamily: 'Poppins_600SemiBold', fontSize: 16, color: '#0f172a', marginBottom: 12, marginTop: 24 }}>Prefer programs in</Text>
+            <Text style={{ fontFamily: 'Poppins_600SemiBold', fontSize: 16, color: '#0f172a', marginBottom: 12, marginTop: 24 }}>Preferred Language</Text>
             {LANGUAGES.map((opt) => (
-              <CheckOption key={opt.value} checked={data.languagePreferences.includes(opt.value)} label={`${opt.flag}  ${opt.label}`} onPress={() => toggleArrayItem('languagePreferences', opt.value)} />
+              <CheckOption key={opt.value} checked={data.languagePreferences.includes(opt.value)} label={opt.label} icon={opt.icon} onPress={() => toggleArrayItem('languagePreferences', opt.value)} />
             ))}
           </View>
         )
@@ -394,7 +439,7 @@ const PreferencesOnboarding = () => {
 
             {Object.entries(INTERESTS).map(([category, options]) => (
               <View key={category} style={{ marginBottom: 24 }}>
-                <Text style={{ fontFamily: 'Poppins_600SemiBold', fontSize: 14, color: '#0F4184', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 12 }}>
+                <Text style={{ fontFamily: 'Poppins_600SemiBold', fontSize: 15, color: '#0F4184', letterSpacing: 0.5, marginBottom: 12 }}>
                   {category}
                 </Text>
                 {options.map((opt) => (
@@ -416,7 +461,7 @@ const PreferencesOnboarding = () => {
             </Text>
 
             <View style={{ backgroundColor: 'rgba(15, 65, 132, 0.08)', borderRadius: 12, padding: 14, marginBottom: 14, borderLeftWidth: 4, borderLeftColor: '#0F4184' }}>
-              <Text style={{ fontFamily: 'Poppins_600SemiBold', fontSize: 15, color: '#0F4184', marginBottom: 4 }}>HIGH PRIORITY programs</Text>
+              <Text style={{ fontFamily: 'Poppins_600SemiBold', fontSize: 15, color: '#0F4184', marginBottom: 4 }}>🔔 High Priority Programs</Text>
               <Text style={{ fontFamily: 'Poppins_400Regular', fontSize: 12, color: 'rgba(15, 23, 42, 0.6)' }}>Matching all your preferences</Text>
             </View>
             <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 24 }}>
@@ -438,7 +483,7 @@ const PreferencesOnboarding = () => {
             </View>
 
             <View style={{ backgroundColor: 'rgba(111, 166, 108, 0.12)', borderRadius: 12, padding: 14, marginBottom: 14, borderLeftWidth: 4, borderLeftColor: '#6FA66C' }}>
-              <Text style={{ fontFamily: 'Poppins_600SemiBold', fontSize: 15, color: '#6FA66C', marginBottom: 4 }}>OTHER programs</Text>
+              <Text style={{ fontFamily: 'Poppins_600SemiBold', fontSize: 15, color: '#6FA66C', marginBottom: 4 }}>📋 Other Programs</Text>
               <Text style={{ fontFamily: 'Poppins_400Regular', fontSize: 12, color: 'rgba(15, 23, 42, 0.6)' }}>Partially matching your interests</Text>
             </View>
             <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
@@ -468,7 +513,7 @@ const PreferencesOnboarding = () => {
 
   return (
     <LinearGradient colors={['#ffffff', '#f8fafc', '#f1f5f9']} style={{ flex: 1 }}>
-      <Stack.Screen options={{ headerShown: false, presentation: 'card' }} />
+      <Stack.Screen options={{ headerShown: false, presentation: 'fullScreenModal' }} />
       
       <SafeAreaView style={{ flex: 1 }}>
         {/* Header */}
@@ -481,7 +526,7 @@ const PreferencesOnboarding = () => {
             {/* Percentage */}
             <View style={{ alignItems: 'center' }}>
               <Text style={{ fontFamily: 'Poppins_700Bold', fontSize: 18, color: '#0F4184' }}>
-                {Math.round(((currentStep + 1) / totalSteps) * 100)}%
+                {calculateCompletionPercentage()}%
               </Text>
               <Text style={{ fontFamily: 'Poppins_400Regular', fontSize: 11, color: 'rgba(15, 23, 42, 0.5)' }}>
                 Complete
@@ -500,7 +545,7 @@ const PreferencesOnboarding = () => {
           <View style={{ marginTop: 16, height: 6, backgroundColor: 'rgba(15, 65, 132, 0.1)', borderRadius: 3 }}>
             <View 
               style={{ 
-                width: `${((currentStep + 1) / totalSteps) * 100}%`, 
+                width: `${calculateCompletionPercentage()}%`, 
                 height: '100%', 
                 backgroundColor: '#0F4184', 
                 borderRadius: 3 

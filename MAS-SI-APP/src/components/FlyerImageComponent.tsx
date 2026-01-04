@@ -142,10 +142,10 @@ const getVideoIdFromUrl = (url: string) => {
   return match ? match[1] : null;
 };
 
-const FlyerImageComponent = ({item} : {item : Program}) => {
+const FlyerImageComponent = ({item, autoOpen = false, onModalClose} : {item : Program, autoOpen?: boolean, onModalClose?: () => void}) => {
     const { session } = useAuth()
     const [ imageReady, setImageReady ] = useState(false)
-    const [modalVisible, setModalVisible] = useState(false)
+    const [modalVisible, setModalVisible] = useState(autoOpen)
     const [program, setProgram] = useState<Program | null>(null)
     const [lectures, setLectures] = useState<Lectures[]>([])
     const [speakerData, setSpeakerData] = useState<SheikDataType[]>([])
@@ -566,6 +566,31 @@ const FlyerImageComponent = ({item} : {item : Program}) => {
             fetchLectures();
         }
     }, [item.has_lectures, item.program_id]);
+
+    // Auto-open modal when autoOpen prop is true
+    const hasOpenedRef = useRef(false);
+    useEffect(() => {
+        if (autoOpen && !hasOpenedRef.current) {
+            hasOpenedRef.current = true;
+            // Trigger animation
+            Animated.spring(slideAnim, {
+                toValue: 1,
+                useNativeDriver: true,
+                tension: 40,
+                friction: 8,
+            }).start();
+            // Fetch data
+            fetchProgramData();
+            fetchSpeakerData();
+        }
+    }, [autoOpen]);
+
+    // Call onModalClose callback when modal closes (only after it was opened)
+    useEffect(() => {
+        if (!modalVisible && hasOpenedRef.current && onModalClose) {
+            onModalClose();
+        }
+    }, [modalVisible]);
     
     const handleNotificationPress = async () => {
         if (!session?.user.id || !program) return;
@@ -1038,45 +1063,48 @@ const FlyerImageComponent = ({item} : {item : Program}) => {
 
     return (
         <>
-            <View className='flex-col relative'>
-                <Pressable onPress={handlePress}>
-                    { !imageReady && 
-                        <FlyerSkeleton width={150} height={150} style={{position : 'absolute', top : 0, zIndex : 2}}/>
-                    }
-                    <Image 
-                        source={(hasError || !item.program_img || item.program_img.trim() === '') 
-                            ? require("@/assets/images/massicliquidglassicon.png") 
-                            : { uri : item.program_img }} 
-                        style={{ width : 150, height : 150, borderRadius : 8, margin : 5 }}
-                        resizeMode="cover"
-                        onLoad={() => setImageReady(true)}
-                        onError={() => {
-                            setImageReady(true);
-                            setHasError(true);
-                        }}
-                    />
-                    <Text className='text-black font-medium pl-2 text-[10px] w-[150px] text-center' numberOfLines={1}>{item.program_name}</Text>
-                </Pressable>
+            {/* Card View - Hide when autoOpen is true (modal-only mode) */}
+            {!autoOpen && (
+                <View className='flex-col relative'>
+                    <Pressable onPress={handlePress}>
+                        { !imageReady && 
+                            <FlyerSkeleton width={150} height={150} style={{position : 'absolute', top : 0, zIndex : 2}}/>
+                        }
+                        <Image 
+                            source={(hasError || !item.program_img || item.program_img.trim() === '') 
+                                ? require("@/assets/images/massicliquidglassicon.png") 
+                                : { uri : item.program_img }} 
+                            style={{ width : 150, height : 150, borderRadius : 8, margin : 5 }}
+                            resizeMode="cover"
+                            onLoad={() => setImageReady(true)}
+                            onError={() => {
+                                setImageReady(true);
+                                setHasError(true);
+                            }}
+                        />
+                        <Text className='text-black font-medium pl-2 text-[10px] w-[150px] text-center' numberOfLines={1}>{item.program_name}</Text>
+                    </Pressable>
 
-                {/* Description Card - Show for all programs with descriptions */}
-                {item.program_desc && (
-                    <View style={{
-                        marginHorizontal: 5,
-                        marginTop: 4,
-                    }}>
-                        <Pressable onPress={openModal}>
-                            <Text 
-                                className="text-[#0D509D] text-[10px] text-center"
-                            >
-                                Read full description
-                            </Text>
-                        </Pressable>
-                    </View>
-                )}
-            </View>
+                    {/* Description Card - Show for all programs with descriptions */}
+                    {item.program_desc && (
+                        <View style={{
+                            marginHorizontal: 5,
+                            marginTop: 4,
+                        }}>
+                            <Pressable onPress={openModal}>
+                                <Text 
+                                    className="text-[#0D509D] text-[10px] text-center"
+                                >
+                                    Read full description
+                                </Text>
+                            </Pressable>
+                        </View>
+                    )}
+                </View>
+            )}
 
-            {/* Program Detail Modal - Slide Up - Only show if no lectures/videos */}
-            {(modalVisible || isClosing.current) && (!item.has_lectures || (item.has_lectures && lectures.length === 0)) && (
+            {/* Program Detail Modal - Slide Up - Show if no lectures/videos OR if autoOpen is true */}
+            {(modalVisible || isClosing.current) && (autoOpen || !item.has_lectures || (item.has_lectures && lectures.length === 0)) && (
                 <Portal>
                     <Modal
                         visible={modalVisible}
@@ -1352,26 +1380,18 @@ const FlyerImageComponent = ({item} : {item : Program}) => {
                                             </Pressable>
                                         </BlurView>
                                         <View style={{ flexDirection: 'row', gap: 10 }}>
-                                            {program && isBefore(new Date().toISOString(), program.program_end_date || '') ? (
-                                                <>
-                                                    <BlurView intensity={20} tint="dark" style={{ borderRadius: 16, overflow: 'hidden', width: 36, height: 36 }}>
-                                                        <Pressable onPress={handleNotificationPress} style={{ width: 36, height: 36, alignItems: 'center', justifyContent: 'center' }}>
-                                                            {programInNotifications ? <Icon source={"bell-check"} color='#0D509D' size={20}/> : <Icon source={"bell-outline"} color='#0D509D' size={20}/>}
-                                                        </Pressable>
-                                                    </BlurView>
-                                                    <BlurView intensity={20} tint="dark" style={{ borderRadius: 16, overflow: 'hidden', width: 36, height: 36 }}>
-                                                        <Pressable onPress={handleAddToProgramsPress} style={{ width: 36, height: 36, alignItems: 'center', justifyContent: 'center' }}>
-                                                            {programInPrograms ? <Icon source={'minus-circle-outline'} color='#0D509D' size={20}/> : <Icon source={"plus-circle-outline"} color='#0D509D' size={20}/>}
-                                                        </Pressable>
-                                                    </BlurView>
-                                                </>
-                                            ) : (
+                                            {program && isBefore(new Date().toISOString(), program.program_end_date || '') && (
                                                 <BlurView intensity={20} tint="dark" style={{ borderRadius: 16, overflow: 'hidden', width: 36, height: 36 }}>
-                                                    <Pressable onPress={handleAddToProgramsPress} style={{ width: 36, height: 36, alignItems: 'center', justifyContent: 'center' }}>
-                                                        {programInPrograms ? <Icon source={'minus-circle'} color='#0D509D' size={20}/> : <Icon source={"plus-circle-outline"} color='#0D509D' size={20}/>}
+                                                    <Pressable onPress={handleNotificationPress} style={{ width: 36, height: 36, alignItems: 'center', justifyContent: 'center' }}>
+                                                        {programInNotifications ? <Icon source={"bell-check"} color='#0D509D' size={20}/> : <Icon source={"bell-outline"} color='#0D509D' size={20}/>}
                                                     </Pressable>
                                                 </BlurView>
                                             )}
+                                            <BlurView intensity={20} tint="dark" style={{ borderRadius: 16, overflow: 'hidden', width: 36, height: 36 }}>
+                                                <Pressable onPress={handleAddToProgramsPress} style={{ width: 36, height: 36, alignItems: 'center', justifyContent: 'center' }}>
+                                                    <Icon source={programInPrograms ? 'heart' : 'heart-outline'} color={programInPrograms ? '#E53935' : '#0D509D'} size={20}/>
+                                                </Pressable>
+                                            </BlurView>
                                         </View>
                                     </View>
                                     

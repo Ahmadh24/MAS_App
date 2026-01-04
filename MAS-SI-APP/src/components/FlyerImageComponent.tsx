@@ -142,10 +142,10 @@ const getVideoIdFromUrl = (url: string) => {
   return match ? match[1] : null;
 };
 
-const FlyerImageComponent = ({item} : {item : Program}) => {
+const FlyerImageComponent = ({item, autoOpen = false, onModalClose} : {item : Program, autoOpen?: boolean, onModalClose?: () => void}) => {
     const { session } = useAuth()
     const [ imageReady, setImageReady ] = useState(false)
-    const [modalVisible, setModalVisible] = useState(false)
+    const [modalVisible, setModalVisible] = useState(autoOpen)
     const [program, setProgram] = useState<Program | null>(null)
     const [lectures, setLectures] = useState<Lectures[]>([])
     const [speakerData, setSpeakerData] = useState<SheikDataType[]>([])
@@ -220,7 +220,7 @@ const FlyerImageComponent = ({item} : {item : Program}) => {
                 });
             },
             onPanResponderRelease: (evt, gestureState) => {
-                const threshold = height * 0.25; // Close if dragged down more than 25% of screen height
+                const threshold = -10; // Dismiss immediately on any downward drag
                 
                 if (gestureState.dy > threshold || gestureState.vy > 0.5) {
                     // Mark as closing to prevent re-renders
@@ -566,6 +566,31 @@ const FlyerImageComponent = ({item} : {item : Program}) => {
             fetchLectures();
         }
     }, [item.has_lectures, item.program_id]);
+
+    // Auto-open modal when autoOpen prop is true
+    const hasOpenedRef = useRef(false);
+    useEffect(() => {
+        if (autoOpen && !hasOpenedRef.current) {
+            hasOpenedRef.current = true;
+            // Trigger animation
+            Animated.spring(slideAnim, {
+                toValue: 1,
+                useNativeDriver: true,
+                tension: 40,
+                friction: 8,
+            }).start();
+            // Fetch data
+            fetchProgramData();
+            fetchSpeakerData();
+        }
+    }, [autoOpen]);
+
+    // Call onModalClose callback when modal closes (only after it was opened)
+    useEffect(() => {
+        if (!modalVisible && hasOpenedRef.current && onModalClose) {
+            onModalClose();
+        }
+    }, [modalVisible]);
     
     const handleNotificationPress = async () => {
         if (!session?.user.id || !program) return;
@@ -1038,45 +1063,48 @@ const FlyerImageComponent = ({item} : {item : Program}) => {
 
     return (
         <>
-            <View className='flex-col relative'>
-                <Pressable onPress={handlePress}>
-                    { !imageReady && 
-                        <FlyerSkeleton width={150} height={150} style={{position : 'absolute', top : 0, zIndex : 2}}/>
-                    }
-                    <Image 
-                        source={(hasError || !item.program_img || item.program_img.trim() === '') 
-                            ? require("@/assets/images/massicliquidglassicon.png") 
-                            : { uri : item.program_img }} 
-                        style={{ width : 150, height : 150, borderRadius : 8, margin : 5 }}
-                        resizeMode="cover"
-                        onLoad={() => setImageReady(true)}
-                        onError={() => {
-                            setImageReady(true);
-                            setHasError(true);
-                        }}
-                    />
-                    <Text className='text-black font-medium pl-2 text-[10px] w-[150px] text-center' numberOfLines={1}>{item.program_name}</Text>
-                </Pressable>
+            {/* Card View - Hide when autoOpen is true (modal-only mode) */}
+            {!autoOpen && (
+                <View className='flex-col relative'>
+                    <Pressable onPress={handlePress}>
+                        { !imageReady && 
+                            <FlyerSkeleton width={150} height={150} style={{position : 'absolute', top : 0, zIndex : 2}}/>
+                        }
+                        <Image 
+                            source={(hasError || !item.program_img || item.program_img.trim() === '') 
+                                ? require("@/assets/images/massicliquidglassicon.png") 
+                                : { uri : item.program_img }} 
+                            style={{ width : 150, height : 150, borderRadius : 8, margin : 5 }}
+                            resizeMode="cover"
+                            onLoad={() => setImageReady(true)}
+                            onError={() => {
+                                setImageReady(true);
+                                setHasError(true);
+                            }}
+                        />
+                        <Text className='text-black font-medium pl-2 text-[10px] w-[150px] text-center' numberOfLines={1}>{item.program_name}</Text>
+                    </Pressable>
 
-                {/* Description Card - Show for all programs with descriptions */}
-                {item.program_desc && (
-                    <View style={{
-                        marginHorizontal: 5,
-                        marginTop: 4,
-                    }}>
-                        <Pressable onPress={openModal}>
-                            <Text 
-                                className="text-[#0D509D] text-[10px] text-center"
-                            >
-                                Read full description
-                            </Text>
-                        </Pressable>
-                    </View>
-                )}
-            </View>
+                    {/* Description Card - Show for all programs with descriptions */}
+                    {item.program_desc && (
+                        <View style={{
+                            marginHorizontal: 5,
+                            marginTop: 4,
+                        }}>
+                            <Pressable onPress={openModal}>
+                                <Text 
+                                    className="text-[#0D509D] text-[10px] text-center"
+                                >
+                                    Read full description
+                                </Text>
+                            </Pressable>
+                        </View>
+                    )}
+                </View>
+            )}
 
-            {/* Program Detail Modal - Slide Up - Only show if no lectures/videos */}
-            {(modalVisible || isClosing.current) && (!item.has_lectures || (item.has_lectures && lectures.length === 0)) && (
+            {/* Program Detail Modal - Slide Up - Show if no lectures/videos OR if autoOpen is true */}
+            {(modalVisible || isClosing.current) && (autoOpen || !item.has_lectures || (item.has_lectures && lectures.length === 0)) && (
                 <Portal>
                     <Modal
                         visible={modalVisible}
@@ -1112,6 +1140,11 @@ const FlyerImageComponent = ({item} : {item : Program}) => {
                                     borderBottomRightRadius: 0,
                                     borderBottomWidth: 0,
                                     overflow: 'hidden',
+                                    shadowColor: '#000',
+                                    shadowOffset: { width: 0, height: -8 },
+                                    shadowOpacity: 0.3,
+                                    shadowRadius: 12,
+                                    elevation: 20,
                                     transform: [
                                         {
                                             translateY: Animated.add(
@@ -1174,7 +1207,7 @@ const FlyerImageComponent = ({item} : {item : Program}) => {
                                         
                                         // If at the top and we have a panY value, check if we should close
                                         if (offset <= 0 && panYValue.current > 20) {
-                                            const threshold = height * 0.2; // Close if dragged down more than 20% of screen height
+                                            const threshold = -10; // Dismiss immediately on any downward drag
                                             
                                             if (panYValue.current > threshold) {
                                                 // Close the sheet
@@ -1233,7 +1266,7 @@ const FlyerImageComponent = ({item} : {item : Program}) => {
                                         
                                         // If at the top and we have a panY value, check if we should close
                                         if (offset <= 0 && panYValue.current > 20) {
-                                            const threshold = height * 0.2;
+                                            const threshold = -10;
                                             
                                             if (panYValue.current > threshold) {
                                                 // Close the sheet
@@ -1318,6 +1351,8 @@ const FlyerImageComponent = ({item} : {item : Program}) => {
                                     }}
                                     showsVerticalScrollIndicator={true}
                                     bounces={true}
+                                    alwaysBounceVertical={true}
+                                    overScrollMode="always"
                                     contentContainerStyle={{
                                         justifyContent: "flex-start",
                                         alignItems: "stretch",
@@ -1333,7 +1368,7 @@ const FlyerImageComponent = ({item} : {item : Program}) => {
                                         left: 0, 
                                         right: 0, 
                                         zIndex: 100, 
-                                        paddingTop: 30, 
+                                        paddingTop: 12, 
                                         paddingHorizontal: 10, 
                                         flexDirection: 'row', 
                                         justifyContent: 'space-between', 
@@ -1341,30 +1376,22 @@ const FlyerImageComponent = ({item} : {item : Program}) => {
                                     }}>
                                         <BlurView intensity={20} tint="dark" style={{ borderRadius: 16, overflow: 'hidden', width: 36, height: 36 }}>
                                             <Pressable onPress={() => closeModal()} style={{ width: 36, height: 36, alignItems: 'center', justifyContent: 'center' }}>
-                                                <Icon source="chevron-left" size={20} color="black" />
+                                                <Icon source="chevron-left" size={20} color="#0D509D" />
                                             </Pressable>
                                         </BlurView>
                                         <View style={{ flexDirection: 'row', gap: 10 }}>
-                                            {program && isBefore(new Date().toISOString(), program.program_end_date || '') ? (
-                                                <>
-                                                    <BlurView intensity={20} tint="dark" style={{ borderRadius: 16, overflow: 'hidden', width: 36, height: 36 }}>
-                                                        <Pressable onPress={handleNotificationPress} style={{ width: 36, height: 36, alignItems: 'center', justifyContent: 'center' }}>
-                                                            {programInNotifications ? <Icon source={"bell-check"} color='black' size={20}/> : <Icon source={"bell-outline"} color='black' size={20}/>}
-                                                        </Pressable>
-                                                    </BlurView>
-                                                    <BlurView intensity={20} tint="dark" style={{ borderRadius: 16, overflow: 'hidden', width: 36, height: 36 }}>
-                                                        <Pressable onPress={handleAddToProgramsPress} style={{ width: 36, height: 36, alignItems: 'center', justifyContent: 'center' }}>
-                                                            {programInPrograms ? <Icon source={'minus-circle-outline'} color='black' size={20}/> : <Icon source={"plus-circle-outline"} color='black' size={20}/>}
-                                                        </Pressable>
-                                                    </BlurView>
-                                                </>
-                                            ) : (
+                                            {program && isBefore(new Date().toISOString(), program.program_end_date || '') && (
                                                 <BlurView intensity={20} tint="dark" style={{ borderRadius: 16, overflow: 'hidden', width: 36, height: 36 }}>
-                                                    <Pressable onPress={handleAddToProgramsPress} style={{ width: 36, height: 36, alignItems: 'center', justifyContent: 'center' }}>
-                                                        {programInPrograms ? <Icon source={'minus-circle'} color='black' size={20}/> : <Icon source={"plus-circle-outline"} color='black' size={20}/>}
+                                                    <Pressable onPress={handleNotificationPress} style={{ width: 36, height: 36, alignItems: 'center', justifyContent: 'center' }}>
+                                                        {programInNotifications ? <Icon source={"bell-check"} color='#0D509D' size={20}/> : <Icon source={"bell-outline"} color='#0D509D' size={20}/>}
                                                     </Pressable>
                                                 </BlurView>
                                             )}
+                                            <BlurView intensity={20} tint="dark" style={{ borderRadius: 16, overflow: 'hidden', width: 36, height: 36 }}>
+                                                <Pressable onPress={handleAddToProgramsPress} style={{ width: 36, height: 36, alignItems: 'center', justifyContent: 'center' }}>
+                                                    <Icon source={programInPrograms ? 'heart' : 'heart-outline'} color={programInPrograms ? '#E53935' : '#0D509D'} size={20}/>
+                                                </Pressable>
+                                            </BlurView>
                                         </View>
                                     </View>
                                     
@@ -1438,8 +1465,8 @@ const FlyerImageComponent = ({item} : {item : Program}) => {
                                                         }}
                                                         style={{ paddingHorizontal: 12, paddingVertical: 8, flexDirection: 'row', alignItems: 'center', gap: 6 }}
                                                     >
-                                                        <Icon source={"cart-variant"} color='black' size={16}/>
-                                                        <Text className='text-black font-semibold' style={{ fontSize: 12 }}>Sign Up Now</Text>
+                                                        <Icon source={"cart-variant"} color='#0D509D' size={16}/>
+                                                        <Text style={{ fontSize: 12, fontWeight: '600', color: '#0D509D' }}>Sign Up Now</Text>
                                                     </Pressable>
                                                 </BlurView>
                                             </View>
@@ -1454,22 +1481,9 @@ const FlyerImageComponent = ({item} : {item : Program}) => {
                                         
                                         {speakerString && (
                                             <Pressable onPress={() => setSpeakerModalVisible(true)} style={{ alignSelf: 'center', marginTop: 8 }}>
-                                                <BlurView intensity={60} tint="dark" style={{ 
-                                                    borderRadius: 8, 
-                                                    overflow: 'hidden', 
-                                                    paddingHorizontal: 8, 
-                                                    paddingVertical: 4, 
-                                                    backgroundColor: '#2A2A2A',
-                                                    shadowColor: "#000",
-                                                    shadowOffset: { width: 0, height: 4 },
-                                                    shadowOpacity: 0.4,
-                                                    shadowRadius: 8,
-                                                    elevation: 8,
-                                                }}>
-                                                    <Text className='text-center text-[#60A5FA] font-semibold text-sm' numberOfLines={1}>
-                                                        {speakerString}
-                                                    </Text>
-                                                </BlurView>
+                                                <Text style={{ textAlign: 'center', color: '#0D509D', fontWeight: '600', fontSize: 14 }} numberOfLines={1}>
+                                                    {speakerString}
+                                                </Text>
                                             </Pressable>
                                         )}
 

@@ -357,4 +357,110 @@ export const RenderAddedEventLectures = ( {event_lecture_id, playlist , id} : Re
   )
 }
 
+type RenderAddedQuranLecturesProp = {
+  quran_lecture_id: string
+  playlist: string
+  id: number
+}
+
+export const RenderAddedQuranLectures = ({ quran_lecture_id, playlist, id }: RenderAddedQuranLecturesProp) => {
+  const [lecture, setLecture] = useState<{ youtube_id: string, reciter: string, surah: string, id: string } | null>(null)
+  const [speakerInfo, setSpeakerInfo] = useState<{ speaker_name: string, speaker_img: string } | null>(null)
+
+  const getLectureInfo = async () => {
+    const { data, error } = await supabase.from("quran_playlist").select("*").eq("id", quran_lecture_id).single()
+    if (error) {
+      console.log(error)
+      return
+    }
+    if (data) {
+      setLecture(data)
+      // Get speaker info
+      if (data.reciter) {
+        const { data: speaker, error: speakerError } = await supabase
+          .from("speaker_data")
+          .select("speaker_name, speaker_img")
+          .eq("speaker_id", data.reciter)
+          .single()
+        if (speaker) {
+          setSpeakerInfo(speaker)
+        }
+      }
+    }
+  }
+
+  const DotsButton = () => {
+    return (
+      <Menu>
+        <MenuTrigger>
+          <Icon source={"dots-horizontal"} color='black' size={25} />
+        </MenuTrigger>
+        <MenuOptions customStyles={{ optionsContainer: { width: 150, borderRadius: 8, marginTop: 20, padding: 8 } }}>
+          <MenuOption onSelect={async () => {
+            const { error } = await supabase.from('user_playlist_lectures').delete().eq('playlist_id', playlist).eq('quran_lecture_id', quran_lecture_id).eq('id', id)
+            if (error) {
+              console.log(error)
+            }
+          }}>
+            <View className='flex-row justify-between items-center'>
+              <Text>Remove From Playlist</Text>
+              <Icon source="trash-can-outline" color='red' size={15} />
+            </View>
+          </MenuOption>
+        </MenuOptions>
+      </Menu>
+    )
+  }
+
+  const width = Dimensions.get("window").width
+
+  useEffect(() => {
+    getLectureInfo()
+  }, [])
+
+  if (!lecture) {
+    return (
+      <View className='bg-white mt-2 justify-center items-center' style={{ width: width, height: 60 }}>
+        <ActivityIndicator size="small" color="#0D509D" />
+      </View>
+    )
+  }
+
+  return (
+    <View className='bg-white mt-2 justify-center' style={{ width: width }}>
+      <Pressable>
+        <View className='flex-row justify-between px-2'>
+          <Link href={{
+            pathname: '/myPrograms/quran/QuranVideo',
+            params: {
+              youtube_id: lecture.youtube_id,
+              quran_id: lecture.id,
+              surah: lecture.surah,
+              speaker_name: speakerInfo?.speaker_name || 'Unknown',
+              speaker_img: speakerInfo?.speaker_img || '',
+              speaker_id: lecture.reciter
+            }
+          }}>
+            <View className=''>
+              <Image
+                source={speakerInfo?.speaker_img ? { uri: speakerInfo.speaker_img } : require("@/assets/images/QuranImg.png")}
+                style={{ width: 50, height: 50, borderRadius: 8 }}
+              />
+            </View>
+            <View className='flex-col justify-center' style={{ width: width / 1.5, height: 50 }}>
+              <Text className='text-md font-bold ml-2 text-black' style={{ flexShrink: 1 }} numberOfLines={1}>{lecture.surah}</Text>
+              <View className='flex-row' style={{ flexShrink: 1, width: width / 1.5 }}>
+                <Text className='ml-2 text-gray-500' style={{ flexShrink: 1 }} numberOfLines={1}>{speakerInfo?.speaker_name || 'Unknown Speaker'}</Text>
+              </View>
+            </View>
+          </Link>
+          <View className='flex-row mt-3 justify-center px-2'>
+            <DotsButton />
+          </View>
+        </View>
+      </Pressable>
+    </View>
+  )
+}
+
 export default RenderAddedProgramLectures

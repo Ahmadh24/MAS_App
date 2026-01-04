@@ -6,6 +6,7 @@ import moment from 'moment';
 import { Link } from 'expo-router';
 import { Icon } from 'react-native-paper';
 import { LinearGradient } from 'expo-linear-gradient';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 type salahDisplayWidgetProp = {
     prayer: gettingPrayerData,
     nextPrayer: gettingPrayerData
@@ -19,6 +20,7 @@ type currentSalahProp = {
     iqamah: string
 }
 export default function SalahDisplayWidget({ prayer, nextPrayer }: salahDisplayWidgetProp) {
+    const insets = useSafeAreaInsets();
     if (!prayer) {
         return
     }
@@ -93,9 +95,17 @@ export default function SalahDisplayWidget({ prayer, nextPrayer }: salahDisplayW
         const currentMoment = moment(currentTime, "HH:mm A")
         let iqamahMoment = moment(currentSalah.iqamah, "HH:mm A")
 
-        // If showing next day's Fajr, add a day to the iqamah time
+        // If showing next day's Fajr, only add a day if we're in the evening (after Isha)
+        // Don't add a day if we're in early morning (before Fajr) - Fajr is later today
         if (salahIndex === 5) {
-            iqamahMoment.add(1, "day")
+            const ishaMoment = moment(prayer.athan_isha, "HH:mm A")
+            const fajrMoment = moment(prayer.athan_fajr, "HH:mm A")
+            
+            // Only add a day if current time is after Isha (evening hours)
+            // If we're before Fajr (early morning), Fajr is later today, not tomorrow
+            if (currentMoment.isAfter(ishaMoment)) {
+                iqamahMoment.add(1, "day")
+            }
         }
 
         // Calculate time until next iqamah
@@ -228,7 +238,7 @@ export default function SalahDisplayWidget({ prayer, nextPrayer }: salahDisplayW
                 <Pressable>
                     <LinearGradient
                         colors={['#214E91', '#1a3d6f']} // Two background colors - adjust as needed
-                        style={{ height: "100%", width: "100%", paddingTop: 80, paddingBottom: 80, justifyContent: "flex-end" }}
+                        style={{ height: "100%", width: "100%", paddingTop: insets.top, paddingBottom: 80, justifyContent: "flex-end" }}
                     >
                         <ImageBackground
                             source={require("@/assets/images/LogoClear.png")}

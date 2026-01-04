@@ -8,28 +8,28 @@
 
 /* Begin PBXBuildFile section */
 		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
-		2839859B2313A9A161766736 /* ExpoModulesProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5133F367DE8EB60D4AEB9817 /* ExpoModulesProvider.swift */; };
+		1B3AF477B464DDA4F3507ECC /* libPods-MASStatenIsland.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 598D438311937EEC76D90C67 /* libPods-MASStatenIsland.a */; };
 		3E461D99554A48A4959DE609 /* SplashScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = AA286B85B6C04FC6940260E9 /* SplashScreen.storyboard */; };
-		43F712BF8DBE57CFB120AAD0 /* libPods-MASStatenIsland.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 9E0693C67D0AC0BC7924C55D /* libPods-MASStatenIsland.a */; };
+		6F2DECA683A054B588D7BBD5 /* ExpoModulesProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0827BBBB24AC3E56F90A0291 /* ExpoModulesProvider.swift */; };
 		BB2F792D24A3F905000567C9 /* Expo.plist in Resources */ = {isa = PBXBuildFile; fileRef = BB2F792C24A3F905000567C9 /* Expo.plist */; };
 		F11748422D0307B40044C1D9 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = F11748412D0307B40044C1D9 /* AppDelegate.swift */; };
-		FFD3CB9C80F65D47B34B1ED6 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 5751B9424777A8EDD57B4E6C /* PrivacyInfo.xcprivacy */; };
+		F93059751D9AEADF7E7E5A28 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = F34C4E73A5B850B0D2EA527B /* PrivacyInfo.xcprivacy */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		0827BBBB24AC3E56F90A0291 /* ExpoModulesProvider.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ExpoModulesProvider.swift; path = "Pods/Target Support Files/Pods-MASStatenIsland/ExpoModulesProvider.swift"; sourceTree = "<group>"; };
 		13B07F961A680F5B00A75B9A /* MASStatenIsland.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MASStatenIsland.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		13B07FB51A68108700A75B9A /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Images.xcassets; path = MASStatenIsland/Images.xcassets; sourceTree = "<group>"; };
 		13B07FB61A68108700A75B9A /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = MASStatenIsland/Info.plist; sourceTree = "<group>"; };
-		227B0C94928B511DB129E709 /* Pods-MASStatenIsland.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-MASStatenIsland.debug.xcconfig"; path = "Target Support Files/Pods-MASStatenIsland/Pods-MASStatenIsland.debug.xcconfig"; sourceTree = "<group>"; };
-		5133F367DE8EB60D4AEB9817 /* ExpoModulesProvider.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ExpoModulesProvider.swift; path = "Pods/Target Support Files/Pods-MASStatenIsland/ExpoModulesProvider.swift"; sourceTree = "<group>"; };
-		5751B9424777A8EDD57B4E6C /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; includeInIndex = 1; name = PrivacyInfo.xcprivacy; path = MASStatenIsland/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
-		866E3EE78E51C761EBD64E57 /* Pods-MASStatenIsland.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-MASStatenIsland.release.xcconfig"; path = "Target Support Files/Pods-MASStatenIsland/Pods-MASStatenIsland.release.xcconfig"; sourceTree = "<group>"; };
-		9E0693C67D0AC0BC7924C55D /* libPods-MASStatenIsland.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-MASStatenIsland.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		598D438311937EEC76D90C67 /* libPods-MASStatenIsland.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-MASStatenIsland.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		AA286B85B6C04FC6940260E9 /* SplashScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = SplashScreen.storyboard; path = MASStatenIsland/SplashScreen.storyboard; sourceTree = "<group>"; };
+		ABC48EFAF99D2AE72B927EB5 /* Pods-MASStatenIsland.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-MASStatenIsland.debug.xcconfig"; path = "Target Support Files/Pods-MASStatenIsland/Pods-MASStatenIsland.debug.xcconfig"; sourceTree = "<group>"; };
+		ABD2389AB5A9E62D1BC06C04 /* Pods-MASStatenIsland.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-MASStatenIsland.release.xcconfig"; path = "Target Support Files/Pods-MASStatenIsland/Pods-MASStatenIsland.release.xcconfig"; sourceTree = "<group>"; };
 		BB2F792C24A3F905000567C9 /* Expo.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Expo.plist; sourceTree = "<group>"; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
 		F11748412D0307B40044C1D9 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AppDelegate.swift; path = MASStatenIsland/AppDelegate.swift; sourceTree = "<group>"; };
 		F11748442D0722820044C1D9 /* MASStatenIsland-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = "MASStatenIsland-Bridging-Header.h"; path = "MASStatenIsland/MASStatenIsland-Bridging-Header.h"; sourceTree = "<group>"; };
+		F34C4E73A5B850B0D2EA527B /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; includeInIndex = 1; name = PrivacyInfo.xcprivacy; path = MASStatenIsland/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -37,7 +37,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				43F712BF8DBE57CFB120AAD0 /* libPods-MASStatenIsland.a in Frameworks */,
+				1B3AF477B464DDA4F3507ECC /* libPods-MASStatenIsland.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -53,16 +53,7 @@
 				13B07FB51A68108700A75B9A /* Images.xcassets */,
 				13B07FB61A68108700A75B9A /* Info.plist */,
 				AA286B85B6C04FC6940260E9 /* SplashScreen.storyboard */,
-				5751B9424777A8EDD57B4E6C /* PrivacyInfo.xcprivacy */,
-			);
-			name = MASStatenIsland;
-			sourceTree = "<group>";
-		};
-		240C9A3D7AD70AA390225D3D /* Pods */ = {
-			isa = PBXGroup;
-			children = (
-				227B0C94928B511DB129E709 /* Pods-MASStatenIsland.debug.xcconfig */,
-				866E3EE78E51C761EBD64E57 /* Pods-MASStatenIsland.release.xcconfig */,
+				F34C4E73A5B850B0D2EA527B /* PrivacyInfo.xcprivacy */,
 			);
 			name = Pods;
 			path = Pods;
@@ -72,15 +63,15 @@
 			isa = PBXGroup;
 			children = (
 				ED297162215061F000B7C4FE /* JavaScriptCore.framework */,
-				9E0693C67D0AC0BC7924C55D /* libPods-MASStatenIsland.a */,
+				598D438311937EEC76D90C67 /* libPods-MASStatenIsland.a */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
 		};
-		7B033D4D6E36D4B46B179604 /* MASStatenIsland */ = {
+		4215F0230FEBCEAA816B7AB2 /* MASStatenIsland */ = {
 			isa = PBXGroup;
 			children = (
-				5133F367DE8EB60D4AEB9817 /* ExpoModulesProvider.swift */,
+				0827BBBB24AC3E56F90A0291 /* ExpoModulesProvider.swift */,
 			);
 			name = MASStatenIsland;
 			sourceTree = "<group>";
@@ -99,8 +90,8 @@
 				832341AE1AAA6A7D00B99B32 /* Libraries */,
 				83CBBA001A601CBA00E9B192 /* Products */,
 				2D16E6871FA4F8E400B85C8A /* Frameworks */,
-				240C9A3D7AD70AA390225D3D /* Pods */,
-				91AD6DFBDFEB43B6B420181D /* ExpoModulesProviders */,
+				AE8FCDFE838E321AC7CE12C9 /* Pods */,
+				F6C9A96A1A25A69F11E28883 /* ExpoModulesProviders */,
 			);
 			indentWidth = 2;
 			sourceTree = "<group>";
@@ -115,12 +106,14 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
-		91AD6DFBDFEB43B6B420181D /* ExpoModulesProviders */ = {
+		AE8FCDFE838E321AC7CE12C9 /* Pods */ = {
 			isa = PBXGroup;
 			children = (
-				7B033D4D6E36D4B46B179604 /* MASStatenIsland */,
+				ABC48EFAF99D2AE72B927EB5 /* Pods-MASStatenIsland.debug.xcconfig */,
+				ABD2389AB5A9E62D1BC06C04 /* Pods-MASStatenIsland.release.xcconfig */,
 			);
-			name = ExpoModulesProviders;
+			name = Pods;
+			path = Pods;
 			sourceTree = "<group>";
 		};
 		BB2F792B24A3F905000567C9 /* Supporting */ = {
@@ -132,6 +125,14 @@
 			path = MASStatenIsland/Supporting;
 			sourceTree = "<group>";
 		};
+		F6C9A96A1A25A69F11E28883 /* ExpoModulesProviders */ = {
+			isa = PBXGroup;
+			children = (
+				4215F0230FEBCEAA816B7AB2 /* MASStatenIsland */,
+			);
+			name = ExpoModulesProviders;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -140,13 +141,13 @@
 			buildConfigurationList = 13B07F931A680F5B00A75B9A /* Build configuration list for PBXNativeTarget "MASStatenIsland" */;
 			buildPhases = (
 				08A4A3CD28434E44B6B9DE2E /* [CP] Check Pods Manifest.lock */,
-				8C8EFE6A039074D5A71891DB /* [Expo] Configure project */,
+				4ADF53728CC334D3201AA632 /* [Expo] Configure project */,
 				13B07F871A680F5B00A75B9A /* Sources */,
 				13B07F8C1A680F5B00A75B9A /* Frameworks */,
 				13B07F8E1A680F5B00A75B9A /* Resources */,
 				00DD1BFF1BD5951E006B06BC /* Bundle React Native code and images */,
 				800E24972A6A228C8D4807E9 /* [CP] Copy Pods Resources */,
-				DF0A78E31D8D902732113C32 /* [CP] Embed Pods Frameworks */,
+				9CE8780CD06453F4B02FE217 /* [CP] Embed Pods Frameworks */,
 			);
 			buildRules = (
 			);
@@ -196,7 +197,7 @@
 				BB2F792D24A3F905000567C9 /* Expo.plist in Resources */,
 				13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */,
 				3E461D99554A48A4959DE609 /* SplashScreen.storyboard in Resources */,
-				FFD3CB9C80F65D47B34B1ED6 /* PrivacyInfo.xcprivacy in Resources */,
+				F93059751D9AEADF7E7E5A28 /* PrivacyInfo.xcprivacy in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -241,6 +242,30 @@
 			shellPath = /bin/sh;
 			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
 			showEnvVarsInLog = 0;
+		};
+		4ADF53728CC334D3201AA632 /* [Expo] Configure project */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"$(SRCROOT)/.xcode.env",
+				"$(SRCROOT)/.xcode.env.local",
+				"$(SRCROOT)/MASStatenIsland/MASStatenIsland.entitlements",
+				"$(SRCROOT)/Pods/Target Support Files/Pods-MASStatenIsland/expo-configure-project.sh",
+			);
+			name = "[Expo] Configure project";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(SRCROOT)/Pods/Target Support Files/Pods-MASStatenIsland/ExpoModulesProvider.swift",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "# This script configures Expo modules and generates the modules provider file.\nbash -l -c \"./Pods/Target\\ Support\\ Files/Pods-MASStatenIsland/expo-configure-project.sh\"\n";
 		};
 		800E24972A6A228C8D4807E9 /* [CP] Copy Pods Resources */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -322,31 +347,7 @@
 			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-MASStatenIsland/Pods-MASStatenIsland-resources.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
-		8C8EFE6A039074D5A71891DB /* [Expo] Configure project */ = {
-			isa = PBXShellScriptBuildPhase;
-			alwaysOutOfDate = 1;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-			);
-			inputPaths = (
-				"$(SRCROOT)/.xcode.env",
-				"$(SRCROOT)/.xcode.env.local",
-				"$(SRCROOT)/MASStatenIsland/MASStatenIsland.entitlements",
-				"$(SRCROOT)/Pods/Target Support Files/Pods-MASStatenIsland/expo-configure-project.sh",
-			);
-			name = "[Expo] Configure project";
-			outputFileListPaths = (
-			);
-			outputPaths = (
-				"$(SRCROOT)/Pods/Target Support Files/Pods-MASStatenIsland/ExpoModulesProvider.swift",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "# This script configures Expo modules and generates the modules provider file.\nbash -l -c \"./Pods/Target\\ Support\\ Files/Pods-MASStatenIsland/expo-configure-project.sh\"\n";
-		};
-		DF0A78E31D8D902732113C32 /* [CP] Embed Pods Frameworks */ = {
+		9CE8780CD06453F4B02FE217 /* [CP] Embed Pods Frameworks */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -376,7 +377,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				F11748422D0307B40044C1D9 /* AppDelegate.swift in Sources */,
-				2839859B2313A9A161766736 /* ExpoModulesProvider.swift in Sources */,
+				6F2DECA683A054B588D7BBD5 /* ExpoModulesProvider.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -385,7 +386,7 @@
 /* Begin XCBuildConfiguration section */
 		13B07F941A680F5B00A75B9A /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 227B0C94928B511DB129E709 /* Pods-MASStatenIsland.debug.xcconfig */;
+			baseConfigurationReference = ABC48EFAF99D2AE72B927EB5 /* Pods-MASStatenIsland.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
@@ -421,7 +422,7 @@
 		};
 		13B07F951A680F5B00A75B9A /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 866E3EE78E51C761EBD64E57 /* Pods-MASStatenIsland.release.xcconfig */;
+			baseConfigurationReference = ABD2389AB5A9E62D1BC06C04 /* Pods-MASStatenIsland.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;

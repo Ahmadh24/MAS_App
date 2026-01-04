@@ -1,34 +1,93 @@
-import { View, Text, TouchableOpacity, Image } from 'react-native'
+import { View, Text, TouchableOpacity, Image, StyleSheet } from 'react-native'
 import React from 'react'
 import { Link } from "expo-router"
 import { UserPlaylistType } from '@/src/types'
+import { Music2, Play } from 'lucide-react-native'
+import Animated, { FadeIn } from 'react-native-reanimated'
+
 type RenderUserPlaylistProp = {
-    playlist : UserPlaylistType
+    playlist: UserPlaylistType
 }
-const RenderUserPlaylist = ({ playlist } : RenderUserPlaylistProp) => {
-  return (
-        <Link  href={`/myPrograms/playlists/${playlist.playlist_id}`} asChild className='items-center h-[170] w-[100%] my-1'>
-            <TouchableOpacity className='w-[100%]'>
-                <View className='flex-col items-center px-2 '>
-                    <View style={{justifyContent: "center", alignItems: "center", borderRadius: 15, width: "30%",}}>
-                               { playlist.playlist_img ? <Image 
-                                    source={ playlist.playlist_img ? { uri: playlist.playlist_img } : require("@/assets/images/MASHomeLogo.png")}
-                                    style={{width: 160, height: 140, objectFit: "fill", borderRadius: 8}}
-                                />
-                                :
-                                    <View style={{ height : 140, width : 160, borderRadius : 20, alignItems : 'center', justifyContent : 'center', backgroundColor : playlist.def_background }} >
-                                        <Image source={require('@/assets/images/MasPlaylistDef.png')} style={{height : '70%', width : '70%', objectFit : 'fill'}} />
-                                    </View>
-                            }
+
+const RenderUserPlaylist = ({ playlist }: RenderUserPlaylistProp) => {
+    return (
+        <Link href={`/myPrograms/playlists/${playlist.playlist_id}`} asChild>
+            <TouchableOpacity activeOpacity={0.9}>
+                <Animated.View entering={FadeIn.duration(400)} style={styles.card}>
+                    {playlist.playlist_img ? (
+                        <Image 
+                            source={{ uri: playlist.playlist_img }}
+                            style={styles.image}
+                        />
+                    ) : (
+                        <View style={[styles.placeholder, { backgroundColor: playlist.def_background || '#6366F1' }]}>
+                            <Music2 color="rgba(255,255,255,0.8)" size={40} strokeWidth={1.5} />
+                        </View>
+                    )}
+                    
+                    {/* Overlay with title */}
+                    <View style={styles.overlay}>
+                        <Text style={styles.title} numberOfLines={1}>{playlist.playlist_name}</Text>
                     </View>
-                    <View className='items-center justify-center w-[100%]'>
-                        <Text className='text-[20px] font-[300] text-black text-center my-1' numberOfLines={1}> {playlist.playlist_name} </Text>
+                    
+                    {/* Play button */}
+                    <View style={styles.playButton}>
+                        <Play color="#fff" size={16} fill="#fff" />
                     </View>
-                </View>
-                
+                </Animated.View>
             </TouchableOpacity>
         </Link>
-  )
+    )
 }
+
+const styles = StyleSheet.create({
+    card: {
+        height: 180,
+        width: '100%',
+        borderRadius: 20,
+        overflow: 'hidden',
+        backgroundColor: '#fff',
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.1,
+        shadowRadius: 12,
+        elevation: 5,
+    },
+    image: {
+        width: '100%',
+        height: '100%',
+        resizeMode: 'cover',
+    },
+    placeholder: {
+        width: '100%',
+        height: '100%',
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    overlay: {
+        position: 'absolute',
+        bottom: 0,
+        left: 0,
+        right: 0,
+        padding: 12,
+        backgroundColor: 'rgba(0,0,0,0.5)',
+    },
+    title: {
+        fontSize: 15,
+        fontWeight: '600',
+        color: '#fff',
+    },
+    playButton: {
+        position: 'absolute',
+        top: 12,
+        right: 12,
+        width: 36,
+        height: 36,
+        borderRadius: 18,
+        backgroundColor: 'rgba(0,0,0,0.4)',
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+})
 
 export default RenderUserPlaylist

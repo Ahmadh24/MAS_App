@@ -3,7 +3,7 @@ import { View, Text, ScrollView, StyleSheet, TouchableOpacity, Pressable, Platfo
 import { Stack, useRouter, useNavigation } from 'expo-router';
 import { Icon } from 'react-native-paper';
 import { LinearGradient } from 'expo-linear-gradient';
-import { LiquidGlassView, isLiquidGlassSupported } from '@callstack/liquid-glass';
+import { LiquidGlassView, isLiquidGlassSupported } from '@/src/lib/liquidGlass';
 import { Bell } from 'lucide-react-native';
 import LottieView from 'lottie-react-native';
 

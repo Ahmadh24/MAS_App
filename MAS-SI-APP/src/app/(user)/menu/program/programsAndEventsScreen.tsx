@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react'
 import ProgramsScreen from './allPrograms';
 import Event from './events/Event';
 import Pace from './pace/Pace';
-import UpcomingEvents from './upcomingEvents/UpcomingEvents';
+import UpcomingEvents from './upcomingEvents';
 import { View, TouchableOpacity, StyleSheet, Text, SafeAreaView, StatusBar, Pressable, ScrollView, useWindowDimensions } from 'react-native';
 import Animated, { useAnimatedStyle, useSharedValue, withTiming, interpolate, withSpring } from 'react-native-reanimated';
 import { TabBar, TabBarIndicator, TabBarIndicatorProps, TabBarProps } from 'react-native-tab-view';

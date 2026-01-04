@@ -10,6 +10,7 @@ import { useAuth } from "@/src/providers/AuthProvider"
 import { supabase } from '@/src/lib/supabase';
 import { setDate, format } from 'date-fns';
 import LectureKeyNotesCard from '@/src/components/LectureKeyNotesCard';
+import { AIReasoningMarkdown, AIKeynotes } from '@/src/components/AIReasoningMarkdown';
 import { FlatList } from 'react-native';
 import { Divider, Icon, Modal, Portal } from 'react-native-paper';
 import Animated, { runOnJS, useAnimatedStyle, useSharedValue, withTiming, Easing } from 'react-native-reanimated';
@@ -146,54 +147,40 @@ export default function LecturesData() {
 
 
   const LectureAIKeyNotes = () => {
-    const [scrollY, setScrollY] = useState(0)
-    const [active, setActive] = useState(0)
-    const handleScroll = (event: any) => {
-      const scrollPositon = event.nativeEvent.contentOffset.y;
-      const index = Math.ceil(scrollPositon / (KEYNOTECARDHEIGHT + 20));
-      setActive(index)
-    }
-    const array = currentLecture?.lecture_key_notes
     return (
-      <View className='items-center bg=[#ededed]'>
-        <View className='mt-2' />
-        <ScrollView
-          onScroll={(event) => { handleScroll(event); setScrollY(event.nativeEvent.contentOffset.y) }} contentContainerStyle={{ alignItems: "center", paddingBottom: 0 }}
-          decelerationRate={0.6}
-          snapToInterval={KEYNOTECARDHEIGHT + (20 * 0.2)}
-          showsVerticalScrollIndicator={false}
-
-        >
-          <View className='flex-col items-center mt-3'>
-            <Text className='font-bold text-black text-2xl text-center'>{currentLecture?.lecture_name}</Text>
-            <Text className='font-bold text-[#0D509D]' onPress={showModal}>{speakerString ? speakerString.join(' & ') : ''}</Text>
-          </View>
-          {array ? array.map((item, index) => {
-            return (
-              <>
-                <LectureKeyNotesCard height={KEYNOTECARDHEIGHT} width={KEYNOTECARDWIDTH} index={index} scrollY={scrollY} keynote={item} active={active} />
-                <View style={{ height: 20 }} />
-              </>
-            )
-          }) : <></>}
-
-        </ScrollView>
+      <View className='px-4 py-2 bg-[#ededed]'>
+        <View className='flex-col items-center mb-3'>
+          <Text className='font-bold text-black text-2xl text-center'>{currentLecture?.lecture_name}</Text>
+          <Text className='font-bold text-[#0D509D]' onPress={showModal}>{speakerString ? speakerString.join(' & ') : ''}</Text>
+        </View>
+        <AIKeynotes 
+          keynotes={currentLecture?.lecture_key_notes}
+          title="Key Notes"
+          variant="light"
+          autoExpand={true}
+          streamOnMount={true}
+          maxHeight={300}
+        />
       </View>
     )
   }
+
   const LectureAISummay = () => {
     return (
-      <ScrollView className='flex-1' contentContainerStyle={{ alignItems: "center", backgroundColor: "#ededed" }}>
-        <View className='flex-col items-center mt-3'>
+      <View className='px-4 py-2 bg-[#ededed]'>
+        <View className='flex-col items-center mb-3'>
           <Text className='font-bold text-black text-2xl text-center'>{currentLecture?.lecture_name}</Text>
           <Text className='font-bold text-blue-500' onPress={showModal}>{speakerString ? speakerString.join(' & ') : ''}</Text>
         </View>
-        <View className='h-[350] w-[85%] mt-2'>
-          <ScrollView className=' bg-white' style={{ borderRadius: 10 }} contentContainerStyle={{ paddingHorizontal: 8, paddingVertical: 5 }}>
-            <Text>{currentLecture?.lecture_ai}</Text>
-          </ScrollView>
-        </View>
-      </ScrollView>
+        <AIReasoningMarkdown 
+          content={currentLecture?.lecture_ai}
+          title="AI Summary"
+          variant="light"
+          autoExpand={true}
+          streamOnMount={true}
+          maxHeight={300}
+        />
+      </View>
     )
   }
 

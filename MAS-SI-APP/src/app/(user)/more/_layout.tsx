@@ -9,6 +9,16 @@ const MoreLayout = () => {
           name='index' 
           options={{ 
             headerShown: false,
+            presentation: 'transparentModal',
+            animation: 'fade',
+          }} 
+        />
+        <Stack.Screen 
+          name='PreferencesOnboarding' 
+          options={{ 
+            headerShown: false,
+            presentation: 'fullScreenModal',
+            animation: 'slide_from_bottom',
           }} 
         />
     </Stack>

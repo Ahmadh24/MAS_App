@@ -9,7 +9,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 import { Icon } from 'react-native-paper';
 import * as Haptics from 'expo-haptics';
-import TabArray from '@/src/app/(user)/tabArray';
+import TabArray from '@/src/lib/tabs';
 
 const TAB_COUNT = TabArray.length;
 
@@ -179,7 +179,7 @@ const ClassicTabBar = ({ state, descriptors, navigation }: BottomTabBarProps) =>
                                 accessibilityRole="button"
                                 accessibilityState={isFocused ? { selected: true } : {}}
                                 accessibilityLabel={options.tabBarAccessibilityLabel}
-                                testID={options.tabBarTestID}
+                                testID={`tab-${route.name}`}
                                 hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
                             >
                                 <Animated.View style={[styles.iconContainer, iconStyle]}>

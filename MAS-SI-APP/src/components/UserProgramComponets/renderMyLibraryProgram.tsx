@@ -14,7 +14,7 @@ const RenderMyLibraryProgram = ( {program_id} : RenderProgramProp) => {
   const [ program, setProgram ] = useState<Program>()
   const [ speakerString, setSpeakerString ] = useState('')
   async function fetchUserProgram(){
-    const { data, error } = await supabase.from("programs").select("*").eq("program_id ",  program_id).single()
+    const { data, error } = await supabase.from("programs").select("*").eq("program_id", program_id).single()
     if(data){
     setProgram(data)
     let speaker_string : string[] = data.program_speaker.map(() => {return ''})

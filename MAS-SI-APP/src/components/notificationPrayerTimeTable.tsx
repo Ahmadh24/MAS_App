@@ -27,7 +27,7 @@ import JummahMarquee from "./JummahMarquee";
 import { format } from "date-fns";
 import { LinearGradient } from 'expo-linear-gradient';
 import { BlurView } from 'expo-blur';
-import { LiquidGlassView, isLiquidGlassSupported } from '@callstack/liquid-glass';
+import { LiquidGlassView, isLiquidGlassSupported } from '@/src/lib/liquidGlass';
 import { Pencil, X, Check } from 'lucide-react-native';
 
 type NotificationOption = 'prayer_time' | 'iqamah_time' | '30_min_before' | 'mute';

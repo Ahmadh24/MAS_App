@@ -8,6 +8,7 @@ import Animated, { interpolate, useAnimatedRef, useAnimatedStyle, useScrollViewO
 import NotificationCard from './NotificationCard'
 import { Icon } from 'react-native-paper'
 import NotificationEventCard from './NotificationEventCard'
+import { LinearGradient } from 'expo-linear-gradient'
 const NotificationEventSettings = () => {
   const { event_id } = useLocalSearchParams()
   const { session } = useAuth()
@@ -67,33 +68,43 @@ const NotificationEventSettings = () => {
 
   const array = [1, 2, 3]
   return (
-    <View className='flex-1 bg-white' style={{ flexGrow: 1 }}>
-      <StatusBar barStyle={"dark-content"} />
-      <Stack.Screen options={{ title: '', headerStyle: { backgroundColor: "white" } }} />
+    <LinearGradient
+      colors={['#1d4681', '#3183bf']}
+      style={{ flex: 1 }}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 0, y: 1 }}
+    >
+      <StatusBar barStyle={"light-content"} />
+      <Stack.Screen options={{ 
+        title: '', 
+        headerStyle: { backgroundColor: "transparent" },
+        headerTransparent: true,
+        headerTintColor: 'white',
+      }} />
       <Animated.ScrollView
         ref={scrollRef}
         scrollEventThrottle={16}
-        contentContainerStyle={{ justifyContent: "center", alignItems: "center", marginTop: "2%", backgroundColor: "white", paddingBottom: 0 }}
+        contentContainerStyle={{ justifyContent: "center", alignItems: "center", marginTop: "15%", paddingBottom: 40 }}
       >
 
         <Animated.Image
           source={event?.event_img ? { uri: event.event_img } : require("@/assets/images/MASHomeLogo.png")}
-          style={[{ width: width / 1.2, height: 300, borderRadius: 8 }, imageAnimatedStyle]}
+          style={[{ width: width / 1.2, height: 300, borderRadius: 16, borderWidth: 2, borderColor: 'rgba(255, 255, 255, 0.2)' }, imageAnimatedStyle]}
           resizeMode='stretch'
         />
-        <View className='flex-col bg-white w-[100%] h-[80]'>
-          <Text className='font-bold text-2xl text-center'>{event?.event_name}</Text>
-          <Text className='font-bold text-gray-400 text-center'>{speaker ? speaker.join('&') : ''}</Text>
+        <View style={{ width: '100%', paddingVertical: 20 }}>
+          <Text style={{ fontWeight: 'bold', fontSize: 24, textAlign: 'center', color: 'white' }}>{event?.event_name}</Text>
+          <Text style={{ fontWeight: '600', textAlign: 'center', color: '#6EE7B7' }}>{speaker ? speaker.join(' & ') : ''}</Text>
         </View>
 
-        <View className='ml-2 mt-4'>
-          <Text className='text-lg font-semibold'>Notification Options</Text>
+        <View style={{ marginLeft: 8, marginTop: 16, width: '100%', paddingHorizontal: 20 }}>
+          <Text style={{ fontSize: 18, fontWeight: '600', color: 'white' }}>Notification Options</Text>
         </View>
-        <View className='bg-white w-[100%] items-center'>
+        <View style={{ width: '100%', alignItems: 'center', paddingTop: 12 }}>
           {
             array.map((item, index) => {
               return (
-                <View className='flex-col'>
+                <View className='flex-col' key={index}>
                   <View className='flex-row items-center justify-center'>
                     <NotificationEventCard height={NOTICARDHEIGHT} width={NOTICARDWIDTH} index={index} scrollY={scrollY} setSelectedNotification={setSelectedNotification} selectedNotification={selectedNotification} event_id={event_id} eventInfo={event!} />
                   </View>
@@ -104,7 +115,7 @@ const NotificationEventSettings = () => {
           }
         </View>
       </Animated.ScrollView>
-    </View>
+    </LinearGradient>
   )
 }
 

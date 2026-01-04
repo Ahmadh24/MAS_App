@@ -14,6 +14,7 @@ import { ScrollView } from 'react-native';
 import { format, isAfter, isBefore } from 'date-fns';
 import Svg, { Path } from 'react-native-svg';
 import moment from 'moment';
+import { LinearGradient } from 'expo-linear-gradient';
 
 
 export default function Index() {
@@ -126,14 +127,40 @@ export default function Index() {
   const SecondTaraweehTime = new Date(FirstTaraweehTime).setHours(FirstTaraweehTime.getHours() + 1, FirstTaraweehTime.getMinutes() + 20)
   const SecondTaraweehEndTime = new Date(FirstTaraweehTime).setHours(FirstTaraweehTime.getHours() + 2, FirstTaraweehTime.getMinutes() + 20)
   return (
-    <View className='flex flex-1 h-screen'>
-      <ScrollView className='h-full  bg-white flex flex-col ' contentContainerStyle={{ paddingBottom: 50 }} bounces={false}>
-        <StatusBar barStyle={"dark-content"} />
-        <ImageBackground
-          source={require('@/assets/images/PrayerTimesHeader.jpg')}
-          style={{ justifyContent: 'flex-start', height: '100%' }}
-          imageStyle={{ height: height / 3.5, opacity: 0.9, borderBottomLeftRadius: 10, borderBottomRightRadius: 10, width: '100%' }}
-          className='flex flex-col w-full'
+    <LinearGradient
+      colors={['#1d4681', '#3183bf']}
+      style={{ flex: 1 }}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 0, y: 1 }}
+    >
+      <StatusBar barStyle={"light-content"} />
+      
+      <ScrollView style={{ flex: 1 }} contentContainerStyle={{ paddingBottom: 150 }} bounces={false}>
+        {/* Header with Logo */}
+        <View style={{ position: 'relative' }}>
+          <View
+            style={{ paddingTop: 5, paddingBottom: 100, alignItems: 'center' }}
+          >
+            <Text style={{ color: 'white', fontSize: 24, fontWeight: '700' }}>Prayer Times</Text>
+          </View>
+          <Image
+            source={require("@/assets/images/LogoClear.png")}
+            style={{ 
+            width: 150, 
+            height: 150,
+              opacity: 0.3,
+              position: 'absolute',
+              bottom: -35,
+              alignSelf: 'center',
+              left: '50%',
+              marginLeft: -75,
+              zIndex: 100,
+            }}
+            resizeMode="contain"
+          />
+        </View>
+
+        <View style={{ flex: 1 }}
         >
           {/* Weekly Prayer Times */}
           <FlatList
@@ -147,7 +174,7 @@ export default function Index() {
             viewabilityConfig={viewConfig}
             contentContainerStyle={{ justifyContent: "center", alignItems: "center" }}
             ref={flatlistRef}
-            className='h-[100%] mt-[50%] p-0'
+            className='h-[100%] p-0'
           />
           {/* Business Ads */}
           <ApprovedAds setRenderedFalse={() => setIsRendered(false)} setRenderedTrue={() => setIsRendered(true)} />
@@ -280,10 +307,10 @@ export default function Index() {
           }
 
 
-        </ImageBackground>
+        </View>
         {/* <ApprovedAds setRenderedFalse={() => setIsRendered(false)} setRenderedTrue={() => setIsRendered(true) }/> */}
       </ScrollView>
-    </View>
+    </LinearGradient>
   )
 }
 

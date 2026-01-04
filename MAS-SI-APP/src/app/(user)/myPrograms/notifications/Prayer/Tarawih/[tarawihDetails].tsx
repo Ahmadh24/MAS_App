@@ -1,8 +1,9 @@
-import { View, Text, useWindowDimensions, Dimensions, StatusBar, Image } from 'react-native'
+import { View, Text, useWindowDimensions, Dimensions, StatusBar, Image, ScrollView } from 'react-native'
 import React, { useState } from 'react'
 import { Stack, useLocalSearchParams } from 'expo-router'
 import TarawihCards from './_tarawihCards'
 import { usePrayerTimes } from '@/src/hooks/usePrayerTimes'
+import { LinearGradient } from 'expo-linear-gradient'
 
 const TarawihDetails = () => {
   const { tarawihName, tarawihTitle } = useLocalSearchParams()
@@ -25,33 +26,44 @@ const TarawihDetails = () => {
   const SecondTaraweehEndTime = new Date(FirstTaraweehTime).setHours(FirstTaraweehTime.getHours() + 2)
   SecondTaraweehTime.setHours(FirstTaraweehTime.getHours() + 1, FirstTaraweehTime.getMinutes() + 20)
   return (
-    <View className='flex-1 bg-white items-center'>
-      <Stack.Screen options={{ headerTitle: 'Taraweeh Settings', headerBackTitle: '', headerBackTitleVisible: false, headerStyle: { backgroundColor: "white" }, headerTintColor: '#1B85FF' }} />
-      <StatusBar barStyle={'dark-content'} />
-      <Text className='text-[20px] font-bold '></Text>
-      <View className='mt-4'>
-        <Image
-          source={require('@/assets/images/TarawihNotiCard.jpeg')}
-          style={{ width: width / 2, height: 200, borderRadius: 8 }}
-          resizeMode='stretch'
-        />
-      </View>
-      <View className='flex-col bg-white w-[100%]'>
-        <Text className='font-bold text-2xl text-center m-4'>{tarawihTitle}</Text>
-        <View className='ml-2'>
-          <Text>Notification Options</Text>
+    <LinearGradient
+      colors={['#1d4681', '#3183bf']}
+      style={{ flex: 1 }}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 0, y: 1 }}
+    >
+      <ScrollView style={{ flex: 1 }} contentContainerStyle={{ alignItems: 'center', paddingBottom: 40, paddingTop: 20 }}>
+        <Stack.Screen options={{ 
+          headerTitle: 'Taraweeh Settings', 
+          headerBackTitle: '', 
+          headerBackTitleVisible: false, 
+          headerStyle: { backgroundColor: "transparent" },
+          headerTransparent: true,
+          headerTintColor: 'white',
+        }} />
+        <StatusBar barStyle={'light-content'} />
+        <View className='mt-4'>
+          <Image
+            source={require('@/assets/images/TarawihNotiCard.jpeg')}
+            style={{ width: width / 2, height: 200, borderRadius: 16, borderWidth: 2, borderColor: 'rgba(255, 255, 255, 0.2)' }}
+            resizeMode='stretch'
+          />
         </View>
-      </View>
-      <View className='bg-white w-[100%] items-center'>
-
-        {
-          [1, 2, 3].map((item, index) => (
-            <TarawihCards jummah={tarawihName} height={NOTICARDHEIGHT} width={NOTICARDWIDTH} item={item} index={index} setSelectedNotification={setSelectedNotification} selectedNotification={selectedNotification} tarawihName={tarawihName} tarawihTime={tarawihName == 'Tarawih One' ? FirstTaraweehTime : SecondTaraweehTime} />
-          ))
-        }
-
-      </View>
-    </View>
+        <View style={{ width: '100%', paddingVertical: 16 }}>
+          <Text style={{ fontWeight: 'bold', fontSize: 24, textAlign: 'center', color: 'white' }}>{tarawihTitle}</Text>
+        </View>
+        <View style={{ marginLeft: 8, width: '100%', paddingHorizontal: 20 }}>
+          <Text style={{ fontSize: 18, fontWeight: '600', color: 'white' }}>Notification Options</Text>
+        </View>
+        <View style={{ width: '100%', alignItems: 'center', paddingTop: 12 }}>
+          {
+            [1, 2, 3].map((item, idx) => (
+              <TarawihCards key={idx} jummah={tarawihName} height={NOTICARDHEIGHT} width={NOTICARDWIDTH} item={item} index={idx} setSelectedNotification={setSelectedNotification} selectedNotification={selectedNotification} tarawihName={tarawihName} tarawihTime={tarawihName == 'Tarawih One' ? FirstTaraweehTime : SecondTaraweehTime} />
+            ))
+          }
+        </View>
+      </ScrollView>
+    </LinearGradient>
   )
 }
 

@@ -68,7 +68,7 @@ const NotificationEventsScreen = ({ addedEvents, layout }: NotificationEventsScr
               <View className='pb-[50%]' />
             <View>
                 <Text className='font-bold text-xl text-center'>Add programs and events by tapping the <Icon source={"bell"} color="#007AFF" size={20} /> or sliding right on the flyer name</Text>
-              </View>
+            </View>
           </View>
           )
         }
@@ -100,7 +100,7 @@ const ClassesScreen = ({ addedPrograms, layout }: ClassesScreenProp) => {
               <View className='pb-[50%]' />
             <View>
                 <Text className='font-bold text-xl text-center'>Add programs and events by tapping the <Icon source={"bell"} color="#007AFF" size={20} /> or sliding right on the flyer name</Text>
-              </View>
+            </View>
           </View>
           )
         }
@@ -128,7 +128,7 @@ const LecturesScreen = ({ addedPrograms, layout }: ClassesScreenProp) => {
               <View className='pb-[50%]' />
             <View>
                 <Text className='font-bold text-xl text-center'>Add programs and events by tapping the <Icon source={"bell"} color="#007AFF" size={20} /> or sliding right on the flyer name</Text>
-              </View>
+            </View>
           </View>
           )
         }
@@ -616,7 +616,7 @@ const NotificationEvents = () => {
 
               {/* Save Button */}
               <Pressable style={jummahStyles.saveButton} onPress={handleSave}>
-                <Check color="#6EE7B7" size={20} strokeWidth={2.5} style={{ marginRight: 8 }} />
+                <Check color="#FFFFFF" size={20} strokeWidth={2.5} style={{ marginRight: 8 }} />
                 <Text style={jummahStyles.saveButtonText}>Save</Text>
               </Pressable>
             </View>
@@ -768,7 +768,7 @@ const NotificationEvents = () => {
                     }}>
                       {route.title}
                     </Text>
-                  </Pressable>
+      </Pressable>
                 );
               })}
             </View>
@@ -964,18 +964,16 @@ const jummahStyles = StyleSheet.create({
     lineHeight: 20,
   },
   saveButton: {
-    backgroundColor: 'rgba(110, 231, 183, 0.25)',
+    backgroundColor: 'rgba(0, 122, 255, 0.8)',
     paddingVertical: 16,
     borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
     flexDirection: 'row',
     marginTop: 32,
-    borderWidth: 1.5,
-    borderColor: 'rgba(110, 231, 183, 0.5)',
   },
   saveButtonText: {
-    color: '#6EE7B7',
+    color: '#FFFFFF',
     fontSize: 16,
     fontWeight: '600',
   },

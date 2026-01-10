@@ -705,7 +705,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   prayerName: {
-    fontSize: 13,
+    fontSize: 16,
     fontWeight: '600',
     color: 'white',
     marginBottom: 2,
@@ -715,14 +715,14 @@ const styles = StyleSheet.create({
     marginBottom: 1,
   },
   timeLabel: {
-    fontSize: 10,
+    fontSize: 12,
     fontWeight: '600',
     color: 'rgba(255, 255, 255, 0.7)',
     marginRight: 4,
     minWidth: 40,
   },
   timeValue: {
-    fontSize: 10,
+    fontSize: 12,
     fontWeight: '600',
     color: '#6EE7B7',
   },

@@ -31,9 +31,9 @@ export default function AccountModal({ visible, onClose }: AccountModalProps) {
       onRequestClose={onClose}
     >
       <LinearGradient
-        colors={['#87CEEB', '#214E91', '#2A2A2A']}
+        colors={['#1d4681', '#3183bf']}
         start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
+        end={{ x: 0, y: 1 }}
         style={styles.container}
       >
         <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent}>
@@ -164,9 +164,9 @@ const styles = StyleSheet.create({
             color: 'white',
   },
   closeButton: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
+              width: 36,
+              height: 36,
+              borderRadius: 18,
     overflow: 'hidden',
     backgroundColor: 'rgba(160, 170, 190, 0.55)',
   },
@@ -182,12 +182,12 @@ const styles = StyleSheet.create({
     paddingBottom: 30,
   },
   avatarContainer: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
+              width: 80,
+              height: 80,
+              borderRadius: 40,
     alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 12,
+              justifyContent: 'center',
+              marginBottom: 12,
     overflow: 'hidden',
     backgroundColor: 'rgba(160, 170, 190, 0.5)',
   },
@@ -208,8 +208,8 @@ const styles = StyleSheet.create({
   },
   inviteButtonContainer: {
     width: '100%',
-    borderRadius: 999,
-    overflow: 'hidden',
+                  borderRadius: 999,
+                  overflow: 'hidden',
     backgroundColor: 'rgba(160, 170, 190, 0.55)',
   },
   inviteButton: {
@@ -242,7 +242,7 @@ const styles = StyleSheet.create({
   menuCard: {
     width: '100%',
     borderRadius: 20,
-    overflow: 'hidden',
+              overflow: 'hidden',
     marginBottom: 16,
     backgroundColor: 'rgba(160, 170, 190, 0.55)',
   },
@@ -263,8 +263,8 @@ const styles = StyleSheet.create({
   logoutButtonContainer: {
     width: '100%',
     borderRadius: 20,
-    overflow: 'hidden',
-    marginTop: 8,
+                overflow: 'hidden',
+                marginTop: 8,
     backgroundColor: 'rgba(160, 170, 190, 0.55)',
   },
   logoutButton: {

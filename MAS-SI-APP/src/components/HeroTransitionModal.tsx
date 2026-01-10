@@ -607,7 +607,7 @@ export const HeroTransitionModal: React.FC<HeroTransitionProps> = ({
 
                   {/* Save Button */}
                   <Pressable style={styles.saveButton} onPress={handleClose}>
-                    <Check color="#6EE7B7" size={20} strokeWidth={2.5} style={{ marginRight: 8 }} />
+                    <Check color="#FFFFFF" size={20} strokeWidth={2.5} style={{ marginRight: 8 }} />
                     <Text style={styles.saveButtonText}>Save</Text>
                   </Pressable>
                 </View>
@@ -754,18 +754,16 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   saveButton: {
-    backgroundColor: 'rgba(110, 231, 183, 0.25)',
+    backgroundColor: 'rgba(0, 122, 255, 0.8)',
     paddingVertical: 16,
     borderRadius: 12,
     marginTop: 8,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    borderWidth: 1.5,
-    borderColor: 'rgba(110, 231, 183, 0.5)',
   },
   saveButtonText: {
-    color: '#6EE7B7',
+    color: '#FFFFFF',
     fontSize: 17,
     fontWeight: '600',
   },

@@ -462,7 +462,7 @@ const Table = ({ prayerData, setTableIndex, tableIndex, index, userSettings }: p
 
           {/* Save Button */}
           <Pressable style={modalStyles.saveButton} onPress={handleSave}>
-            <Check color="#6EE7B7" size={20} strokeWidth={2.5} style={{ marginRight: 8 }} />
+            <Check color="#FFFFFF" size={20} strokeWidth={2.5} style={{ marginRight: 8 }} />
             <Text style={modalStyles.saveButtonText}>Save</Text>
           </Pressable>
         </View>
@@ -614,7 +614,7 @@ const modalStyles = StyleSheet.create({
     lineHeight: 20,
   },
   saveButton: {
-    backgroundColor: 'rgba(110, 231, 183, 0.25)',
+    backgroundColor: 'rgba(0, 122, 255, 0.8)',
     paddingVertical: 16,
     borderRadius: 12,
     alignItems: 'center',
@@ -622,11 +622,9 @@ const modalStyles = StyleSheet.create({
     flexDirection: 'row',
     marginTop: 32,
     marginBottom: 20,
-    borderWidth: 1.5,
-    borderColor: 'rgba(110, 231, 183, 0.5)',
   },
   saveButtonText: {
-    color: '#6EE7B7',
+    color: '#FFFFFF',
     fontSize: 16,
     fontWeight: '600',
   },

@@ -168,13 +168,13 @@ export default function MoreScreen() {
 
   return (
     <LinearGradient
-      colors={['#87CEEB', '#214E91', '#2A2A2A']}
+      colors={['#1d4681', '#3183bf']}
       start={{ x: 0, y: 0 }}
-      end={{ x: 1, y: 1 }}
+      end={{ x: 0, y: 1 }}
       style={styles.container}
     >
       <StatusBar barStyle="light-content" />
-      <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent}>
+      <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent} bounces={false}>
         {/* Header */}
         <View style={styles.header}>
           <Text style={styles.headerTitle}>Account</Text>
@@ -895,7 +895,7 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   header: {
-    paddingTop: 60,
+    paddingTop: 20,
     paddingBottom: 20,
     paddingHorizontal: 16,
     flexDirection: 'row',
